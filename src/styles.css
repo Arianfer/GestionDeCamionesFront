@@ -1,1 +1,22 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+    --color-primario: #2e7d32;
+    --color-primario-oscuro: #1b5e20;
+    --color-fondo: #f4f6f4;
+    --color-superficie: #ffffff;
+    --color-texto: #1f2933;
+    --color-texto-claro: #ffffff;
+    --color-borde: #d9e2dc;
+    --color-error: #c62828;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: system-ui, sans-serif;
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+}
