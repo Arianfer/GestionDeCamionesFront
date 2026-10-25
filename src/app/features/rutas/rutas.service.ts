@@ -3,7 +3,10 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { Ruta, RutaChofer, RutaRequest } from '../../models/ruta.model';
+import { Ruta, RutaChofer, RutaRequest } from '../../shared/models/ruta.model';
+import { Usuario } from '../../shared/models/usuario.model';
+import { Servicio } from '../../shared/models/servicio.model';
+
 
 @Injectable({ providedIn: 'root' })
 export class RutasService {
@@ -40,5 +43,18 @@ export class RutasService {
     return this.http.get<RutaChofer>(
       `${environment.apiUrl}/tareas/mi-ruta/${choferId}`,
     );
+  }
+
+  obtenerChoferes(): Observable<Usuario[]> {
+    return this.http.get<Usuario[]>(`${environment.apiUrl}/usuarios`);
+  }
+
+  obtenerServicios(): Observable<Servicio[]> {
+    return this.http.get<Servicio[]>(`${environment.apiUrl}/servicios`);
+  }
+
+  /** Lo necesita ruta-form para guardar el orden de los servicios */
+  reordenarServicios(ids: number[]): Observable<void> {
+    return this.http.put<void>(`${environment.apiUrl}/servicios/reordenar`, ids);
   }
 }

@@ -3,7 +3,7 @@ import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { RutasService } from '../rutas.service';
-import { Ruta } from '../../../models/ruta.model';
+import { Ruta } from '../../../shared/models/ruta.model';
 
 @Component({
   selector: 'app-ruta-list',

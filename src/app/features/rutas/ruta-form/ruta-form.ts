@@ -3,11 +3,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RutasService } from '../rutas.service';
-import { ServiciosService } from '../../servicios.service';
-import { UsuariosService } from '../../usuarios.service';
-import { RutaRequest } from '../../../models/ruta.model';
-import { Servicio } from '../../../models/servicio.model';
-import { Usuario } from '../../../models/usuario.model';
+import { RutaRequest } from '../../../shared/models/ruta.model';
+import { Servicio } from '../../../shared/models/servicio.model';
+import { Usuario } from '../../../shared/models/usuario.model';
 
 @Component({
   selector: 'app-ruta-form',
@@ -20,8 +18,6 @@ export class RutaForm implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private rutasService = inject(RutasService);
-  private serviciosService = inject(ServiciosService);
-  private usuariosService = inject(UsuariosService);
 
   // null = alta, número = edición
   id: number | null = null;
@@ -55,7 +51,7 @@ export class RutaForm implements OnInit {
   }
 
   ngOnInit() {
-    this.usuariosService.getAll().subscribe({
+    this.rutasService.obtenerChoferes().subscribe({
       next: (data) => this.usuarios.set(data),
       error: () => this.error.set('No se pudieron cargar los choferes.'),
     });
@@ -136,7 +132,7 @@ export class RutaForm implements OnInit {
     this.mensajeOrden.set('');
 
     const ids = this.servicios().map((s) => s.id);
-    this.serviciosService.reordenar(ids).subscribe({
+    this.rutasService.reordenarServicios(ids).subscribe({
       next: () => {
         this.guardandoOrden.set(false);
         this.ordenModificado.set(false);
