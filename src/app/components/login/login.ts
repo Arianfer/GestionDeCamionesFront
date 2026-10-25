@@ -1,9 +1,51 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AuthService } from '../../service/auth.service';
+import { LoginRequest, AuthResponse } from '../../models/auth.model';
 
 @Component({
-  imports: [],
   selector: 'app-login',
-  styleUrl: './login.css',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.html',
+  styleUrl: './login.css'
 })
-export class Login {}
+export class LoginComponent {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
+  credentials: LoginRequest = {
+    dni: '',
+    password: ''
+  };
+
+  errorMessage: string = '';
+  isLoading: boolean = false;
+
+  onSubmit(): void {
+    if (!this.credentials.dni || !this.credentials.password) {
+      this.errorMessage = 'Por favor complete el DNI y la contraseña';
+      return;
+    }
+
+    this.isLoading = true;
+    this.errorMessage = '';
+
+    this.authService.login(this.credentials).subscribe({
+      next: (res: AuthResponse) => {
+        this.isLoading = false;
+        if (res.rol === 'EMPLEADO') {
+          this.router.navigate(['/chofer']);
+        } else {
+          this.router.navigate(['/inicio']);
+        }
+      },
+      error: (err: any) => {
+        this.isLoading = false;
+        this.errorMessage = 'DNI o contraseña incorrectos';
+      }
+    });
+  }
+}

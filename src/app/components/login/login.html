@@ -1,2 +1,40 @@
-<h1>Iniciar sesión</h1>
-<p>Pantalla en construcción (SCRUM-20).</p>
+<div class="login-container">
+  <div class="login-card">
+    <h2>Sistema Ciageser S.A.</h2>
+    <p class="subtitle">Gestión de Camiones y Recorridos</p>
+
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="dni">DNI (Usuario)</label>
+        <input
+          type="text"
+          id="dni"
+          name="dni"
+          [(ngModel)]="credentials.dni"
+          placeholder="Ej: 12345678"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña (4 últimos dígitos)</label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          [(ngModel)]="credentials.password"
+          placeholder="Ej: 5678"
+          required
+        />
+      </div>
+
+      <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+
+      <button type="submit" [disabled]="isLoading" class="btn-primary">
+        {{ isLoading ? 'Ingresando...' : 'Iniciar Sesión' }}
+      </button>
+    </form>
+  </div>
+</div>
