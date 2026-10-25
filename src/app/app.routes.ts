@@ -1,17 +1,24 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './components/login/login';
-import { Layout } from './components/layout/layout';
-import { Inicio } from './components/inicio/inicio';
+import { Login } from './features/auth/login/login';
+import { MainLayout } from './layouts/main-layout/main-layout';
+import { Inicio } from './features/inicio/inicio';
 
 export const routes: Routes = [
-  { path: 'login', component: LoginComponent },
+  { path: 'login', component: Login },
   {
     path: '',
-    component: Layout,
+    component: MainLayout,
     children: [
       { path: 'inicio', component: Inicio },
-      { path: '', redirectTo: 'inicio', pathMatch: 'full' }
-    ]
+      {
+        path: 'rutas',
+        canActivate: [],
+        data: { roles: ['ADMIN', 'OFICINA'] },
+        loadChildren: () =>
+          import('./features/rutas/rutas.routes').then(m => m.RUTAS_ROUTES),
+      },
+      { path: '', redirectTo: 'inicio', pathMatch: 'full' },
+    ],
   },
-  { path: '**', redirectTo: 'login' }
+  { path: '**', redirectTo: 'inicio' },
 ];

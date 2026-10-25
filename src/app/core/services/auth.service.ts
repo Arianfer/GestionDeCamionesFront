@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
-import { LoginRequest, AuthResponse } from '../models/auth.model';
+import { LoginRequest, AuthResponse } from '../../shared/models/auth.model';
 
 @Injectable({
   providedIn: 'root'

@@ -2,8 +2,8 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../service/auth.service';
-import { LoginRequest, AuthResponse } from '../../models/auth.model';
+import { AuthService } from '../../../core/services/auth.service';
+import { LoginRequest, AuthResponse } from '../../../shared/models/auth.model';
 
 @Component({
   selector: 'app-login',
@@ -12,7 +12,7 @@ import { LoginRequest, AuthResponse } from '../../models/auth.model';
   templateUrl: './login.html',
   styleUrl: './login.css'
 })
-export class LoginComponent {
+export class Login {
   private authService = inject(AuthService);
   private router = inject(Router);
 
