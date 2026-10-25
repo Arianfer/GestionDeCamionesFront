@@ -1,0 +1,61 @@
+<div class="header">
+  <h2>Rutas</h2>
+  <a routerLink="/rutas/nuevo" class="btn-primary">+ Nueva ruta</a>
+</div>
+
+<div class="filtros">
+  <input
+    type="text"
+    placeholder="Buscar por nombre de ruta o chofer"
+    [ngModel]="texto()"
+    (ngModelChange)="texto.set($event)"
+  />
+  <input
+    type="date"
+    [ngModel]="fecha()"
+    (ngModelChange)="fecha.set($event)"
+  />
+  @if (fecha()) {
+    <button type="button" class="limpiar" (click)="fecha.set('')">Quitar fecha</button>
+  }
+</div>
+
+@if (error()) {
+  <p class="error">{{ error() }}</p>
+}
+
+@if (cargando()) {
+  <p>Cargando...</p>
+} @else if (rutasFiltradas().length === 0) {
+  <p>No hay rutas para mostrar.</p>
+} @else {
+  <table>
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th>Fecha</th>
+        <th>Chofer</th>
+        <th>Servicios</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (r of rutasFiltradas(); track r.idRuta) {
+        <tr>
+          <td>{{ r.nombre }}</td>
+          <td class="descripcion">{{ r.descripcion }}</td>
+          <td>{{ r.fecha | date: 'dd/MM/yyyy' }}</td>
+          <td>{{ r.nombreChofer }}</td>
+          <td>{{ cantidadServicios(r) }}</td>
+          <td class="acciones">
+            <a [routerLink]="['/rutas', r.idRuta, 'editar']">Editar</a>
+            <!-- Descomentar cuando exista ruta-mapa:
+            <a [routerLink]="['/rutas', r.idRuta, 'mapa']">Mapa</a> -->
+            <button type="button" (click)="eliminar(r)">Eliminar</button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+}

@@ -1,0 +1,74 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.btn-primary {
+  background: #1565c0;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  text-decoration: none;
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.filtros input {
+  padding: 0.5rem;
+}
+
+.filtros input[type='text'] {
+  flex: 1;
+  min-width: 220px;
+}
+
+.limpiar {
+  background: none;
+  border: none;
+  color: #1565c0;
+  cursor: pointer;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.6rem;
+  border-bottom: 1px solid #ddd;
+}
+
+.descripcion {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.acciones {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.acciones button {
+  color: #c62828;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.error {
+  color: #c62828;
+}
