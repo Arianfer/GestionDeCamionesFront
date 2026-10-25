@@ -10,6 +10,13 @@ export const routes: Routes = [
     component: Layout,
     children: [
       { path: 'inicio', component: Inicio },
+      {
+        path: 'rutas',
+        canActivate: [],
+        data: { roles: ['ADMIN', 'OFICINA'] },
+        loadChildren: () =>
+          import('./features/rutas/rutas.routes').then(m => m.RUTAS_ROUTES),
+      },
       { path: '', redirectTo: 'inicio', pathMatch: 'full' },
     ],
   },

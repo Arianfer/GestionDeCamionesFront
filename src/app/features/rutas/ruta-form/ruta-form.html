@@ -1,0 +1,104 @@
+<h2>{{ esEdicion ? 'Editar ruta' : 'Nueva ruta' }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="guardar()">
+  <div class="campo">
+    <label for="nombre">Nombre</label>
+    <input id="nombre" type="text" formControlName="nombre" maxlength="50" />
+    @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
+      <small class="error">El nombre es obligatorio (máximo 50 caracteres).</small>
+    }
+    @if (erroresBackend()['nombre']) {
+      <small class="error">{{ erroresBackend()['nombre'] }}</small>
+    }
+  </div>
+
+  <div class="campo">
+    <label for="descripcion">Descripción</label>
+    <textarea id="descripcion" rows="3" formControlName="descripcion" maxlength="400"></textarea>
+    @if (form.controls.descripcion.touched && form.controls.descripcion.invalid) {
+      <small class="error">La descripción es obligatoria (máximo 400 caracteres).</small>
+    }
+    @if (erroresBackend()['descripcion']) {
+      <small class="error">{{ erroresBackend()['descripcion'] }}</small>
+    }
+  </div>
+
+  <div class="campo">
+    <label for="fecha">Fecha</label>
+    <input id="fecha" type="date" formControlName="fecha" />
+    @if (form.controls.fecha.touched && form.controls.fecha.invalid) {
+      <small class="error">La fecha es obligatoria.</small>
+    }
+    @if (erroresBackend()['fecha']) {
+      <small class="error">{{ erroresBackend()['fecha'] }}</small>
+    }
+  </div>
+
+  <div class="campo">
+    <label for="idChofer">Chofer</label>
+    <select id="idChofer" formControlName="idChofer">
+      <option [ngValue]="null" disabled>Seleccioná un chofer</option>
+      @for (c of choferes(); track c.id) {
+        <option [ngValue]="c.id">{{ c.apellido }}, {{ c.nombre }} ({{ c.dni }})</option>
+      }
+    </select>
+    @if (form.controls.idChofer.touched && form.controls.idChofer.invalid) {
+      <small class="error">Tenés que elegir un chofer.</small>
+    }
+    @if (erroresBackend()['idChofer']) {
+      <small class="error">{{ erroresBackend()['idChofer'] }}</small>
+    }
+  </div>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  <div class="botones">
+    <a routerLink="/rutas" class="btn-secundario">Cancelar</a>
+    <button type="submit" class="btn-primary" [disabled]="guardando()">
+      {{ guardando() ? 'Guardando...' : 'Guardar' }}
+    </button>
+  </div>
+</form>
+
+@if (esEdicion) {
+  <section class="servicios">
+    <h3>Servicios de la ruta</h3>
+
+    @if (servicios().length === 0) {
+      <p>Esta ruta todavía no tiene servicios. Se cargan desde la pantalla de servicios.</p>
+    } @else {
+      <p class="ayuda">El orden de la lista es el orden en que el chofer va a visitar los puntos.</p>
+
+      <ol>
+        @for (s of servicios(); track s.id; let i = $index; let ultimo = $last) {
+          <li>
+            <span class="posicion">{{ i + 1 }}</span>
+            <span class="detalle">
+              <strong>{{ s.nombre }}</strong>
+              <small>{{ s.direccion }}</small>
+            </span>
+            <span class="mover">
+              <button type="button" (click)="mover(i, -1)" [disabled]="i === 0"
+                      aria-label="Subir">↑</button>
+              <button type="button" (click)="mover(i, 1)" [disabled]="ultimo"
+                      aria-label="Bajar">↓</button>
+            </span>
+          </li>
+        }
+      </ol>
+
+      <div class="botones">
+        @if (mensajeOrden()) {
+          <span class="mensaje">{{ mensajeOrden() }}</span>
+        }
+        <button type="button" class="btn-primary"
+                [disabled]="!ordenModificado() || guardandoOrden()"
+                (click)="guardarOrden()">
+          {{ guardandoOrden() ? 'Guardando...' : 'Guardar orden' }}
+        </button>
+      </div>
+    }
+  </section>
+}
