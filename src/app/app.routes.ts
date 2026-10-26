@@ -2,12 +2,14 @@ import { Routes } from '@angular/router';
 import { Login } from './features/auth/login/login';
 import { MainLayout } from './layouts/main-layout/main-layout';
 import { Inicio } from './features/inicio/inicio';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   { path: 'login', component: Login },
   {
     path: '',
     component: MainLayout,
+    canActivate: [authGuard],
     children: [
       { path: 'inicio', component: Inicio },
       {
