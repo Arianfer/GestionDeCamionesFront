@@ -6,7 +6,7 @@ export interface Ruta {
   nombre: string;
   descripcion: string;
   servicios: Servicio[] | null;
-  fecha: string;          // 'YYYY-MM-DD'
+  fecha: string | null;          // 'YYYY-MM-DD'
   idChofer: number;
   nombreChofer: string;
 }
@@ -15,7 +15,7 @@ export interface Ruta {
 export interface RutaRequest {
   nombre: string;
   descripcion: string;
-  fecha: string;          // 'YYYY-MM-DD'
+  fecha: string | null;          // 'YYYY-MM-DD'
   idChofer: number;
 }
 

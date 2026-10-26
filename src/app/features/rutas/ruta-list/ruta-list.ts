@@ -33,7 +33,7 @@ export class RutaList implements OnInit {
       )
       .filter((r) => !f || r.fecha === f)
       // las más recientes primero
-      .sort((a, b) => b.fecha.localeCompare(a.fecha) || a.nombre.localeCompare(b.nombre));
+      .sort((a, b) => (b.fecha ?? '').localeCompare(a.fecha ?? '') || a.nombre.localeCompare(b.nombre));
   });
 
   ngOnInit() {
