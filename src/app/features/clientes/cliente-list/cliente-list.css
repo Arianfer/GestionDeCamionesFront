@@ -1,0 +1,147 @@
+.pagina {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.encabezado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.subtitulo {
+  margin: 4px 0 0;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+.barra {
+  margin-bottom: 16px;
+}
+
+.barra input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.barra input:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+.tabla-contenedor {
+  overflow-x: auto;
+  border: 1px solid #e2e2e2;
+  border-radius: 8px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+th {
+  background: #f6f7f9;
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #555;
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:hover {
+  background: #fafbfc;
+}
+
+.acciones {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+th.acciones {
+  display: table-cell;
+  text-align: right;
+}
+
+.estado {
+  padding: 32px 0;
+  text-align: center;
+  color: #666;
+}
+
+.alerta {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  background: #fdecec;
+  border: 1px solid #f5c2c2;
+  border-radius: 6px;
+  color: #9b1c1c;
+}
+
+.btn {
+  display: inline-block;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 0.875rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primario {
+  background: #2563eb;
+  color: #fff;
+}
+
+.btn-primario:hover {
+  background: #1d4ed8;
+}
+
+.btn-secundario {
+  background: #fff;
+  border-color: #ccc;
+  color: #222;
+}
+
+.btn-secundario:hover {
+  background: #f3f4f6;
+}
+
+.btn-peligro {
+  background: #fff;
+  border-color: #e5a3a3;
+  color: #b91c1c;
+}
+
+.btn-peligro:hover:not(:disabled) {
+  background: #fdecec;
+}
