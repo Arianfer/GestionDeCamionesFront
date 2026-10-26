@@ -1,0 +1,100 @@
+.pagina {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+h1 {
+  margin: 0 0 20px;
+  font-size: 1.5rem;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+input {
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font: inherit;
+}
+
+input:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+input.invalido {
+  border-color: #b91c1c;
+}
+
+.error {
+  color: #b91c1c;
+  font-size: 0.8125rem;
+}
+
+.alerta {
+  margin: 0 0 16px;
+  padding: 10px 12px;
+  background: #fdecec;
+  border: 1px solid #f5c2c2;
+  border-radius: 6px;
+  color: #9b1c1c;
+}
+
+.estado {
+  padding: 32px 0;
+  text-align: center;
+  color: #666;
+}
+
+.botones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.btn {
+  display: inline-block;
+  padding: 8px 14px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 0.875rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primario {
+  background: #2563eb;
+  color: #fff;
+}
+
+.btn-primario:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.btn-secundario {
+  background: #fff;
+  border-color: #ccc;
+  color: #222;
+}
+
+.btn-secundario:hover {
+  background: #f3f4f6;
+}
