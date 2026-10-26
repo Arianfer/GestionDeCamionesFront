@@ -1,1 +1,68 @@
-<p>cliente-form works!</p>
+<section class="pagina">
+  <header class="encabezado">
+    <h1>{{ esEdicion ? 'Editar cliente' : 'Nuevo cliente' }}</h1>
+  </header>
+
+  @if (cargando()) {
+    <p class="estado">Cargando cliente…</p>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="guardar()" novalidate>
+      @if (error()) {
+        <p class="alerta" role="alert">{{ error() }}</p>
+      }
+
+      <div class="campo">
+        <label for="cuit">CUIT</label>
+        <input
+          #cuitInput
+          id="cuit"
+          type="text"
+          inputmode="numeric"
+          maxlength="13"
+          placeholder="11 dígitos, sin guiones"
+          formControlName="cuit"
+          [class.invalido]="cuit.touched && cuit.invalid"
+          (input)="soloDigitos(cuitInput)"
+        />
+        @if (cuit.touched && cuit.invalid) {
+          <small class="error">
+            @if (cuit.errors?.['servidor']) {
+              {{ cuit.errors?.['servidor'] }}
+            } @else if (cuit.errors?.['required']) {
+              El CUIT es obligatorio.
+            } @else {
+              El CUIT debe tener exactamente 11 números.
+            }
+          </small>
+        }
+      </div>
+
+      <div class="campo">
+        <label for="razonSocial">Razón social</label>
+        <input
+          id="razonSocial"
+          type="text"
+          placeholder="Ej: Empresa Ejemplo SA"
+          formControlName="razonSocial"
+          [class.invalido]="razonSocial.touched && razonSocial.invalid"
+        />
+        @if (razonSocial.touched && razonSocial.invalid) {
+          <small class="error">
+            @if (razonSocial.errors?.['servidor']) {
+              {{ razonSocial.errors?.['servidor'] }}
+            } @else {
+              La razón social es obligatoria.
+            }
+          </small>
+        }
+      </div>
+
+      <div class="botones">
+        <a class="btn btn-secundario" routerLink="/clientes">Cancelar</a>
+        <button type="submit" class="btn btn-primario" [disabled]="guardando()">
+          {{ guardando() ? 'Guardando…' : esEdicion ? 'Guardar cambios' : 'Crear cliente' }}
+        </button>
+      </div>
+    </form>
+  }
+</section>
