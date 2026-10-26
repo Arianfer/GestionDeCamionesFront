@@ -15,7 +15,7 @@ export interface Ruta {
 export interface RutaRequest {
   nombre: string;
   descripcion: string;
-  fecha: string | null;          // 'YYYY-MM-DD'
+  fecha: string;          // 'YYYY-MM-DD'
   idChofer: number;
 }
 

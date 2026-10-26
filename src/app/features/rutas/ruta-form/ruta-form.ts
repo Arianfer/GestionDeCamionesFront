@@ -64,7 +64,7 @@ export class RutaForm implements OnInit {
           this.form.patchValue({
             nombre: r.nombre,
             descripcion: r.descripcion,
-            fecha: r.fecha,
+            fecha: r.fecha ?? '',
             idChofer: r.idChofer,
           });
           // servicios puede venir null; los ordeno por "orden"
