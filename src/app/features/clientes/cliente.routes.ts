@@ -4,6 +4,17 @@ export const CLIENTES_ROUTES: Routes = [
     {
         path: '',
         loadComponent: () =>
-            import('./cliente')
-    }
+            import('./cliente-list/cliente-list').then((m) => m.ClienteList),
+    },
+    {
+        path: 'nuevo',
+        loadComponent: () =>
+            import('./cliente-form/cliente-form').then((m) => m.ClienteForm)
+    },
+    {
+    path: ':id/editar',
+    loadComponent: () =>
+      import('./cliente-form/cliente-form').then((m) => m.ClienteForm),
+  },
+
 ]
