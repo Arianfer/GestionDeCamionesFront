@@ -1,11 +1,12 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
 export const authGuard: CanActivateFn = () => {
+  const authService = inject(AuthService);
   const router = inject(Router);
 
-  // Verificamos con el nombre exacto de la clave del localStorage[cite: 1]
-  if (localStorage.getItem('token_jwt')) {
+  if (authService.getToken()) {
     return true;
   }
 
