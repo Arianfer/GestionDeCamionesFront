@@ -12,7 +12,7 @@ import { ClienteService } from '../cliente.service';
   templateUrl: './cliente-list.html',
   styleUrl: './cliente-list.css',
 })
-export class ClienteListComponent implements OnInit {
+export class ClienteList implements OnInit {
   private readonly clienteService = inject(ClienteService);
   private readonly clientes = signal<Cliente[]>([]);
   private readonly filtro = signal('');
