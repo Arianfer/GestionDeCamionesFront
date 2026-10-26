@@ -3,7 +3,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { Cliente } from '../../../shared/models/cliente.model';
-import { CuitPipe } from '../../../shared/pipes/cuit-pipe';
+import { CuitPipe } from '../../../shared/pipes/cuit.pipe';
 import { ClienteService } from '../cliente.service';
 
 @Component({
@@ -14,15 +14,14 @@ import { ClienteService } from '../cliente.service';
 })
 export class ClienteListComponent implements OnInit {
   private readonly clienteService = inject(ClienteService);
-
-  readonly clientes = signal<Cliente[]>([]);
-  readonly filtro = signal('');
-  readonly cargando = signal(true);
-  readonly error = signal<string | null>(null);
-  readonly eliminandoId = signal<number | null>(null);
+  private readonly clientes = signal<Cliente[]>([]);
+  private readonly filtro = signal('');
+  private readonly cargando = signal(true);
+  private readonly error = signal<string | null>(null);
+  private readonly eliminandoId = signal<number | null>(null);
 
   /** Filtra por ID exacto, CUIT (con o sin guiones) o razón social. */
-  readonly filtrados = computed(() => {
+  private readonly filtrados = computed(() => {
     const q = this.filtro().trim().toLowerCase();
     if (!q) return this.clientes();
     const qDigitos = q.replace(/\D/g, '');

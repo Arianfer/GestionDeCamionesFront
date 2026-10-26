@@ -1,1 +1,69 @@
-<p>cliente-list works!</p>
+<section class="pagina">
+  <header class="encabezado">
+    <div>
+      <h1>Clientes</h1>
+      <p class="subtitulo">{{ filtrados().length }} de {{ clientes().length }} clientes</p>
+    </div>
+    <a class="btn btn-primario" routerLink="/clientes/nuevo">+ Nuevo cliente</a>
+  </header>
+
+  <div class="barra">
+    <input
+      #q
+      type="search"
+      placeholder="Buscar por ID, CUIT o razón social"
+      aria-label="Buscar clientes"
+      [value]="filtro()"
+      (input)="filtro.set(q.value)"
+    />
+  </div>
+
+  @if (error()) {
+    <p class="alerta" role="alert">{{ error() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="estado">Cargando clientes…</p>
+  } @else if (filtrados().length === 0) {
+    <p class="estado">
+      @if (clientes().length === 0) {
+        Todavía no hay clientes cargados.
+      } @else {
+        Ningún cliente coincide con la búsqueda.
+      }
+    </p>
+  } @else {
+    <div class="tabla-contenedor">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>CUIT</th>
+            <th>Razón social</th>
+            <th class="acciones">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of filtrados(); track c.id) {
+            <tr>
+              <td>{{ c.id }}</td>
+              <td>{{ c.cuit | cuit }}</td>
+              <td>{{ c.razonSocial }}</td>
+              <td class="acciones">
+                <a class="btn btn-secundario" [routerLink]="['/clientes', c.id, 'editar']">Editar</a>
+                <button
+                  type="button"
+                  class="btn btn-peligro"
+                  [disabled]="eliminandoId() === c.id"
+                  (click)="eliminarCliente(c)"
+                >
+                  {{ eliminandoId() === c.id ? 'Eliminando…' : 'Eliminar' }}
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
