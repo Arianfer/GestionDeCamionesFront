@@ -3,9 +3,10 @@ import { Login } from './features/auth/login/login';
 import { MainLayout } from './layouts/main-layout/main-layout';
 import { Inicio } from './features/inicio/inicio';
 import { authGuard } from './core/guards/auth.guard';
+import { guestGuard } from './core/guards/guest.guard';
 
 export const routes: Routes = [
-  { path: 'login', component: Login },
+  { path: 'login', component: Login, canActivate: [guestGuard] },
   {
     path: '',
     component: MainLayout,
