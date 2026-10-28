@@ -19,17 +19,41 @@
 
 .links {
     display: flex;
-    gap: 24px;
+    align-items: center; /* Alinea los links y el botón perfectamente al centro vertical */
+    gap: 20px;
 }
 
 .links a {
     color: var(--color-texto-claro);
     text-decoration: none;
     opacity: 0.85;
+    transition: opacity 0.2s ease;
+}
+
+.links a:hover {
+    opacity: 1;
 }
 
 .links a.activo {
     opacity: 1;
     font-weight: bold;
     border-bottom: 2px solid var(--color-texto-claro);
+}
+
+.btn-logout {
+    background-color: transparent;
+    color: var(--color-texto-claro);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    padding: 6px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-logout:hover {
+    background-color: rgba(220, 53, 69, 0.9); /* Cambia a rojo recién cuando le pasás el mouse */
+    border-color: #dc3545;
+    color: #ffffff;
 }
