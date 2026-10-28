@@ -1,0 +1,126 @@
+.inicio-container {
+  padding: 32px;
+  max-width: 1100px;
+  margin: 0 auto;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* Banner superior */
+.bienvenida-card {
+  background: white;
+  padding: 24px 32px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-left: 6px solid var(--color-primario, #1b7b3a);
+  margin-bottom: 28px;
+}
+
+.bienvenida-card h1 {
+  margin: 0 0 8px 0;
+  color: #2c3e50;
+  font-size: 1.8rem;
+}
+
+.bienvenida-card p {
+  margin: 0;
+  color: #6c757d;
+}
+
+.badge-rol {
+  background-color: #e8f5e9;
+  color: #1b7b3a;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: bold;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+/* Métricas */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.kpi-card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.kpi-icon {
+  font-size: 2.2rem;
+  background: #f8f9fa;
+  padding: 12px;
+  border-radius: 50%;
+}
+
+.kpi-info h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.kpi-numero {
+  margin: 4px 0 0 0;
+  font-size: 1.6rem;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+/* Accesos rápidos */
+h2 {
+  color: #2c3e50;
+  font-size: 1.3rem;
+  margin-bottom: 16px;
+}
+
+.accesos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.acceso-card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #f0f0f0;
+}
+
+.acceso-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+  border-color: var(--color-primario, #1b7b3a);
+}
+
+.acceso-card .icono {
+  font-size: 2rem;
+}
+
+.acceso-card h3 {
+  margin: 0 0 4px 0;
+  color: #2c3e50;
+  font-size: 1.1rem;
+}
+
+.acceso-card p {
+  margin: 0;
+  color: #6c757d;
+  font-size: 0.85rem;
+}

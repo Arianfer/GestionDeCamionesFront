@@ -1,9 +1,21 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
+import { RouterLink } from '@angular/router';
+import { AuthService } from '../../core/services/auth.service';
 
 @Component({
-  imports: [],
   selector: 'app-inicio',
-  styleUrl: './inicio.css',
+  imports: [RouterLink],
   templateUrl: './inicio.html',
+  styleUrl: './inicio.css'
 })
-export class Inicio {}
+export class Inicio implements OnInit {
+  private authService = inject(AuthService);
+  
+  nombreUsuario: string = '';
+  rolUsuario: string = '';
+
+  ngOnInit(): void {
+    this.nombreUsuario = this.authService.getNombre() || 'Usuario';
+    this.rolUsuario = this.authService.getRol() || 'OPERADOR';
+  }
+}

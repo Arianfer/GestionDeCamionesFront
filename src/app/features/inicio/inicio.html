@@ -1,2 +1,63 @@
-<h1>Inicio</h1>
-<p>Bienvenido al sistema de gestión de CIAGESER.</p>
+<div class="inicio-container">
+  <!-- Banner de bienvenida -->
+  <header class="bienvenida-card">
+    <div class="texto">
+      <h1>¡Hola, {{ nombreUsuario }}! 👋</h1>
+      <p>Bienvenido al panel principal de gestión de flota de <strong>CIAGESER</strong>.</p>
+    </div>
+    <span class="badge-rol">{{ rolUsuario }}</span>
+  </header>
+
+  <!-- Tarjetas de métricas/KPIs -->
+  <section class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon">🚛</div>
+      <div class="kpi-info">
+        <h3>En Trayecto</h3>
+        <p class="kpi-numero">12</p>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">📍</div>
+      <div class="kpi-info">
+        <h3>Rutas Activas</h3>
+        <p class="kpi-numero">8</p>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">👥</div>
+      <div class="kpi-info">
+        <h3>Clientes</h3>
+        <p class="kpi-numero">24</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Accesos Rápidos -->
+  <h2>Accesos Rápidos</h2>
+  <section class="accesos-grid">
+    <a routerLink="/rutas" class="acceso-card">
+      <div class="icono">🗺️</div>
+      <div class="detalle">
+        <h3>Gestión de Rutas</h3>
+        <p>Asignar choferes, monitorear trayectos y estados.</p>
+      </div>
+    </a>
+
+    <a routerLink="/clientes" class="acceso-card">
+      <div class="icono">🏢</div>
+      <div class="detalle">
+        <h3>Clientes</h3>
+        <p>Consultar la lista de clientes registrados.</p>
+      </div>
+    </a>
+
+    <a routerLink="/servicios" class="acceso-card">
+      <div class="icono">📦</div>
+      <div class="detalle">
+        <h3>Servicios</h3>
+        <p>Ver tipos de servicios y solicitudes activas.</p>
+      </div>
+    </a>
+  </section>
+</div>
