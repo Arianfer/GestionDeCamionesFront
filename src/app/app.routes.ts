@@ -4,6 +4,7 @@ import { MainLayout } from './layouts/main-layout/main-layout';
 import { Inicio } from './features/inicio/inicio';
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
+import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   { path: 'login', component: Login, canActivate: [guestGuard] },
