@@ -20,13 +20,16 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/rutas/rutas.routes').then(m => m.RUTAS_ROUTES),
       },
+      { 
+        path: 'clientes',
+        canActivate: [],
+        data: { roles: ['ADMIN', 'OFICINA']},
+        loadChildren: () => 
+          import('./features/clientes/cliente.routes').then(m => m.CLIENTES_ROUTES)
+
+      },
       { path: '', redirectTo: 'inicio', pathMatch: 'full' },
     ],
-  },
-  { 
-    path: 'clientes',
-    loadChildren: () => 
-      import('./features/clientes/cliente.routes').then(m => m.CLIENTES_ROUTES) 
   },
   { 
     path: '**', 
