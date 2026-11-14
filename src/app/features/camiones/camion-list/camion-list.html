@@ -1,0 +1,73 @@
+<section class="pagina">
+  <header class="encabezado">
+    <div>
+      <h1>Camiones</h1>
+      <p class="subtitulo">{{ filtrados().length }} de {{ camiones().length }} camiones</p>
+    </div>
+  </header>
+
+  <div class="barra">
+    <input
+      #q
+      type="search"
+      placeholder="Buscar por ID o patente"
+      aria-label="Buscar camiones por ID o patente"
+      [value]="filtro()"
+      (input)="filtro.set(q.value)"
+    />
+    <select
+      #estadoSel
+      aria-label="Filtrar por estado"
+      [value]="estadoFiltro()"
+      (change)="cambiarEstadoFiltro(estadoSel.value)"
+    >
+      <option value="">Todos los estados</option>
+      @for (e of estados; track e.valor) {
+        <option [value]="e.valor">{{ e.etiqueta }}</option>
+      }
+    </select>
+  </div>
+
+  @if (error()) {
+    <p class="alerta" role="alert">{{ error() }}</p>
+  }
+
+  @if (cargando()) {
+    <p class="estado">Cargando camiones…</p>
+  } @else if (filtrados().length === 0) {
+    <p class="estado">
+      @if (camiones().length === 0) {
+        Todavía no hay camiones cargados.
+      } @else {
+        Ningún camión coincide con los filtros.
+      }
+    </p>
+  } @else {
+    <div class="tabla-contenedor">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Patente</th>
+            <th>Tipo</th>
+            <th>Estado</th>
+            <th class="numero">Capacidad de carga</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (c of filtrados(); track c.id) {
+            <tr>
+              <td>{{ c.id }}</td>
+              <td>{{ c.patente | patente }}</td>
+              <td>{{ etiquetaTipo(c.tipo) }}</td>
+              <td>
+                <span class="badge" [attr.data-estado]="c.estadoCamion">{{ etiquetaEstado(c.estadoCamion) }}</span>
+              </td>
+              <td class="numero">{{ c.capacidadCarga }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
