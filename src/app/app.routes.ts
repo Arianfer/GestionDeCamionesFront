@@ -29,6 +29,13 @@ export const routes: Routes = [
           import('./features/clientes/cliente.routes').then(m => m.CLIENTES_ROUTES)
 
       },
+      {
+        path: 'camiones',
+        loadChildren: () =>
+          import('./features/camiones/camiones.routes').then((m) => m.CAMIONES_ROUTES),
+        canActivate: [],
+        data: { roles: ['ADMIN', 'OFICINA'] },
+      },
       { path: '', redirectTo: 'inicio', pathMatch: 'full' },
     ],
   },
