@@ -16,14 +16,14 @@ export const routes: Routes = [
       { path: 'inicio', component: Inicio },
       {
         path: 'rutas',
-        canActivate: [],
+        canActivate: [roleGuard],
         data: { roles: ['ADMIN', 'OFICINA'] },
         loadChildren: () =>
           import('./features/rutas/rutas.routes').then(m => m.RUTAS_ROUTES),
       },
       { 
         path: 'clientes',
-        canActivate: [],
+        canActivate: [roleGuard],
         data: { roles: ['ADMIN', 'OFICINA']},
         loadChildren: () => 
           import('./features/clientes/cliente.routes').then(m => m.CLIENTES_ROUTES)
