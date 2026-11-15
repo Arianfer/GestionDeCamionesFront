@@ -1,0 +1,249 @@
+:host {
+  display: block;
+  height: 100dvh;
+  width: 100%;
+}
+
+.app-chofer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background: #ffffff;
+  overflow: hidden;
+  position: relative;
+}
+
+.top-card {
+  background: #ffffff;
+  padding: 14px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  z-index: 10;
+}
+
+.info-central {
+  font-size: 14px;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.error-text {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.exito-text {
+  flex-direction: column;
+  align-items: flex-start;
+  color: #15803d;
+}
+
+.parada-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.badge-contador {
+  background: #1e293b;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+}
+
+.badge-residuo {
+  background: #e2e8f0;
+  color: #334155;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 12px;
+}
+
+.badge-residuo.reciclable {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.btn-salir-mini {
+  margin-left: auto;
+  background: #fee2e2;
+  color: #b91c1c;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.titulo-parada {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.direccion-parada {
+  margin: 4px 0 0 0;
+  font-size: 14px;
+  color: #475569;
+}
+
+.mapa-container {
+  flex: 1;
+  position: relative;
+  width: 100%;
+  min-height: 0;
+}
+
+.leaflet-map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.fab-navegar {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  background: #1a73e8;
+  color: #ffffff;
+  border: none;
+  border-radius: 28px;
+  padding: 12px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(26, 115, 232, 0.4);
+  z-index: 5;
+  cursor: pointer;
+}
+
+.bottom-controls {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr 1fr;
+  gap: 12px;
+  padding: 14px 16px 22px 16px;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.06);
+  z-index: 10;
+}
+
+.btn-accion {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 76px;
+  border: none;
+  border-radius: 16px;
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: 800;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.btn-accion span {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.btn-accion:active {
+  transform: scale(0.95);
+}
+
+.btn-falla { background: #dc2626; }
+.btn-exito { background: #16a34a; }
+.btn-alerta { background: #ea580c; }
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  align-items: flex-end;
+  z-index: 50;
+}
+
+.bottom-sheet {
+  width: 100%;
+  background: #ffffff;
+  border-radius: 20px 20px 0 0;
+  padding: 20px;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.bottom-sheet h3 {
+  margin: 0 0 14px 0;
+  font-size: 17px;
+  color: #0f172a;
+}
+
+.sheet-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 15px;
+  margin-bottom: 14px;
+}
+
+.sheet-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.sheet-actions button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-cancelar { background: #e2e8f0; color: #334155; }
+.btn-confirmar { background: #0f172a; color: #ffffff; }
+
+::ng-deep .parada-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 13px;
+  border: 2px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+::ng-deep .parada-circle.actual {
+  box-shadow: 0 0 0 5px rgba(26, 115, 232, 0.35), 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+::ng-deep .camion-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: #1a73e8;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  font-size: 17px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}

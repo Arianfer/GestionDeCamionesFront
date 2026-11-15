@@ -2,12 +2,19 @@ import { Routes } from '@angular/router';
 import { Login } from './features/auth/login/login';
 import { MainLayout } from './layouts/main-layout/main-layout';
 import { Inicio } from './features/inicio/inicio';
+import { RutaChoferComponent } from './features/empleado/ruta-chofer';
 import { authGuard } from './core/guards/auth.guard';
 import { guestGuard } from './core/guards/guest.guard';
 import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
   { path: 'login', component: Login, canActivate: [guestGuard] },
+  {
+    path: 'chofer',
+    component: RutaChoferComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['EMPLEADO'] },
+  },
   {
     path: '',
     component: MainLayout,
@@ -27,7 +34,6 @@ export const routes: Routes = [
         data: { roles: ['ADMIN', 'OFICINA']},
         loadChildren: () => 
           import('./features/clientes/cliente.routes').then(m => m.CLIENTES_ROUTES)
-
       },
       {
         path: 'camiones',
