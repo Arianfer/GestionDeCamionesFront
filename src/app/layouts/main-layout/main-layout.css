@@ -1,5 +1,11 @@
 .contenido {
-    max-width: 1100px;
+    width: 80%;
     margin: 0 auto;
     padding: 24px 16px;
+}
+
+@media (max-width: 1024px) {
+    .contenido {
+        width: 100%;
+    }
 }
