@@ -21,11 +21,11 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/rutas/rutas.routes').then(m => m.RUTAS_ROUTES),
       },
-      { 
+      {
         path: 'clientes',
         canActivate: [roleGuard],
-        data: { roles: ['ADMIN', 'OFICINA']},
-        loadChildren: () => 
+        data: { roles: ['ADMIN', 'OFICINA'] },
+        loadChildren: () =>
           import('./features/clientes/cliente.routes').then(m => m.CLIENTES_ROUTES)
 
       },
@@ -36,11 +36,18 @@ export const routes: Routes = [
         canActivate: [],
         data: { roles: ['ADMIN', 'OFICINA'] },
       },
+      {
+        path: 'usuarios',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'OFICINA'] },
+        loadChildren: () =>
+          import('./features/usuarios/usuarios.routes').then(m => m.USUARIOS_ROUTES),
+      },
       { path: '', redirectTo: 'inicio', pathMatch: 'full' },
     ],
   },
-  { 
-    path: '**', 
-    redirectTo: 'inicio' 
+  {
+    path: '**',
+    redirectTo: 'inicio'
   }
 ];

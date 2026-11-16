@@ -1,0 +1,80 @@
+<!-- usuario-form.html -->
+<h2>{{ esEdicion ? 'Editar usuario' : 'Nuevo usuario' }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="guardar()">
+  <div class="campo">
+    <label for="nombre">Nombre</label>
+    <input id="nombre" type="text" formControlName="nombre" />
+    @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
+      <small class="error">El nombre debe tener entre 2 y 50 caracteres.</small>
+    }
+    @if (erroresBackend()['nombre']) {
+      <small class="error">{{ erroresBackend()['nombre'] }}</small>
+    }
+  </div>
+
+  <div class="campo">
+    <label for="apellido">Apellido</label>
+    <input id="apellido" type="text" formControlName="apellido" />
+    @if (form.controls.apellido.touched && form.controls.apellido.invalid) {
+      <small class="error">El apellido debe tener entre 2 y 50 caracteres.</small>
+    }
+    @if (erroresBackend()['apellido']) {
+      <small class="error">{{ erroresBackend()['apellido'] }}</small>
+    }
+  </div>
+
+  <div class="campo">
+    <label for="dni">DNI</label>
+    <input id="dni" type="text" inputmode="numeric" maxlength="8" formControlName="dni" />
+    @if (form.controls.dni.touched && form.controls.dni.invalid) {
+      <small class="error">El DNI debe tener 7 u 8 números.</small>
+    }
+    @if (erroresBackend()['dni']) {
+      <small class="error">{{ erroresBackend()['dni'] }}</small>
+    }
+    @if (esEdicion) {
+      <small class="ayuda">El DNI no se puede modificar porque la contraseña inicial depende de él.</small>
+    }
+  </div>
+
+  <div class="campo">
+    <label for="email">Email</label>
+    <input id="email" type="email" formControlName="email" />
+    @if (form.controls.email.touched && form.controls.email.invalid) {
+      <small class="error">Ingresá un email válido.</small>
+    }
+    @if (erroresBackend()['email']) {
+      <small class="error">{{ erroresBackend()['email'] }}</small>
+    }
+  </div>
+
+  <div class="campo">
+    <label for="rol">Rol</label>
+    <select id="rol" formControlName="rol">
+      @for (r of rolesDisponibles(); track r) {
+        <option [value]="r">{{ r }}</option>
+      }
+    </select>
+    @if (erroresBackend()['rol']) {
+      <small class="error">{{ erroresBackend()['rol'] }}</small>
+    }
+  </div>
+
+  @if (!esEdicion) {
+    <p class="ayuda">
+      La contraseña inicial se genera sola con los últimos 4 dígitos del DNI.
+    </p>
+  }
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  <div class="botones">
+    <a routerLink="/usuarios" class="btn-secundario">Cancelar</a>
+    <button type="submit" class="btn-primary" [disabled]="guardando()">
+      {{ guardando() ? 'Guardando...' : 'Guardar' }}
+    </button>
+  </div>
+</form>

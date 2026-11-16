@@ -22,6 +22,7 @@ export class Navbar {
     { label: 'Rutas',     path: '/rutas',    roles: ['ADMIN', 'OFICINA'] },
     { label: 'Clientes',  path: '/clientes', roles: ['ADMIN', 'OFICINA'] },
     { label: 'Servicios', path: '/servicios', roles: ['ADMIN', 'OFICINA'] },
+    { label: 'Usuarios', path: '/usuarios', roles: ['ADMIN', 'OFICINA'] },
   ];
 
   linksVisibles: NavLink[] = this.links.filter(l =>

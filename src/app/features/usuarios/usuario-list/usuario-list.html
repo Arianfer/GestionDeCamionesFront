@@ -1,0 +1,76 @@
+<header class="encabezado">
+  <div>
+    <h1>Usuarios</h1>
+    <p class="subtitulo">Quiénes pueden acceder al sistema</p>
+  </div>
+  <a routerLink="/usuarios/nuevo" class="btn btn-primario">+ Nuevo usuario</a>
+</header>
+
+<div class="filtros">
+  <input
+    type="text"
+    inputmode="numeric"
+    placeholder="Buscar por DNI"
+    [ngModel]="dni()"
+    (ngModelChange)="dni.set($event)"
+    (keyup.enter)="buscarPorDni()"
+  />
+  <button type="button" class="btn btn-secundario" (click)="buscarPorDni()">Buscar</button>
+  @if (dni()) {
+    <button type="button" class="btn-enlace" (click)="limpiar()">Ver todos</button>
+  }
+</div>
+
+@if (error()) {
+  <p class="alerta" role="alert">{{ error() }}</p>
+}
+@if (aviso()) {
+  <p class="alerta alerta-aviso" role="status">{{ aviso() }}</p>
+}
+
+@if (cargando()) {
+  <p class="estado">Cargando usuarios…</p>
+} @else if (usuarios().length === 0) {
+  @if (!aviso() && !error()) {
+    <p class="estado">No hay usuarios para mostrar.</p>
+  }
+} @else {
+  <div class="tabla-contenedor">
+    <table>
+      <thead>
+        <tr>
+          <th>DNI</th>
+          <th>Usuario</th>
+          <th>Rol</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (u of usuarios(); track u.id) {
+          <tr [class.inactivo]="!u.activo">
+            <td>{{ u.dni }}</td>
+            <td class="celda-doble">
+              <span>{{ u.apellido }}, {{ u.nombre }}</span>
+              <span class="secundario">{{ u.email }}</span>
+            </td>
+            <td><span class="badge badge-neutro">{{ u.rol }}</span></td>
+            <td>
+              <span class="badge" [class.badge-ok]="u.activo" [class.badge-inactivo]="!u.activo">
+                {{ u.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+            <td class="acciones">
+              <a class="btn-enlace" [routerLink]="['/usuarios', u.id, 'editar']">Editar</a>
+              @if (u.activo && !esPropio(u)) {
+                <button type="button" class="btn-enlace btn-enlace-peligro" (click)="desactivar(u)">
+                  Desactivar
+                </button>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

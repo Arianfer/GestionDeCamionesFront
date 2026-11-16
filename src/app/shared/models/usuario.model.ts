@@ -9,3 +9,11 @@ export interface Usuario {
   rol: Rol;
   activo: boolean;
 }
+
+export interface UsuarioRequest {
+  nombre: string;
+  apellido: string;
+  dni: string;
+  email: string;
+  rol: Rol;
+}
