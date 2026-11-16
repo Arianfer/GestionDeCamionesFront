@@ -4,7 +4,7 @@
   <!-- Nombre -->
   <div class="campo">
     <label for="nombre">Nombre del servicio</label>
-    <input id="nombre" type="text" formControlName="nombre" placeholder="Ej: Manolo Alem" />
+    <input id="nombre" type="text" formControlName="nombre" placeholder="Ej: Manolo Sucursal Alem" />
     @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
       <small class="error">El nombre es obligatorio.</small>
     }
@@ -13,13 +13,14 @@
     }
   </div>
 
-  <!-- Dirección + búsqueda en Georef -->
-  <div class="campo">
+  <!-- Dirección + Autocompletado -->
+  <div class="campo campo-autocompletado">
     <label for="direccion">Dirección</label>
     <div class="fila-busqueda">
       <input
         id="direccion"
         type="text"
+        autocomplete="off"
         formControlName="direccion"
         placeholder="Ej: Alem 3800"
         (input)="direccionEditada()"
@@ -32,7 +33,7 @@
 
     @if (sugerencias().length > 0) {
       <ul class="sugerencias">
-        @for (d of sugerencias(); track d.direccionFormateada) {
+        @for (d of sugerencias(); track d.direccionFormateada + d.latitud) {
           <li>
             <button type="button" (click)="elegirDireccion(d)">{{ d.direccionFormateada }}</button>
           </li>
@@ -43,15 +44,46 @@
     @if (avisoDireccion()) {
       <small class="error">{{ avisoDireccion() }}</small>
     }
-    @if (tieneUbicacion()) {
-      <small class="ayuda">
-        📍 Ubicación: {{ form.controls.latitud.value }}, {{ form.controls.longitud.value }}
-      </small>
-    } @else if (form.controls.direccion.touched) {
-      <small class="error">Buscá la dirección y elegí una opción de la lista.</small>
-    }
     @if (erroresBackend()['direccion']) {
       <small class="error">{{ erroresBackend()['direccion'] }}</small>
+    }
+  </div>
+
+  <!-- Coordenadas exactas + Mini-mapa arrastrable -->
+  <div class="fila">
+    <div class="campo">
+      <label for="latitud">Latitud</label>
+      <input
+        id="latitud"
+        type="number"
+        step="0.000001"
+        formControlName="latitud"
+        placeholder="Ej: -38.0055"
+        (change)="onCoordenadasManuales()"
+      />
+    </div>
+    <div class="campo">
+      <label for="longitud">Longitud</label>
+      <input
+        id="longitud"
+        type="number"
+        step="0.000001"
+        formControlName="longitud"
+        placeholder="Ej: -57.5426"
+        (change)="onCoordenadasManuales()"
+      />
+    </div>
+  </div>
+
+  <div class="campo">
+    <div class="mapa-header">
+      <span class="ayuda">
+        📍 Hacé clic en el mapa o <strong>arrastrá el punto verde</strong> hasta la puerta/esquina exacta del cliente.
+      </span>
+    </div>
+    <div #mapaPin class="mini-mapa"></div>
+    @if ((form.controls.latitud.touched || form.controls.longitud.touched) && !tieneUbicacion()) {
+      <small class="error">Elegí una dirección o marcá el punto en el mapa.</small>
     }
     @if (erroresBackend()['latitud'] || erroresBackend()['longitud']) {
       <small class="error">{{ erroresBackend()['latitud'] || erroresBackend()['longitud'] }}</small>

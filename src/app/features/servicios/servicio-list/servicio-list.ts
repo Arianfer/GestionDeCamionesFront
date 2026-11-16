@@ -6,6 +6,7 @@ import { forkJoin } from 'rxjs';
 import { ServiciosService } from '../servicios.service';
 import { ClienteService } from '../../clientes/cliente.service';
 import { RutasService } from '../../rutas/rutas.service';
+import { AlertService } from '../../../core/services/alert.service';
 import { mensajeError } from '../mensaje-error';
 import { Servicio } from '../../../shared/models/servicio.model';
 import { Cliente } from '../../../shared/models/cliente.model';
@@ -21,6 +22,7 @@ export class ServicioList implements OnInit {
   private serviciosService = inject(ServiciosService);
   private clienteService = inject(ClienteService);
   private rutasService = inject(RutasService);
+  private alertService = inject(AlertService);
 
   servicios = signal<Servicio[]>([]);
   clientes = signal<Cliente[]>([]);
@@ -84,10 +86,10 @@ export class ServicioList implements OnInit {
     this.filtroRuta.set(valor === '' ? null : Number(valor));
   }
 
-  eliminar(s: Servicio) {
-    // Provisorio, igual que en clientes/rutas/usuarios, hasta tener un confirm-dialog en shared/
-    const ok = confirm(
-      `¿Eliminar el servicio "${s.nombre}" (${s.direccion})?\nEsta acción no se puede deshacer.`,
+async eliminar(s: Servicio) {
+    const ok = await this.alertService.confirmarEliminacion(
+      `el servicio "${s.nombre}"`,
+      `Ubicación: ${s.direccion}. Esta acción no se puede deshacer.`,
     );
     if (!ok) return;
 
@@ -96,9 +98,9 @@ export class ServicioList implements OnInit {
 
     this.serviciosService.eliminar(s.id).subscribe({
       next: () => {
-        // Lo saco de la lista local en vez de volver a pedir todo al back
         this.servicios.update((lista) => lista.filter((x) => x.id !== s.id));
         this.eliminandoId.set(null);
+        this.alertService.toastExito(`Servicio "${s.nombre}" eliminado`);
       },
       error: (err: HttpErrorResponse) => {
         this.eliminandoId.set(null);

@@ -1,7 +1,6 @@
 :host {
   display: block;
 
-  /* Variables que todavía no están en el styles.css global */
   --color-texto-suave: #5f6b76;
   --color-primario-suave: #e8f3e9;
   --color-hover: #f1f5f1;
@@ -16,6 +15,9 @@ h2 {
   line-height: 1.25;
 }
 
+form {
+  max-width: 760px;
+}
 
 /* ---------- Campos ---------- */
 .campo {
@@ -48,16 +50,71 @@ select:focus {
   box-shadow: 0 0 0 3px var(--color-primario-suave);
 }
 
-input:disabled {
+input:disabled,
+select:disabled {
   background: var(--color-fondo);
   color: var(--color-texto-suave);
   cursor: not-allowed;
 }
 
-/* Angular marca solo los campos tocados e inválidos */
 input.ng-touched.ng-invalid,
 select.ng-touched.ng-invalid {
   border-color: var(--color-error);
+}
+
+/* ---------- Grillas y búsqueda ---------- */
+.fila {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  column-gap: 16px;
+}
+
+.fila-busqueda {
+  display: flex;
+  gap: 8px;
+}
+
+.fila-busqueda input {
+  flex: 1;
+}
+
+.sugerencias {
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  background: var(--color-superficie);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  max-height: 210px;
+  overflow-y: auto;
+}
+
+.sugerencias button {
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  font: inherit;
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sugerencias button:hover,
+.sugerencias button:focus-visible {
+  background: var(--color-hover);
+  outline: none;
+}
+
+/* ---------- Mini-mapa de precisión ---------- */
+.mini-mapa {
+  width: 100%;
+  height: 260px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  z-index: 1;
 }
 
 /* ---------- Mensajes ---------- */
@@ -125,60 +182,11 @@ p.error {
   color: var(--color-texto);
 }
 
-.btn-secundario:hover {
+.btn-secundario:hover:not(:disabled) {
   background: var(--color-hover);
-}
-/* ---------- Propio de servicios ---------- */
-form {
-  max-width: 760px;
-}
-
-.fila {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  column-gap: 16px;
-}
-
-.fila-busqueda {
-  display: flex;
-  gap: 8px;
-}
-.fila-busqueda input {
-  flex: 1;
-}
-
-select:disabled {
-  background: var(--color-fondo);
-  color: var(--color-texto-suave);
-  cursor: not-allowed;
 }
 
 .btn-secundario:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-.sugerencias {
-  list-style: none;
-  margin: 0;
-  padding: 4px;
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio);
-  background: var(--color-superficie);
-}
-.sugerencias button {
-  width: 100%;
-  padding: 8px 10px;
-  border: none;
-  border-radius: 4px;
-  background: none;
-  font: inherit;
-  font-size: 0.875rem;
-  text-align: left;
-  cursor: pointer;
-}
-.sugerencias button:hover,
-.sugerencias button:focus-visible {
-  background: var(--color-hover);
-  outline: none;
 }

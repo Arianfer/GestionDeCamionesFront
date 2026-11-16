@@ -1,9 +1,9 @@
-// src/app/features/servicios/servicio-form/servicio-form.ts
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { forkJoin } from 'rxjs';
+import { Subject, Subscription, debounceTime, distinctUntilChanged, filter, forkJoin, switchMap, tap } from 'rxjs';
+import * as L from 'leaflet';
 import { ServiciosService } from '../servicios.service';
 import { ClienteService } from '../../clientes/cliente.service';
 import { RutasService } from '../../rutas/rutas.service';
@@ -17,6 +17,8 @@ import {
 } from '../../../shared/models/servicio.model';
 import { Cliente } from '../../../shared/models/cliente.model';
 import { Ruta } from '../../../shared/models/ruta.model';
+import { AlertService } from '../../../core/services/alert.service';
+
 
 @Component({
   selector: 'app-servicio-form',
@@ -24,7 +26,8 @@ import { Ruta } from '../../../shared/models/ruta.model';
   templateUrl: './servicio-form.html',
   styleUrl: './servicio-form.css',
 })
-export class ServicioForm implements OnInit {
+export class ServicioForm implements OnInit, AfterViewInit, OnDestroy {
+  private alertService = inject(AlertService);
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -33,27 +36,31 @@ export class ServicioForm implements OnInit {
   private clienteService = inject(ClienteService);
   private rutasService = inject(RutasService);
 
-  // null = alta, número = edición
+  @ViewChild('mapaPin') mapaContenedor?: ElementRef<HTMLDivElement>;
+  private map?: L.Map;
+  private marker?: L.Marker;
+  private readonly CENTRO_MDP: L.LatLngExpression = [-38.0055, -57.5426];
+
   id: number | null = null;
 
   guardando = signal(false);
   error = signal('');
   erroresBackend = signal<Record<string, string>>({});
 
-  // Opciones de los desplegables, cargadas desde la API
   clientes = signal<Cliente[]>([]);
   rutas = signal<Ruta[]>([]);
   cargandoOpciones = signal(true);
 
-  // Mismos valores que los enums del backend
   readonly prioridades: Prioridad[] = ['ALTA', 'MEDIA', 'BAJA'];
   readonly tiposResiduo: TipoResiduo[] = ['GENERAL', 'RECICLABLE'];
   readonly frecuencias: Frecuencia[] = ['DIARIA', 'SEMANAL', 'QUINCENAL'];
 
-  // Búsqueda de dirección con Georef
+  // Autocompletado de dirección
   sugerencias = signal<DireccionNormalizada[]>([]);
   buscando = signal(false);
   avisoDireccion = signal('');
+  private busqueda$ = new Subject<string>();
+  private subBusqueda?: Subscription;
 
   form = this.fb.nonNullable.group({
     nombre: ['', Validators.required],
@@ -64,7 +71,6 @@ export class ServicioForm implements OnInit {
     tipoResiduo: ['GENERAL' as TipoResiduo, Validators.required],
     frecuencia: ['DIARIA' as Frecuencia, Validators.required],
     orden: [0, [Validators.required, Validators.min(0)]],
-    // 0 = "sin elegir"; min(1) obliga a elegir uno real
     idCliente: [0, Validators.min(1)],
     idRuta: [0, Validators.min(1)],
   });
@@ -74,17 +80,17 @@ export class ServicioForm implements OnInit {
   }
 
   ngOnInit() {
+    this.configurarAutocompletado();
     this.cargarOpciones();
 
     const idParam = this.route.snapshot.paramMap.get('id');
     if (!idParam) return;
 
     this.id = Number(idParam);
-    // El PUT del backend ignora el cliente, así que no dejamos cambiarlo
     this.form.controls.idCliente.disable();
 
     this.serviciosService.getById(this.id).subscribe({
-      next: (s) =>
+      next: (s) => {
         this.form.patchValue({
           nombre: s.nombre,
           direccion: s.direccion,
@@ -96,13 +102,141 @@ export class ServicioForm implements OnInit {
           orden: s.orden,
           idCliente: s.idCliente,
           idRuta: s.idRuta,
-        }),
+        });
+        this.actualizarPinMapa(s.latitud, s.longitud, 16);
+      },
       error: (err: HttpErrorResponse) => {
         this.error.set(mensajeError(err, 'cargar el servicio'));
-        // Si no hay servicio que editar, no dejamos guardar
         this.form.disable();
       },
     });
+  }
+
+  ngAfterViewInit() {
+    this.inicializarMapa();
+  }
+
+  ngOnDestroy() {
+    this.subBusqueda?.unsubscribe();
+    this.map?.remove();
+  }
+
+  // ---------- Mapa interactivo con pin arrastrable ----------
+
+  private inicializarMapa() {
+    if (!this.mapaContenedor) return;
+
+    const lat = this.form.controls.latitud.value;
+    const lon = this.form.controls.longitud.value;
+    const tieneCoords = lat !== null && lon !== null;
+
+    this.map = L.map(this.mapaContenedor.nativeElement, {
+      center: tieneCoords ? [lat!, lon!] : this.CENTRO_MDP,
+      zoom: tieneCoords ? 16 : 12,
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenStreetMap',
+    }).addTo(this.map);
+
+    // Permitir hacer clic directo en cualquier esquina/puerta del mapa para clavar el pin
+    this.map.on('click', (e: L.LeafletMouseEvent) => {
+      if (this.form.disabled) return;
+      this.actualizarCoordenadasDesdeMapa(e.latlng.lat, e.latlng.lng);
+    });
+
+    if (tieneCoords) {
+      this.actualizarPinMapa(lat!, lon!, 16);
+    }
+
+    setTimeout(() => this.map?.invalidateSize(), 100);
+  }
+
+  private actualizarPinMapa(lat: number, lon: number, zoom = 16) {
+    if (!this.map) return;
+
+    const pos: L.LatLngExpression = [lat, lon];
+
+    if (!this.marker) {
+      const iconoPin = L.divIcon({
+        className: 'pin-ubicacion-custom',
+        html: `<div style="
+          width: 24px; height: 24px;
+          background: #1b5e20;
+          border: 3px solid #ffffff;
+          border-radius: 50%;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.45);
+          cursor: grab;
+        "></div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+      });
+
+      this.marker = L.marker(pos, { draggable: true, icon: iconoPin }).addTo(this.map);
+      this.marker.on('dragend', () => {
+        const nuevaPos = this.marker!.getLatLng();
+        this.actualizarCoordenadasDesdeMapa(nuevaPos.lat, nuevaPos.lng);
+      });
+    } else {
+      this.marker.setLatLng(pos);
+    }
+
+    this.map.setView(pos, zoom);
+  }
+
+  private actualizarCoordenadasDesdeMapa(lat: number, lon: number) {
+    const latRedondeada = Number(lat.toFixed(6));
+    const lonRedondeada = Number(lon.toFixed(6));
+
+    this.form.patchValue({
+      latitud: latRedondeada,
+      longitud: lonRedondeada,
+    });
+    this.actualizarPinMapa(latRedondeada, lonRedondeada, this.map?.getZoom() ?? 16);
+  }
+
+  onCoordenadasManuales() {
+    const lat = this.form.controls.latitud.value;
+    const lon = this.form.controls.longitud.value;
+    if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
+      this.actualizarPinMapa(lat, lon, 16);
+    }
+  }
+
+  // ---------- Autocompletado ----------
+
+  private configurarAutocompletado() {
+    this.subBusqueda = this.busqueda$
+      .pipe(
+        debounceTime(350),
+        distinctUntilChanged(),
+        tap((texto) => {
+          if (texto.trim().length < 3) {
+            this.sugerencias.set([]);
+            this.buscando.set(false);
+          }
+        }),
+        filter((texto) => texto.trim().length >= 3),
+        tap(() => {
+          this.buscando.set(true);
+          this.avisoDireccion.set('');
+        }),
+        switchMap((texto) => this.georef.buscarEnZona(texto))
+      )
+      .subscribe({
+        next: (lista) => {
+          this.buscando.set(false);
+          this.sugerencias.set(lista);
+          if (lista.length === 0) {
+            this.avisoDireccion.set('No se encontraron coincidencias. Podés marcar el punto directo en el mapa.');
+          }
+        },
+        error: () => {
+          this.buscando.set(false);
+          this.avisoDireccion.set('Error al buscar dirección. Marcá el punto directo en el mapa.');
+        },
+      });
   }
 
   private cargarOpciones() {
@@ -113,7 +247,6 @@ export class ServicioForm implements OnInit {
       rutas: this.rutasService.getAll(),
     }).subscribe({
       next: ({ clientes, rutas }) => {
-        // Orden alfabético para encontrar rápido en el desplegable
         this.clientes.set([...clientes].sort((a, b) => a.razonSocial.localeCompare(b.razonSocial)));
         this.rutas.set([...rutas].sort((a, b) => a.nombre.localeCompare(b.nombre)));
         this.cargandoOpciones.set(false);
@@ -125,52 +258,31 @@ export class ServicioForm implements OnInit {
     });
   }
 
-  // ---------- Dirección ----------
-
   buscarDireccion(evento?: Event) {
-    evento?.preventDefault(); // que el Enter no envíe el formulario
-
+    evento?.preventDefault();
     const texto = this.form.controls.direccion.value.trim();
     if (texto.length < 3) {
       this.avisoDireccion.set('Escribí calle y altura, por ejemplo "Alem 3800".');
       return;
     }
-
-    this.buscando.set(true);
-    this.avisoDireccion.set('');
-    this.sugerencias.set([]);
-
-    this.georef.buscarEnMarDelPlata(texto).subscribe({
-      next: (lista) => {
-        this.buscando.set(false);
-        this.sugerencias.set(lista);
-        if (lista.length === 0) {
-          this.avisoDireccion.set('No se encontró esa dirección en Mar del Plata. Revisá calle y altura.');
-        }
-      },
-      error: () => {
-        this.buscando.set(false);
-        this.avisoDireccion.set('No se pudo consultar el buscador de direcciones. Probá de nuevo.');
-      },
-    });
+    this.busqueda$.next(texto);
   }
 
   elegirDireccion(d: DireccionNormalizada) {
     this.form.patchValue({
-      direccion: `${d.calle} ${d.altura}`,
+      direccion: d.direccionFormateada,
       latitud: d.latitud,
       longitud: d.longitud,
     });
     this.sugerencias.set([]);
     this.avisoDireccion.set('');
+    this.actualizarPinMapa(d.latitud, d.longitud, 16);
   }
 
-  // Si el usuario cambia el texto, las coordenadas viejas ya no sirven
   direccionEditada() {
-    if (this.form.controls.latitud.value !== null) {
-      this.form.patchValue({ latitud: null, longitud: null });
-    }
-    this.sugerencias.set([]);
+    const texto = this.form.controls.direccion.value;
+    this.avisoDireccion.set('');
+    this.busqueda$.next(texto);
   }
 
   tieneUbicacion(): boolean {
@@ -189,7 +301,6 @@ export class ServicioForm implements OnInit {
     this.error.set('');
     this.erroresBackend.set({});
 
-    // getRawValue incluye el cliente aunque esté deshabilitado
     const v = this.form.getRawValue();
     const body: ServicioRequest = { ...v, latitud: v.latitud!, longitud: v.longitud! };
 
@@ -197,11 +308,15 @@ export class ServicioForm implements OnInit {
       ? this.serviciosService.actualizar(this.id!, body)
       : this.serviciosService.crear(body);
 
-    peticion.subscribe({
-      next: () => this.router.navigate(['/servicios']),
+peticion.subscribe({
+      next: () => {
+        this.alertService.toastExito(
+          this.esEdicion ? 'Servicio actualizado correctamente' : 'Servicio creado correctamente'
+        );
+        this.router.navigate(['/servicios']);
+      },
       error: (err: HttpErrorResponse) => {
         this.guardando.set(false);
-        // 400 de validación: { campo: mensaje } -> se muestra debajo de cada campo
         const esValidacion =
           err.status === 400 &&
           err.error &&
