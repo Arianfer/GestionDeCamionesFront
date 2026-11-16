@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { AlertService } from '../../../core/services/alert.service';
 import { LoginRequest, AuthResponse } from '../../../shared/models/auth.model';
 
 @Component({
@@ -14,6 +15,7 @@ import { LoginRequest, AuthResponse } from '../../../shared/models/auth.model';
 })
 export class Login {
   private authService = inject(AuthService);
+  private alertService = inject(AlertService);
   private router = inject(Router);
 
   credentials: LoginRequest = {
@@ -27,6 +29,7 @@ export class Login {
   onSubmit(): void {
     if (!this.credentials.dni || !this.credentials.password) {
       this.errorMessage = 'Por favor complete el DNI y la contraseña';
+      this.alertService.error('Campos incompletos', 'Por favor completá el DNI y la contraseña.');
       return;
     }
 
@@ -36,6 +39,7 @@ export class Login {
     this.authService.login(this.credentials).subscribe({
       next: (res: AuthResponse) => {
         this.isLoading = false;
+        this.alertService.toastExito('¡Bienvenido a Ciageser S.A.!');
         if (res.rol === 'EMPLEADO') {
           this.router.navigate(['/chofer']);
         } else {
@@ -45,6 +49,7 @@ export class Login {
       error: (err: any) => {
         this.isLoading = false;
         this.errorMessage = 'DNI o contraseña incorrectos';
+        this.alertService.error('Error al iniciar sesión', 'DNI o contraseña incorrectos.');
       }
     });
   }
