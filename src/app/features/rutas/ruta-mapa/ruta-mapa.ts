@@ -101,10 +101,10 @@ export class RutaMapa implements OnInit, AfterViewInit, OnChanges, OnDestroy {
       zoom: 13
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap &copy; CARTO'
-    }).addTo(this.map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '&copy; OpenStreetMap'
+}).addTo(this.map);
 
     this.markersLayer.addTo(this.map);
   }
