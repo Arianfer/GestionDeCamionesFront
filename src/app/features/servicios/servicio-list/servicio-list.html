@@ -1,0 +1,77 @@
+<header class="encabezado">
+  <div>
+    <h1>Servicios</h1>
+    <p class="subtitulo">Puntos de recolección de cada cliente</p>
+  </div>
+  <a routerLink="/servicios/nuevo" class="btn btn-primario">+ Nuevo servicio</a>
+</header>
+
+<div class="filtros">
+  <select #selRuta (change)="cambiarFiltro(selRuta.value)">
+    <option value="">Todas las rutas</option>
+    @for (r of rutas(); track r.idRuta) {
+      <option [value]="r.idRuta">{{ r.nombre }}</option>
+    }
+  </select>
+</div>
+
+@if (error()) {
+  <p class="alerta" role="alert">{{ error() }}</p>
+}
+
+@if (cargando()) {
+  <p class="estado">Cargando servicios…</p>
+} @else if (serviciosFiltrados().length === 0) {
+  @if (!error()) {
+    <p class="estado">No hay servicios para mostrar.</p>
+  }
+} @else {
+  <div class="tabla-contenedor">
+    <table>
+      <thead>
+        <tr>
+          <th>Orden</th>
+          <th>Servicio</th>
+          <th>Cliente</th>
+          <th>Ruta</th>
+          <th>Residuo</th>
+          <th>Prioridad</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of serviciosFiltrados(); track s.id) {
+          <tr>
+            <td>{{ s.orden }}</td>
+            <td class="celda-doble">
+              <span>{{ s.nombre }}</span>
+              <span class="secundario">{{ s.direccion }}</span>
+            </td>
+            <td>{{ clienteDe(s) }}</td>
+            <td>{{ rutaDe(s) }}</td>
+            <td class="celda-doble">
+              <span>{{ s.tipoResiduo }}</span>
+              <span class="secundario">{{ s.frecuencia }}</span>
+            </td>
+            <td>
+              <span class="badge" [class]="'badge badge-' + s.prioridad.toLowerCase()">
+                {{ s.prioridad }}
+              </span>
+            </td>
+            <td class="acciones">
+              <a class="btn-enlace" [routerLink]="['/servicios', s.id, 'editar']">Editar</a>
+              <button
+                type="button"
+                class="btn-enlace btn-enlace-peligro"
+                (click)="eliminar(s)"
+                [disabled]="eliminandoId() === s.id"
+              >
+                {{ eliminandoId() === s.id ? 'Eliminando…' : 'Eliminar' }}
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
