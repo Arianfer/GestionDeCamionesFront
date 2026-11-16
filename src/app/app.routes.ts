@@ -36,6 +36,13 @@ export const routes: Routes = [
           import('./features/clientes/cliente.routes').then(m => m.CLIENTES_ROUTES)
       },
       {
+        path: 'servicios',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'OFICINA'] },
+        loadChildren: () =>
+          import('./features/servicios/servicios.routes').then(m => m.SERVICIOS_ROUTES),
+      },
+      {
         path: 'camiones',
         loadChildren: () =>
           import('./features/camiones/camiones.routes').then((m) => m.CAMIONES_ROUTES),
