@@ -252,31 +252,29 @@ export class RutaChoferComponent implements OnInit, AfterViewInit, OnDestroy {
         );
 
         if (this.rutaPolyline) {
-          this.rutaPolyline.setLatLngs(coords);
-        } else {
-          this.rutaPolyline = L.polyline(coords, {
-            color: '#1a73e8',
-            weight: 6,
-            opacity: 0.9
-          }).addTo(this.map);
+          this.rutaPolyline.remove();
         }
+        this.rutaPolyline = L.polyline(coords, {
+          color: '#1a73e8',
+          weight: 6,
+          opacity: 0.9
+        }).addTo(this.map);
       },
-      error: () => {
-        // Fallback: línea recta entre puntos si OSRM no responde
+      error: (err) => {
+        console.warn('OSRM falló (revisar coordenadas de las paradas):', puntos, err);
         if (!this.map) return;
         const fallbackCoords: [number, number][] = [
           [origen.lat, origen.lng],
           ...pendientes.map(p => [p.latitud, p.longitud] as [number, number])
         ];
         if (this.rutaPolyline) {
-          this.rutaPolyline.setLatLngs(fallbackCoords);
-        } else {
-          this.rutaPolyline = L.polyline(fallbackCoords, {
-            color: '#1a73e8',
-            weight: 5,
-            dashArray: '8, 8'
-          }).addTo(this.map);
+          this.rutaPolyline.remove();
         }
+        this.rutaPolyline = L.polyline(fallbackCoords, {
+          color: '#1a73e8',
+          weight: 5,
+          dashArray: '8, 8'
+        }).addTo(this.map);
       }
     });
   }
