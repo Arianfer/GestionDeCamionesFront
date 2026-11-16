@@ -60,6 +60,14 @@
             </td>
             <td class="acciones">
               <a class="btn-enlace" [routerLink]="['/servicios', s.id, 'editar']">Editar</a>
+              <button
+                type="button"
+                class="btn-enlace btn-enlace-peligro"
+                (click)="eliminar(s)"
+                [disabled]="eliminandoId() === s.id"
+              >
+                {{ eliminandoId() === s.id ? 'Eliminando…' : 'Eliminar' }}
+              </button>
             </td>
           </tr>
         }

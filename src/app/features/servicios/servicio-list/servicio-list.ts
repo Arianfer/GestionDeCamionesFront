@@ -25,6 +25,7 @@ export class ServicioList implements OnInit {
   filtroRuta = signal<number | null>(null);
   cargando = signal(true);
   error = signal('');
+  eliminandoId = signal<number | null>(null);
 
   // Diccionarios id -> nombre, para no recorrer el array en cada fila
   private nombreCliente = computed(
@@ -78,5 +79,28 @@ export class ServicioList implements OnInit {
 
   cambiarFiltro(valor: string) {
     this.filtroRuta.set(valor === '' ? null : Number(valor));
+  }
+
+  eliminar(s: Servicio) {
+    // Provisorio, igual que en clientes/rutas/usuarios, hasta tener un confirm-dialog en shared/
+    const ok = confirm(
+      `¿Eliminar el servicio "${s.nombre}" (${s.direccion})?\nEsta acción no se puede deshacer.`,
+    );
+    if (!ok) return;
+
+    this.error.set('');
+    this.eliminandoId.set(s.id);
+
+    this.serviciosService.eliminar(s.id).subscribe({
+      next: () => {
+        // Lo saco de la lista local en vez de volver a pedir todo al back
+        this.servicios.update((lista) => lista.filter((x) => x.id !== s.id));
+        this.eliminandoId.set(null);
+      },
+      error: () => {
+        this.eliminandoId.set(null);
+        this.error.set(`No se pudo eliminar el servicio "${s.nombre}".`);
+      },
+    });
   }
 }
