@@ -1,0 +1,138 @@
+<h2>{{ esEdicion ? 'Editar servicio' : 'Nuevo servicio' }}</h2>
+
+<form [formGroup]="form" (ngSubmit)="guardar()">
+  <!-- Nombre -->
+  <div class="campo">
+    <label for="nombre">Nombre del servicio</label>
+    <input id="nombre" type="text" formControlName="nombre" placeholder="Ej: Manolo Alem" />
+    @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
+      <small class="error">El nombre es obligatorio.</small>
+    }
+    @if (erroresBackend()['nombre']) {
+      <small class="error">{{ erroresBackend()['nombre'] }}</small>
+    }
+  </div>
+
+  <!-- Dirección + búsqueda en Georef -->
+  <div class="campo">
+    <label for="direccion">Dirección</label>
+    <div class="fila-busqueda">
+      <input
+        id="direccion"
+        type="text"
+        formControlName="direccion"
+        placeholder="Ej: Alem 3800"
+        (input)="direccionEditada()"
+        (keydown.enter)="buscarDireccion($event)"
+      />
+      <button type="button" class="btn-secundario" (click)="buscarDireccion()" [disabled]="buscando()">
+        {{ buscando() ? 'Buscando…' : 'Buscar' }}
+      </button>
+    </div>
+
+    @if (sugerencias().length > 0) {
+      <ul class="sugerencias">
+        @for (d of sugerencias(); track d.direccionFormateada) {
+          <li>
+            <button type="button" (click)="elegirDireccion(d)">{{ d.direccionFormateada }}</button>
+          </li>
+        }
+      </ul>
+    }
+
+    @if (avisoDireccion()) {
+      <small class="error">{{ avisoDireccion() }}</small>
+    }
+    @if (tieneUbicacion()) {
+      <small class="ayuda">
+        📍 Ubicación: {{ form.controls.latitud.value }}, {{ form.controls.longitud.value }}
+      </small>
+    } @else if (form.controls.direccion.touched) {
+      <small class="error">Buscá la dirección y elegí una opción de la lista.</small>
+    }
+    @if (erroresBackend()['direccion']) {
+      <small class="error">{{ erroresBackend()['direccion'] }}</small>
+    }
+  </div>
+
+  <!-- Cliente y ruta -->
+  <div class="fila">
+    <div class="campo">
+      <label for="idCliente">Cliente</label>
+      <select id="idCliente" formControlName="idCliente">
+        <option [ngValue]="0" disabled>Elegí un cliente</option>
+        @for (c of clientes(); track c.id) {
+          <option [ngValue]="c.id">{{ c.razonSocial }}</option>
+        }
+      </select>
+      @if (form.controls.idCliente.touched && form.controls.idCliente.invalid) {
+        <small class="error">Elegí un cliente.</small>
+      }
+      @if (esEdicion) {
+        <small class="ayuda">El cliente no se puede cambiar al editar.</small>
+      }
+    </div>
+
+    <div class="campo">
+      <label for="idRuta">Ruta</label>
+      <select id="idRuta" formControlName="idRuta">
+        <option [ngValue]="0" disabled>Elegí una ruta</option>
+        @for (r of rutas(); track r.idRuta) {
+          <option [ngValue]="r.idRuta">{{ r.nombre }}</option>
+        }
+      </select>
+      @if (form.controls.idRuta.touched && form.controls.idRuta.invalid) {
+        <small class="error">Elegí una ruta.</small>
+      }
+    </div>
+  </div>
+
+  <!-- Clasificación -->
+  <div class="fila">
+    <div class="campo">
+      <label for="prioridad">Prioridad</label>
+      <select id="prioridad" formControlName="prioridad">
+        @for (p of prioridades; track p) {
+          <option [ngValue]="p">{{ p }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="campo">
+      <label for="tipoResiduo">Tipo de residuo</label>
+      <select id="tipoResiduo" formControlName="tipoResiduo">
+        @for (t of tiposResiduo; track t) {
+          <option [ngValue]="t">{{ t }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="campo">
+      <label for="frecuencia">Frecuencia</label>
+      <select id="frecuencia" formControlName="frecuencia">
+        @for (f of frecuencias; track f) {
+          <option [ngValue]="f">{{ f }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="campo">
+      <label for="orden">Orden de visita</label>
+      <input id="orden" type="number" min="0" formControlName="orden" />
+      @if (form.controls.orden.touched && form.controls.orden.invalid) {
+        <small class="error">El orden tiene que ser 0 o más.</small>
+      }
+    </div>
+  </div>
+
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+
+  <div class="botones">
+    <a routerLink="/servicios" class="btn-secundario">Cancelar</a>
+    <button type="submit" class="btn-primary" [disabled]="guardando()">
+      {{ guardando() ? 'Guardando...' : 'Guardar' }}
+    </button>
+  </div>
+</form>
