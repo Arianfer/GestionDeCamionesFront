@@ -1,1 +1,49 @@
-<p>ruta-mapa works!</p>
+<div class="ruta-mapa-wrapper">
+  <div class="mapa-header">
+    <div class="titulo-bloque">
+      @if (!esVistaEmbebida()) {
+        <a routerLink="/rutas" class="btn-volver">← Volver</a>
+      }
+      <div>
+        <h3>{{ nombreRuta() }}</h3>
+        <span class="subtitulo">
+          {{ paradas().length }} paradas
+          @if (nombreChofer()) { · Chofer: <strong>{{ nombreChofer() }}</strong> }
+        </span>
+      </div>
+    </div>
+
+    @if (distanciaKm() !== null && duracionMin() !== null) {
+      <div class="metricas-ruta">
+        <span class="chip">📏 {{ distanciaKm() }} km</span>
+        <span class="chip">⏱️ ~{{ duracionMin() }} min</span>
+      </div>
+    }
+  </div>
+
+  @if (error()) {
+    <p class="alerta-error">{{ error() }}</p>
+  }
+
+  <div class="mapa-layout">
+    <aside class="lista-paradas">
+      @if (cargando()) {
+        <p class="vacio">Cargando paradas...</p>
+      } @else if (paradas().length === 0) {
+        <p class="vacio">Esta ruta no tiene paradas cargadas todavía.</p>
+      } @else {
+        @for (p of paradas(); track p.id; let i = $index) {
+          <div class="item-parada" (click)="enfocarParada(p)">
+            <span class="numero">{{ i + 1 }}</span>
+            <div class="detalle">
+              <strong>{{ p.nombre }}</strong>
+              <small>{{ p.direccion }}</small>
+            </div>
+          </div>
+        }
+      }
+    </aside>
+
+    <div #mapContainer class="mapa-canvas"></div>
+  </div>
+</div>

@@ -1,0 +1,89 @@
+<div class="app-chofer">
+  <header class="top-card">
+    @if (cargando()) {
+      <div class="info-central">Cargando hoja de ruta...</div>
+    } @else if (errorMsg()) {
+      <div class="info-central error-text">{{ errorMsg() }}</div>
+    } @else if (rutaFinalizada()) {
+      <div class="info-central exito-text">
+        <strong>🎉 ¡Recorrido Finalizado!</strong>
+        <span>Todas las paradas fueron gestionadas.</span>
+      </div>
+    } @else if (paradaActual(); as actual) {
+      <div class="parada-header">
+        <span class="badge-contador">Parada {{ indiceActual() + 1 }} de {{ paradas().length }}</span>
+        <span class="badge-residuo" [class.reciclable]="actual.tipoResiduo === 'RECICLABLE'">
+          {{ actual.tipoResiduo }}
+        </span>
+        <button class="btn-salir-mini" (click)="salir()">Salir</button>
+      </div>
+      <h2 class="titulo-parada">Siguiente: {{ actual.nombre }}</h2>
+      <p class="direccion-parada">📍 {{ actual.direccion }}</p>
+    }
+  </header>
+
+  <main class="mapa-container">
+    <div #mapContainer class="leaflet-map"></div>
+
+    @if (paradaActual()) {
+      <button class="fab-navegar" (click)="abrirNavegacionGps()">
+        🧭 Navegar GPS
+      </button>
+    }
+  </main>
+
+  @if (paradaActual()) {
+    <footer class="bottom-controls">
+      <button class="btn-accion btn-falla" (click)="abrirModalFalla()" aria-label="No recolectado">
+        ✖
+        <span>No hecho</span>
+      </button>
+
+      <button class="btn-accion btn-exito" (click)="marcarCompletada()" aria-label="Completado">
+        ✔
+        <span>Hecho</span>
+      </button>
+
+      <button class="btn-accion btn-alerta" (click)="abrirModalIncidencia()" aria-label="Inconveniente">
+        ❗
+        <span>Novedad</span>
+      </button>
+    </footer>
+  }
+
+  @if (modalActivo()) {
+    <div class="modal-backdrop" (click)="modalActivo.set(null)">
+      <div class="bottom-sheet" (click)="$event.stopPropagation()">
+        @if (modalActivo() === 'FALLA') {
+          <h3>❌ Motivo de no recolección</h3>
+          <select class="sheet-input" [ngModel]="motivoSeleccionado()" (ngModelChange)="motivoSeleccionado.set($event)">
+            @for (m of motivosFalla; track m) {
+              <option [value]="m">{{ m }}</option>
+            }
+          </select>
+          @if (motivoSeleccionado() === 'Otros') {
+            <input
+              type="text"
+              class="sheet-input"
+              placeholder="Escribí el motivo..."
+              [ngModel]="textoObservacion()"
+              (ngModelChange)="textoObservacion.set($event)">
+          }
+        } @else {
+          <h3>❗ Reportar inconveniente</h3>
+          <input
+            type="text"
+            class="sheet-input"
+            placeholder="Ej: Contenedor roto o desbordado..."
+            [ngModel]="textoObservacion()"
+            (ngModelChange)="textoObservacion.set($event)">
+        }
+
+        <div class="sheet-actions">
+          <button class="btn-cancelar" (click)="modalActivo.set(null)">Cancelar</button>
+          <button class="btn-confirmar" (click)="confirmarModal()">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  }
+</div>
