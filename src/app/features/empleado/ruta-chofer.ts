@@ -2,9 +2,11 @@ import { Component, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild, inj
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import * as L from 'leaflet';
 import { ChoferService, RutaChofer, ServicioParada, TareaActiva } from '../../core/services/chofer.service';
 import { AuthService } from '../../core/services/auth.service';
+import { AlertService } from '../../core/services/alert.service';
 
 @Component({
   selector: 'app-ruta-chofer',
@@ -16,6 +18,8 @@ import { AuthService } from '../../core/services/auth.service';
 export class RutaChoferComponent implements OnInit, AfterViewInit, OnDestroy {
   private choferService = inject(ChoferService);
   private authService = inject(AuthService);
+  private alertService = inject(AlertService);
+  private router = inject(Router);
   private http = inject(HttpClient);
 
   @ViewChild('mapContainer') mapContainer!: ElementRef<HTMLDivElement>;
@@ -29,7 +33,7 @@ export class RutaChoferComponent implements OnInit, AfterViewInit, OnDestroy {
   tareaActiva = signal<TareaActiva | null>(null);
   paradas = signal<ServicioParada[]>([]);
   indiceActual = signal<number>(0);
-  ubicacionCamion = signal<{ lat: number; lng: number }>({ lat: -38.0055, lng: -57.5426 }); // Mar del Plata por defecto
+  ubicacionCamion = signal<{ lat: number; lng: number }>({ lat: -38.0055, lng: -57.5426 });
   cargando = signal<boolean>(true);
   errorMsg = signal<string | null>(null);
 
@@ -86,7 +90,6 @@ export class RutaChoferComponent implements OnInit, AfterViewInit, OnDestroy {
       attributionControl: false
     });
 
-    // Tiles oficiales de OpenStreetMap (100% gratis, sin API key)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap'
@@ -94,7 +97,6 @@ export class RutaChoferComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.paradasLayer.addTo(this.map);
 
-    // Marcador del camión
     const camionIcon = L.divIcon({
       className: 'custom-camion-marker',
       html: `<div class="camion-dot">🚛</div>`,
@@ -158,7 +160,6 @@ export class RutaChoferComponent implements OnInit, AfterViewInit, OnDestroy {
         this.ruta.set(rutaData);
         const paradasInit = rutaData.servicios.map(s => ({
           ...s,
-          // Si la parada quedó con 0,0 en la BD, evitamos que caiga en el océano
           latitud: s.latitud && s.latitud !== 0 ? s.latitud : -38.0055,
           longitud: s.longitud && s.longitud !== 0 ? s.longitud : -57.5426,
           estadoParada: 'PENDIENTE' as const
@@ -234,7 +235,6 @@ export class RutaChoferComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     const origen = this.ubicacionCamion();
-    // OSRM espera formato: lng,lat;lng,lat...
     const puntos = [
       `${origen.lng},${origen.lat}`,
       ...pendientes.map(p => `${p.longitud},${p.latitud}`)
@@ -246,7 +246,6 @@ export class RutaChoferComponent implements OnInit, AfterViewInit, OnDestroy {
       next: (res) => {
         if (!this.map || !res?.routes?.length) return;
 
-        // GeoJSON viene como [lng, lat], Leaflet necesita [lat, lng]
         const coords: [number, number][] = res.routes[0].geometry.coordinates.map(
           (c: [number, number]) => [c[1], c[0]]
         );
@@ -282,7 +281,6 @@ export class RutaChoferComponent implements OnInit, AfterViewInit, OnDestroy {
   abrirNavegacionGps(): void {
     const actual = this.paradaActual();
     if (!actual) return;
-    // Abre la app nativa de navegación (Google Maps / Waze en el celular sin gastar API key)
     const url = `https://www.google.com/maps/dir/?api=1&destination=${actual.latitud},${actual.longitud}&travelmode=driving`;
     window.open(url, '_blank');
   }
@@ -333,13 +331,21 @@ export class RutaChoferComponent implements OnInit, AfterViewInit, OnDestroy {
         this.rutaPolyline = null;
       }
       this.dibujarMarcadoresParadas();
+      this.alertService.toastExito('¡Recorrido finalizado con éxito!');
     } else {
+      const etiqueta = estado === 'COMPLETADA' ? 'Parada completada' :
+                       estado === 'FALLA' ? 'Falla registrada' : 'Incidencia registrada';
+      this.alertService.toastInfo(etiqueta);
       this.actualizarMapaCompleto();
     }
   }
 
-  salir(): void {
+  async salir(): Promise<void> {
+    const confirmado = await this.alertService.confirmarLogout();
+    if (!confirmado) return;
+
     this.authService.logout();
-    window.location.href = '/login';
+    this.alertService.toastInfo('Sesión cerrada');
+    this.router.navigate(['/login']);
   }
 }
