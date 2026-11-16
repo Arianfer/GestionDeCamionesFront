@@ -1,9 +1,12 @@
+// src/app/features/servicios/servicio-list/servicio-list.ts
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { ServiciosService } from '../servicios.service';
 import { ClienteService } from '../../clientes/cliente.service';
 import { RutasService } from '../../rutas/rutas.service';
+import { mensajeError } from '../mensaje-error';
 import { Servicio } from '../../../shared/models/servicio.model';
 import { Cliente } from '../../../shared/models/cliente.model';
 import { Ruta } from '../../../shared/models/ruta.model';
@@ -62,8 +65,8 @@ export class ServicioList implements OnInit {
         this.rutas.set(rutas);
         this.cargando.set(false);
       },
-      error: () => {
-        this.error.set('No se pudieron cargar los servicios.');
+      error: (err: HttpErrorResponse) => {
+        this.error.set(mensajeError(err, 'cargar los servicios'));
         this.cargando.set(false);
       },
     });
@@ -97,9 +100,9 @@ export class ServicioList implements OnInit {
         this.servicios.update((lista) => lista.filter((x) => x.id !== s.id));
         this.eliminandoId.set(null);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.eliminandoId.set(null);
-        this.error.set(`No se pudo eliminar el servicio "${s.nombre}".`);
+        this.error.set(mensajeError(err, `eliminar el servicio "${s.nombre}"`));
       },
     });
   }

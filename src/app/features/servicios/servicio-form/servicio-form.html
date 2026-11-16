@@ -53,6 +53,9 @@
     @if (erroresBackend()['direccion']) {
       <small class="error">{{ erroresBackend()['direccion'] }}</small>
     }
+    @if (erroresBackend()['latitud'] || erroresBackend()['longitud']) {
+      <small class="error">{{ erroresBackend()['latitud'] || erroresBackend()['longitud'] }}</small>
+    }
   </div>
 
   <!-- Cliente y ruta -->
@@ -73,6 +76,9 @@
       @if (esEdicion) {
         <small class="ayuda">El cliente no se puede cambiar al editar.</small>
       }
+      @if (erroresBackend()['idCliente']) {
+        <small class="error">{{ erroresBackend()['idCliente'] }}</small>
+      }
     </div>
 
     <div class="campo">
@@ -91,6 +97,9 @@
       @if (!cargandoOpciones() && rutas().length === 0) {
         <small class="ayuda">No hay rutas cargadas. Creá una desde la sección Rutas.</small>
       }
+      @if (erroresBackend()['idRuta']) {
+        <small class="error">{{ erroresBackend()['idRuta'] }}</small>
+      }
     </div>
   </div>
 
@@ -103,6 +112,9 @@
           <option [ngValue]="p">{{ p }}</option>
         }
       </select>
+      @if (erroresBackend()['prioridad']) {
+        <small class="error">{{ erroresBackend()['prioridad'] }}</small>
+      }
     </div>
 
     <div class="campo">
@@ -112,6 +124,9 @@
           <option [ngValue]="t">{{ t }}</option>
         }
       </select>
+      @if (erroresBackend()['tipoResiduo']) {
+        <small class="error">{{ erroresBackend()['tipoResiduo'] }}</small>
+      }
     </div>
 
     <div class="campo">
@@ -121,6 +136,9 @@
           <option [ngValue]="f">{{ f }}</option>
         }
       </select>
+      @if (erroresBackend()['frecuencia']) {
+        <small class="error">{{ erroresBackend()['frecuencia'] }}</small>
+      }
     </div>
 
     <div class="campo">
@@ -128,6 +146,9 @@
       <input id="orden" type="number" min="0" formControlName="orden" />
       @if (form.controls.orden.touched && form.controls.orden.invalid) {
         <small class="error">El orden tiene que ser 0 o más.</small>
+      }
+      @if (erroresBackend()['orden']) {
+        <small class="error">{{ erroresBackend()['orden'] }}</small>
       }
     </div>
   </div>
@@ -138,7 +159,7 @@
 
   <div class="botones">
     <a routerLink="/servicios" class="btn-secundario">Cancelar</a>
-    <button type="submit" class="btn-primary" [disabled]="guardando()">
+    <button type="submit" class="btn-primary" [disabled]="guardando() || form.disabled">
       {{ guardando() ? 'Guardando...' : 'Guardar' }}
     </button>
   </div>

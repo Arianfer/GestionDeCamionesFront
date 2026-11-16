@@ -3,8 +3,12 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { ServiciosService } from '../servicios.service';
+import { ClienteService } from '../../clientes/cliente.service';
+import { RutasService } from '../../rutas/rutas.service';
 import { DireccionNormalizada, GeorefService } from '../../../core/services/georef.service';
+import { mensajeError } from '../mensaje-error';
 import {
   Frecuencia,
   Prioridad,
@@ -13,9 +17,6 @@ import {
 } from '../../../shared/models/servicio.model';
 import { Cliente } from '../../../shared/models/cliente.model';
 import { Ruta } from '../../../shared/models/ruta.model';
-import { forkJoin } from 'rxjs';
-import { ClienteService } from '../../clientes/cliente.service';
-import { RutasService } from '../../rutas/rutas.service';
 
 @Component({
   selector: 'app-servicio-form',
@@ -39,7 +40,7 @@ export class ServicioForm implements OnInit {
   error = signal('');
   erroresBackend = signal<Record<string, string>>({});
 
-    // Opciones de los desplegables, cargadas desde la API
+  // Opciones de los desplegables, cargadas desde la API
   clientes = signal<Cliente[]>([]);
   rutas = signal<Ruta[]>([]);
   cargandoOpciones = signal(true);
@@ -96,7 +97,11 @@ export class ServicioForm implements OnInit {
           idCliente: s.idCliente,
           idRuta: s.idRuta,
         }),
-      error: () => this.error.set('No se pudo cargar el servicio.'),
+      error: (err: HttpErrorResponse) => {
+        this.error.set(mensajeError(err, 'cargar el servicio'));
+        // Si no hay servicio que editar, no dejamos guardar
+        this.form.disable();
+      },
     });
   }
 
@@ -113,9 +118,9 @@ export class ServicioForm implements OnInit {
         this.rutas.set([...rutas].sort((a, b) => a.nombre.localeCompare(b.nombre)));
         this.cargandoOpciones.set(false);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.cargandoOpciones.set(false);
-        this.error.set('No se pudieron cargar los clientes y las rutas. Recargá la página.');
+        this.error.set(mensajeError(err, 'cargar los clientes y las rutas'));
       },
     });
   }
@@ -196,12 +201,18 @@ export class ServicioForm implements OnInit {
       next: () => this.router.navigate(['/servicios']),
       error: (err: HttpErrorResponse) => {
         this.guardando.set(false);
-        if (err.status === 400 && err.error && typeof err.error === 'object') {
+        // 400 de validación: { campo: mensaje } -> se muestra debajo de cada campo
+        const esValidacion =
+          err.status === 400 &&
+          err.error &&
+          typeof err.error === 'object' &&
+          typeof err.error.error !== 'string';
+
+        if (esValidacion) {
           this.erroresBackend.set(err.error);
-        } else if (err.status === 403) {
-          this.error.set('No tenés permiso para realizar esta acción.');
+          this.error.set('Revisá los campos marcados.');
         } else {
-          this.error.set('No se pudo guardar el servicio.');
+          this.error.set(mensajeError(err, 'guardar el servicio'));
         }
       },
     });
