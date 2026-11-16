@@ -50,8 +50,7 @@
           <td>{{ cantidadServicios(r) }}</td>
           <td class="acciones">
             <a [routerLink]="['/rutas', r.idRuta, 'editar']">Editar</a>
-            <!-- Descomentar cuando exista ruta-mapa:
-            <a [routerLink]="['/rutas', r.idRuta, 'mapa']">Mapa</a> -->
+            <a [routerLink]="['/rutas', r.idRuta, 'mapa']">Mapa</a> 
             <button type="button" (click)="eliminar(r)">Eliminar</button>
           </td>
         </tr>
