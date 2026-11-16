@@ -97,7 +97,7 @@
           <svg class="icono" aria-hidden="true"><use href="#i-plus" /></svg>
           <span>Nueva ruta</span>
         </a>
-        <a class="btn btn-secundario" routerLink="/clientes/nuevo">
+        <a class="btn btn-secundario" routerLink="/clientes" [queryParams]="{ nuevo: 1 }">
           <svg class="icono" aria-hidden="true"><use href="#i-cliente" /></svg>
           <span>Nuevo cliente</span>
         </a>
