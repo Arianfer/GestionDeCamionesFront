@@ -1,63 +1,358 @@
-<div class="inicio-container">
-  <!-- Banner de bienvenida -->
-  <header class="bienvenida-card">
-    <div class="texto">
-      <h1>¡Hola, {{ nombreUsuario }}! 👋</h1>
-      <p>Bienvenido al panel principal de gestión de flota de <strong>CIAGESER</strong>.</p>
+<svg class="iconos-def" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-ruta" viewBox="0 0 24 24">
+    <circle cx="6" cy="19" r="3" />
+    <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" />
+    <circle cx="18" cy="5" r="3" />
+  </symbol>
+  <symbol id="i-camion" viewBox="0 0 24 24">
+    <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
+    <path d="M15 18H9" />
+    <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14" />
+    <circle cx="17" cy="18" r="2" />
+    <circle cx="7" cy="18" r="2" />
+  </symbol>
+  <symbol id="i-cliente" viewBox="0 0 24 24">
+    <path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z" />
+    <path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2" />
+    <path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2" />
+    <path d="M10 6h4" />
+    <path d="M10 10h4" />
+    <path d="M10 14h4" />
+    <path d="M10 18h4" />
+  </symbol>
+  <symbol id="i-servicio" viewBox="0 0 24 24">
+    <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.84Z" />
+    <path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65" />
+    <path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65" />
+  </symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24">
+    <path d="M5 12h14" />
+    <path d="M12 5v14" />
+  </symbol>
+  <symbol id="i-flecha" viewBox="0 0 24 24">
+    <path d="M5 12h14" />
+    <path d="m12 5 7 7-7 7" />
+  </symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24">
+    <path d="m9 18 6-6-6-6" />
+  </symbol>
+  <symbol id="i-calendario" viewBox="0 0 24 24">
+    <rect width="18" height="18" x="3" y="4" rx="2" />
+    <path d="M16 2v4" />
+    <path d="M8 2v4" />
+    <path d="M3 10h18" />
+  </symbol>
+  <symbol id="i-usuario" viewBox="0 0 24 24">
+    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+    <circle cx="12" cy="7" r="4" />
+  </symbol>
+  <symbol id="i-ubicacion" viewBox="0 0 24 24">
+    <path d="M20 10c0 4.99-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 14.99 4 10a8 8 0 0 1 16 0Z" />
+    <circle cx="12" cy="10" r="3" />
+  </symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24">
+    <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+    <path d="M21 3v5h-5" />
+    <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+    <path d="M8 16H3v5" />
+  </symbol>
+  <symbol id="i-alerta" viewBox="0 0 24 24">
+    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+    <path d="M12 9v4" />
+    <path d="M12 17h.01" />
+  </symbol>
+  <symbol id="i-navegacion" viewBox="0 0 24 24">
+    <path d="M3 11 22 2l-9 19-2-8-8-2Z" />
+  </symbol>
+  <symbol id="i-check" viewBox="0 0 24 24">
+    <path d="m9 11 3 3L22 4" />
+    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+  </symbol>
+</svg>
+
+<div class="inicio">
+  <header class="inicio-encabezado">
+    <div class="inicio-presentacion">
+      <span class="inicio-pill">
+        <span class="inicio-pill-punto" aria-hidden="true"></span>
+        <span>{{ rolUsuario() }}</span>
+      </span>
+      <h1>{{ puedeGestionar() ? 'Bienvenido, '+ nombreUsuario() : 'Mi jornada' }}</h1>
+      <p class="subtitulo">
+        @if (puedeGestionar()) {
+          Resumen ejecutivo de rutas, disponibilidad de flota, clientes y servicios de
+          <strong>CIAGESER</strong>.
+        } @else {
+          Consultá tus paradas asignadas, el recorrido del día y el estado de tus tareas.
+        }
+        @if (cargando()) {
+          <span class="estado-carga">Actualizando indicadores…</span>
+        }
+      </p>
     </div>
-    <span class="badge-rol">{{ rolUsuario }}</span>
+
+    <div class="inicio-acciones">
+      @if (puedeGestionar()) {
+        <a class="btn btn-primario" routerLink="/rutas" [queryParams]="{ nueva: 1 }">
+          <svg class="icono" aria-hidden="true"><use href="#i-plus" /></svg>
+          <span>Nueva ruta</span>
+        </a>
+        <a class="btn btn-secundario" routerLink="/clientes" [queryParams]="{ nuevo: 1 }">
+          <svg class="icono" aria-hidden="true"><use href="#i-cliente" /></svg>
+          <span>Nuevo cliente</span>
+        </a>
+        @if (error()) {
+          <button type="button" class="btn btn-secundario" (click)="cargar()" [disabled]="cargando()">
+            <svg class="icono" [class.girando]="cargando()" aria-hidden="true"><use href="#i-refresh" /></svg>
+            <span>Reintentar</span>
+          </button>
+        }
+      } @else {
+        <a class="btn btn-primario" routerLink="/chofer">
+          <svg class="icono" aria-hidden="true"><use href="#i-navegacion" /></svg>
+          <span>Ir a mi ruta</span>
+        </a>
+      }
+    </div>
   </header>
 
-  <!-- Tarjetas de métricas/KPIs -->
-  <section class="kpi-grid">
-    <div class="kpi-card">
-      <div class="kpi-icon">🚛</div>
-      <div class="kpi-info">
-        <h3>En Trayecto</h3>
-        <p class="kpi-numero">12</p>
-      </div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-icon">📍</div>
-      <div class="kpi-info">
-        <h3>Rutas Activas</h3>
-        <p class="kpi-numero">8</p>
-      </div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-icon">👥</div>
-      <div class="kpi-info">
-        <h3>Clientes</h3>
-        <p class="kpi-numero">24</p>
-      </div>
-    </div>
-  </section>
+  @if (puedeGestionar()) {
+    <section class="indicadores" aria-label="Indicadores generales">
+      <a class="indicador" routerLink="/rutas">
+        <div class="indicador-cabecera">
+          <div>
+            <p class="indicador-etiqueta">Rutas activas</p>
+            <p class="indicador-valor">{{ rutas().length }}</p>
+          </div>
+          <span class="indicador-icono" aria-hidden="true">
+            <svg class="icono"><use href="#i-ruta" /></svg>
+          </span>
+        </div>
+        <div class="indicador-pie">
+          <span class="indicador-detalle">{{ totalParadas() }} paradas</span>
+          <span class="enlace">
+            Ver rutas
+            <svg class="icono icono-xs" aria-hidden="true"><use href="#i-chevron" /></svg>
+          </span>
+        </div>
+      </a>
 
-  <!-- Accesos Rápidos -->
-  <h2>Accesos Rápidos</h2>
-  <section class="accesos-grid">
-    <a routerLink="/rutas" class="acceso-card">
-      <div class="icono">🗺️</div>
-      <div class="detalle">
-        <h3>Gestión de Rutas</h3>
-        <p>Asignar choferes, monitorear trayectos y estados.</p>
-      </div>
-    </a>
+      <a class="indicador" routerLink="/camiones">
+        <div class="indicador-cabecera">
+          <div>
+            <p class="indicador-etiqueta">Flota operativa</p>
+            <p class="indicador-valor">
+              {{ camionesDisponibles() }}
+              <span class="indicador-secundario">/ {{ camiones().length }}</span>
+            </p>
+          </div>
+          <span class="indicador-icono" aria-hidden="true">
+            <svg class="icono"><use href="#i-camion" /></svg>
+          </span>
+        </div>
+        <div class="indicador-pie">
+          <span class="indicador-detalle">{{ camionesEnRuta() }} en ruta</span>
+          <span class="enlace">
+            Ver flota
+            <svg class="icono icono-xs" aria-hidden="true"><use href="#i-chevron" /></svg>
+          </span>
+        </div>
+      </a>
 
-    <a routerLink="/clientes" class="acceso-card">
-      <div class="icono">🏢</div>
-      <div class="detalle">
-        <h3>Clientes</h3>
-        <p>Consultar la lista de clientes registrados.</p>
-      </div>
-    </a>
+      <a class="indicador" routerLink="/clientes">
+        <div class="indicador-cabecera">
+          <div>
+            <p class="indicador-etiqueta">Clientes activos</p>
+            <p class="indicador-valor">{{ clientes().length }}</p>
+          </div>
+          <span class="indicador-icono" aria-hidden="true">
+            <svg class="icono"><use href="#i-cliente" /></svg>
+          </span>
+        </div>
+        <div class="indicador-pie">
+          <span class="indicador-detalle">{{ usuariosActivos() }} usuarios activos</span>
+          <span class="enlace">
+            Directorio
+            <svg class="icono icono-xs" aria-hidden="true"><use href="#i-chevron" /></svg>
+          </span>
+        </div>
+      </a>
 
-    <a routerLink="/servicios" class="acceso-card">
-      <div class="icono">📦</div>
-      <div class="detalle">
-        <h3>Servicios</h3>
-        <p>Ver tipos de servicios y solicitudes activas.</p>
-      </div>
-    </a>
-  </section>
+      <a class="indicador" routerLink="/servicios">
+        <div class="indicador-cabecera">
+          <div>
+            <p class="indicador-etiqueta">Servicios</p>
+            <p class="indicador-valor">{{ servicios().length }}</p>
+          </div>
+          <span class="indicador-icono" aria-hidden="true">
+            <svg class="icono"><use href="#i-servicio" /></svg>
+          </span>
+        </div>
+        <div class="indicador-pie">
+          <span class="indicador-detalle indicador-detalle-alerta">{{ serviciosAlta() }} prioridad alta</span>
+          <span class="enlace">
+            Catálogo
+            <svg class="icono icono-xs" aria-hidden="true"><use href="#i-chevron" /></svg>
+          </span>
+        </div>
+      </a>
+    </section>
+
+    <div class="resumen-grid">
+      <section class="resumen-panel">
+        <header class="resumen-encabezado">
+          <div class="resumen-titulo">
+            <span class="resumen-icono" aria-hidden="true">
+              <svg class="icono"><use href="#i-navegacion" /></svg>
+            </span>
+            <div>
+              <h2>Rutas disponibles</h2>
+              <p class="subtitulo">Trayectos designados</p>
+            </div>
+          </div>
+          <a class="btn-enlace" routerLink="/rutas">Ver todas</a>
+        </header>
+
+        @if (cargando()) {
+          <div class="lista-resumen">
+            <div class="cargando-item"></div>
+            <div class="cargando-item"></div>
+            <div class="cargando-item"></div>
+          </div>
+        } @else if (rutasDestacadas().length === 0) {
+          <p class="estado">No hay rutas registradas todavía.</p>
+        } @else {
+          <div class="lista-resumen">
+            @for (ruta of rutasDestacadas(); track ruta.idRuta) {
+              <a class="ruta-resumen" [routerLink]="['/rutas', ruta.idRuta, 'mapa']">
+                <div class="ruta-datos">
+                  <div class="ruta-cabecera">
+                    <span class="ruta-codigo">RUT-{{ ruta.idRuta }}</span>
+                    <span class="ruta-nombre">{{ ruta.nombre }}</span>
+                  </div>
+                  <p class="ruta-trayecto">
+                    <svg class="icono icono-sm" aria-hidden="true"><use href="#i-ubicacion" /></svg>
+                    <span>{{ resumenTrayecto(ruta) }}</span>
+                  </p>
+                </div>
+                <div class="ruta-meta">
+                  <span class="ruta-fecha">{{ formatearFecha(ruta.fecha) }}</span>
+                  <span class="ruta-paradas">{{ paradasDe(ruta) }} paradas</span>
+                </div>
+                <span class="ruta-flecha" aria-hidden="true">
+                  <svg class="icono icono-xs"><use href="#i-chevron" /></svg>
+                </span>
+              </a>
+            }
+          </div>
+        }
+      </section>
+
+      <section class="resumen-panel">
+        <header class="resumen-encabezado">
+          <div class="resumen-titulo">
+            <span class="resumen-icono" aria-hidden="true">
+              <svg class="icono"><use href="#i-check" /></svg>
+            </span>
+            <div>
+              <h2>Servicios prioritarios</h2>
+              <p class="subtitulo">Puntos de recolección</p>
+            </div>
+          </div>
+          <a class="btn-enlace" routerLink="/servicios">Ir a servicios</a>
+        </header>
+
+        @if (cargando()) {
+          <div class="lista-resumen">
+            <div class="cargando-item cargando-item-corto"></div>
+            <div class="cargando-item cargando-item-corto"></div>
+            <div class="cargando-item cargando-item-corto"></div>
+          </div>
+        } @else if (serviciosPrioritarios().length === 0) {
+          <p class="estado">No hay servicios registrados todavía.</p>
+        } @else {
+          <div class="lista-resumen">
+            @for (servicio of serviciosPrioritarios(); track servicio.id) {
+              <a
+                class="servicio-resumen"
+                routerLink="/servicios"
+                [queryParams]="{ editar: servicio.id }"
+              >
+                <div class="servicio-cabecera">
+                  <span [class]="'prioridad prioridad-' + servicio.prioridad.toLowerCase()">
+                    {{ etiquetaPrioridad(servicio.prioridad) }}
+                  </span>
+                  <span class="servicio-direccion">
+                    <svg class="icono icono-xs" aria-hidden="true"><use href="#i-ubicacion" /></svg>
+                    <span class="servicio-direccion-texto">{{ servicio.direccion }}</span>
+                  </span>
+                </div>
+                <p class="servicio-nombre">{{ servicio.nombre }}</p>
+                <div class="servicio-detalles">
+                  <span class="servicio-etiqueta">{{ etiquetaResiduo(servicio.tipoResiduo) }}</span>
+                  <span class="servicio-etiqueta">{{ etiquetaFrecuencia(servicio.frecuencia) }}</span>
+                </div>
+              </a>
+            }
+          </div>
+        }
+
+        <div class="flota-resumen">
+          <div class="flota-encabezado">
+            <div>
+              <div class="flota-titulo">
+                <svg class="icono icono-sm" aria-hidden="true"><use href="#i-camion" /></svg>
+                <h3>Distribución de flota</h3>
+              </div>
+              <p class="subtitulo">{{ capacidadTotal() | number: '1.0-1' }} Tn de capacidad total</p>
+            </div>
+            <a class="btn-enlace" routerLink="/camiones">Ver unidades</a>
+          </div>
+          <div class="flota-totales">
+            <div class="flota-item flota-disponible">
+              <strong>{{ camionesDisponibles() }}</strong>
+              <span>Disponibles</span>
+            </div>
+            <div class="flota-item flota-ruta">
+              <strong>{{ camionesEnRuta() }}</strong>
+              <span>En ruta</span>
+            </div>
+            <div class="flota-item flota-taller">
+              <strong>{{ camionesEnMantenimiento() }}</strong>
+              <span>En taller</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    @if (error()) {
+      <p class="alerta" role="alert">
+        <svg class="icono icono-sm" aria-hidden="true"><use href="#i-alerta" /></svg>
+        <span>{{ error() }}</span>
+      </p>
+    }
+  } @else {
+    <section class="resumen-panel panel-empleado">
+      <header class="resumen-encabezado">
+        <div class="resumen-titulo">
+          <span class="resumen-icono" aria-hidden="true">
+            <svg class="icono"><use href="#i-navegacion" /></svg>
+          </span>
+          <div>
+            <h2>Tu jornada</h2>
+            <p class="subtitulo">Paradas asignadas y tareas del día</p>
+          </div>
+        </div>
+      </header>
+      <p class="empleado-texto">
+        Ingresá a <strong>Mi ruta</strong> para consultar las paradas asignadas, ver el mapa del recorrido
+        y actualizar el estado de cada tarea.
+      </p>
+      <a class="btn btn-primario" routerLink="/chofer">
+        <svg class="icono" aria-hidden="true"><use href="#i-navegacion" /></svg>
+        <span>Ver mi ruta</span>
+      </a>
+    </section>
+  }
 </div>

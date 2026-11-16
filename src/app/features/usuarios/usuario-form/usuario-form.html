@@ -1,80 +1,169 @@
-<!-- usuario-form.html -->
-<h2>{{ esEdicion ? 'Editar usuario' : 'Nuevo usuario' }}</h2>
+<div class="usuario-form" [class.usuario-form--embebido]="embebido">
+  <header class="usuario-form-encabezado">
+    <div class="usuario-form-titulo">
+      <span class="usuario-form-icono" aria-hidden="true">
+        <svg class="icono" viewBox="0 0 24 24">
+          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+      </span>
+      <div>
+        <h1>{{ esEdicion ? 'Editar Usuario' : 'Nuevo Usuario' }}</h1>
+        <p class="subtitulo">
+          {{
+            esEdicion
+              ? 'Actualizá los datos del usuario.'
+              : 'Completá los datos obligatorios del usuario.'
+          }}
+        </p>
+      </div>
+    </div>
 
-<form [formGroup]="form" (ngSubmit)="guardar()">
-  <div class="campo">
-    <label for="nombre">Nombre</label>
-    <input id="nombre" type="text" formControlName="nombre" />
-    @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
-      <small class="error">El nombre debe tener entre 2 y 50 caracteres.</small>
+    @if (embebido) {
+      <button type="button" class="btn-cerrar" (click)="cancelar()" aria-label="Cerrar formulario">
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18 6 6 18" />
+          <path d="m6 6 12 12" />
+        </svg>
+      </button>
+    } @else {
+      <a routerLink="/usuarios" class="btn btn-secundario">
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M19 12H5" />
+          <path d="m12 19-7-7 7-7" />
+        </svg>
+        <span>Volver a usuarios</span>
+      </a>
     }
-    @if (erroresBackend()['nombre']) {
-      <small class="error">{{ erroresBackend()['nombre'] }}</small>
-    }
-  </div>
+  </header>
 
-  <div class="campo">
-    <label for="apellido">Apellido</label>
-    <input id="apellido" type="text" formControlName="apellido" />
-    @if (form.controls.apellido.touched && form.controls.apellido.invalid) {
-      <small class="error">El apellido debe tener entre 2 y 50 caracteres.</small>
-    }
-    @if (erroresBackend()['apellido']) {
-      <small class="error">{{ erroresBackend()['apellido'] }}</small>
-    }
-  </div>
-
-  <div class="campo">
-    <label for="dni">DNI</label>
-    <input id="dni" type="text" inputmode="numeric" maxlength="8" formControlName="dni" />
-    @if (form.controls.dni.touched && form.controls.dni.invalid) {
-      <small class="error">El DNI debe tener 7 u 8 números.</small>
-    }
-    @if (erroresBackend()['dni']) {
-      <small class="error">{{ erroresBackend()['dni'] }}</small>
-    }
-    @if (esEdicion) {
-      <small class="ayuda">El DNI no se puede modificar porque la contraseña inicial depende de él.</small>
-    }
-  </div>
-
-  <div class="campo">
-    <label for="email">Email</label>
-    <input id="email" type="email" formControlName="email" />
-    @if (form.controls.email.touched && form.controls.email.invalid) {
-      <small class="error">Ingresá un email válido.</small>
-    }
-    @if (erroresBackend()['email']) {
-      <small class="error">{{ erroresBackend()['email'] }}</small>
-    }
-  </div>
-
-  <div class="campo">
-    <label for="rol">Rol</label>
-    <select id="rol" formControlName="rol">
-      @for (r of rolesDisponibles(); track r) {
-        <option [value]="r">{{ r }}</option>
+  @if (cargando()) {
+    <div class="form-panel">
+      <p class="estado-carga">Cargando usuario...</p>
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="guardar()" class="form-panel" novalidate>
+      @if (error()) {
+        <p class="alerta" role="alert">
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+            <path d="M12 9v4" />
+            <path d="M12 17h.01" />
+          </svg>
+          <span>{{ error() }}</span>
+        </p>
       }
-    </select>
-    @if (erroresBackend()['rol']) {
-      <small class="error">{{ erroresBackend()['rol'] }}</small>
-    }
-  </div>
 
-  @if (!esEdicion) {
-    <p class="ayuda">
-      La contraseña inicial se genera sola con los últimos 4 dígitos del DNI.
-    </p>
+      <div class="form-grid">
+        <div class="campo">
+          <label for="nombre">Nombre <span class="requerido">*</span></label>
+          <input
+            id="nombre"
+            type="text"
+            placeholder="Nombre"
+            formControlName="nombre"
+            [class.invalido]="form.controls.nombre.touched && form.controls.nombre.invalid"
+          />
+          @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
+            <small class="error">El nombre debe tener entre 2 y 50 caracteres.</small>
+          }
+          @if (erroresBackend()['nombre']) {
+            <small class="error">{{ erroresBackend()['nombre'] }}</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="apellido">Apellido <span class="requerido">*</span></label>
+          <input
+            id="apellido"
+            type="text"
+            placeholder="Apellido"
+            formControlName="apellido"
+            [class.invalido]="form.controls.apellido.touched && form.controls.apellido.invalid"
+          />
+          @if (form.controls.apellido.touched && form.controls.apellido.invalid) {
+            <small class="error">El apellido debe tener entre 2 y 50 caracteres.</small>
+          }
+          @if (erroresBackend()['apellido']) {
+            <small class="error">{{ erroresBackend()['apellido'] }}</small>
+          }
+        </div>
+
+        <div class="campo campo-ancho">
+          <label for="dni">DNI <span class="requerido">*</span></label>
+          <input
+            id="dni"
+            type="text"
+            inputmode="numeric"
+            maxlength="8"
+            placeholder="7 u 8 dígitos"
+            formControlName="dni"
+            [class.invalido]="form.controls.dni.touched && form.controls.dni.invalid"
+          />
+          @if (form.controls.dni.touched && form.controls.dni.invalid) {
+            <small class="error">El DNI debe tener 7 u 8 números.</small>
+          }
+          @if (erroresBackend()['dni']) {
+            <small class="error">{{ erroresBackend()['dni'] }}</small>
+          }
+          @if (esEdicion) {
+            <small class="ayuda">El DNI no se puede modificar porque la contraseña inicial depende de él.</small>
+          }
+        </div>
+
+        <div class="campo campo-ancho">
+          <label for="email">Email <span class="requerido">*</span></label>
+          <input
+            id="email"
+            type="email"
+            placeholder="usuario@empresa.com"
+            formControlName="email"
+            [class.invalido]="form.controls.email.touched && form.controls.email.invalid"
+          />
+          @if (form.controls.email.touched && form.controls.email.invalid) {
+            <small class="error">Ingresá un email válido.</small>
+          }
+          @if (erroresBackend()['email']) {
+            <small class="error">{{ erroresBackend()['email'] }}</small>
+          }
+        </div>
+
+        <div class="campo campo-ancho">
+          <label for="rol">Rol <span class="requerido">*</span></label>
+          <select
+            id="rol"
+            formControlName="rol"
+            [class.invalido]="form.controls.rol.touched && form.controls.rol.invalid"
+          >
+            @for (r of rolesDisponibles(); track r) {
+              <option [value]="r">{{ etiquetaRol(r) }}</option>
+            }
+          </select>
+          @if (erroresBackend()['rol']) {
+            <small class="error">{{ erroresBackend()['rol'] }}</small>
+          }
+        </div>
+      </div>
+
+      @if (!esEdicion) {
+        <p class="ayuda">
+          La contraseña inicial se genera sola con los últimos 4 dígitos del DNI.
+        </p>
+      }
+
+      <div class="botones">
+        @if (embebido) {
+          <button type="button" class="btn btn-secundario" (click)="cancelar()">Cancelar</button>
+        } @else {
+          <a routerLink="/usuarios" class="btn btn-secundario">Cancelar</a>
+        }
+        <button type="submit" class="btn btn-primario" [disabled]="guardando()">
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+          <span>{{ guardando() ? 'Guardando...' : esEdicion ? 'Guardar cambios' : 'Guardar usuario' }}</span>
+        </button>
+      </div>
+    </form>
   }
-
-  @if (error()) {
-    <p class="error">{{ error() }}</p>
-  }
-
-  <div class="botones">
-    <a routerLink="/usuarios" class="btn-secundario">Cancelar</a>
-    <button type="submit" class="btn-primary" [disabled]="guardando()">
-      {{ guardando() ? 'Guardando...' : 'Guardar' }}
-    </button>
-  </div>
-</form>
+</div>

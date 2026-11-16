@@ -1,60 +1,304 @@
-<div class="header">
-  <h2>Rutas</h2>
-  <a routerLink="/rutas/nuevo" class="btn-primary">+ Nueva ruta</a>
-</div>
+<div class="rutas">
+  <header class="rutas-encabezado">
+    <div class="rutas-titulo">
+      <h1>Gestión y trazado de rutas</h1>
+      <p class="subtitulo">
+        Seleccioná una ruta para visualizar sus paradas, chofer y fecha.
+      </p>
+    </div>
 
-<div class="filtros">
-  <input
-    type="text"
-    placeholder="Buscar por nombre de ruta o chofer"
-    [ngModel]="texto()"
-    (ngModelChange)="texto.set($event)"
-  />
-  <input
-    type="date"
-    [ngModel]="fecha()"
-    (ngModelChange)="fecha.set($event)"
-  />
-  @if (fecha()) {
-    <button type="button" class="limpiar" (click)="fecha.set('')">Quitar fecha</button>
+    <div class="rutas-acciones">
+      <div class="filtro filtro-busqueda">
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
+        <input
+          type="text"
+          placeholder="Buscar ruta o chofer..."
+          aria-label="Buscar por nombre de ruta o chofer"
+          [ngModel]="texto()"
+          (ngModelChange)="texto.set($event)"
+        />
+      </div>
+
+      <div class="filtro filtro-fecha">
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+          <rect width="18" height="18" x="3" y="4" rx="2" />
+          <path d="M16 2v4" />
+          <path d="M8 2v4" />
+          <path d="M3 10h18" />
+        </svg>
+        <input
+          type="date"
+          aria-label="Filtrar por fecha"
+          [ngModel]="fecha()"
+          (ngModelChange)="fecha.set($event)"
+        />
+      </div>
+
+      @if (fecha()) {
+        <button type="button" class="btn-limpiar" (click)="fecha.set('')" aria-label="Quitar filtro de fecha">
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+        </button>
+      }
+
+      <button type="button" class="btn btn-primario" (click)="abrirNueva()">
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
+        </svg>
+        <span>Nueva Ruta</span>
+      </button>
+    </div>
+  </header>
+
+  @if (error()) {
+    <p class="alerta" role="alert">
+      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+        <path d="M12 9v4" />
+        <path d="M12 17h.01" />
+      </svg>
+      <span>{{ error() }}</span>
+    </p>
+  }
+
+  @if (cargando()) {
+    <div class="rutas-layout">
+      <div class="master-lista" aria-label="Cargando rutas">
+        <div class="cargando-item"></div>
+        <div class="cargando-item"></div>
+        <div class="cargando-item"></div>
+        <div class="cargando-item"></div>
+      </div>
+      <div class="detalle-panel">
+        <div class="detalle-vacio">
+          <span class="estado-icono" aria-hidden="true">
+            <svg class="icono" viewBox="0 0 24 24">
+              <circle cx="6" cy="19" r="3" />
+              <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" />
+              <circle cx="18" cy="5" r="3" />
+            </svg>
+          </span>
+          <h2>Cargando rutas</h2>
+          <p>Estamos preparando el listado y sus paradas.</p>
+        </div>
+      </div>
+    </div>
+  } @else if (rutasFiltradas().length === 0) {
+    <div class="estado-vacio">
+      <span class="estado-icono" aria-hidden="true">
+        <svg class="icono" viewBox="0 0 24 24">
+          <circle cx="6" cy="19" r="3" />
+          <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" />
+          <circle cx="18" cy="5" r="3" />
+        </svg>
+      </span>
+      <h2>No hay rutas para mostrar</h2>
+      @if (texto() || fecha()) {
+        <p>Probá con otro término de búsqueda o quitá los filtros.</p>
+        <button type="button" class="btn btn-secundario" (click)="texto.set(''); fecha.set('')">
+          Limpiar filtros
+        </button>
+      } @else {
+        <p>Todavía no se registró ninguna ruta.</p>
+        <button type="button" class="btn btn-primario" (click)="abrirNueva()">
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 12h14" />
+            <path d="M12 5v14" />
+          </svg>
+          <span>Crear primera ruta</span>
+        </button>
+      }
+    </div>
+  } @else {
+    <div class="rutas-layout">
+      <section class="master-lista" aria-label="Listado de rutas">
+        @for (r of rutasFiltradas(); track r.idRuta) {
+          <button
+            type="button"
+            class="ruta-card"
+            [class.activa]="esSeleccionada(r)"
+            (click)="seleccionar(r)"
+          >
+            <span class="ruta-card-fila">
+              <span class="ruta-codigo">RUT-{{ r.idRuta }}</span>
+              <span class="ruta-fecha-badge">{{ (r.fecha | date: 'dd/MM/yyyy') || 'Sin fecha' }}</span>
+            </span>
+
+            <span class="ruta-card-nombre">{{ r.nombre }}</span>
+
+            <span class="ruta-card-trayecto">
+              <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20 10c0 4.99-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 14.99 4 10a8 8 0 0 1 16 0Z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              <span class="trayecto-texto">{{ resumenTrayecto(r) }}</span>
+            </span>
+
+            <span class="ruta-card-pie">
+              <span class="meta-item">
+                <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                  <circle cx="12" cy="7" r="4" />
+                </svg>
+                {{ r.nombreChofer || 'Sin chofer' }}
+              </span>
+              <span class="ruta-paradas">{{ cantidadServicios(r) }} paradas</span>
+            </span>
+          </button>
+        }
+      </section>
+
+      @if (rutaSeleccionada(); as r) {
+        <article class="detalle-panel" aria-label="Detalle de la ruta">
+          <header class="detalle-encabezado">
+            <div class="detalle-titulo">
+              <div class="detalle-chips">
+                <span class="ruta-codigo-chip">RUT-{{ r.idRuta }}</span>
+                <span class="ruta-fecha-chip">{{ (r.fecha | date: 'dd/MM/yyyy') || 'Sin fecha' }}</span>
+              </div>
+              <h2>{{ r.nombre }}</h2>
+              <p class="detalle-descripcion">{{ r.descripcion || 'Sin descripción' }}</p>
+              <p class="detalle-asignacion">
+                Unidad asignada: <strong>{{ unidadAsignada(r) }}</strong>
+              </p>
+            </div>
+
+            <div class="detalle-acciones">
+              <button type="button" class="btn-accion" (click)="abrirEditar(r)">
+                <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                </svg>
+                <span>Editar</span>
+              </button>
+              <a
+                class="btn-icono"
+                [routerLink]="['/rutas', r.idRuta, 'mapa']"
+                title="Ver mapa"
+                aria-label="Ver mapa"
+              >
+                <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M20 10c0 4.99-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 14.99 4 10a8 8 0 0 1 16 0Z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+              </a>
+              <button
+                type="button"
+                class="btn-icono btn-icono-peligro"
+                (click)="eliminar(r)"
+                title="Eliminar"
+                aria-label="Eliminar"
+              >
+                <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 6h18" />
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  <path d="m19 6-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                  <path d="M10 11v6" />
+                  <path d="M14 11v6" />
+                </svg>
+              </button>
+            </div>
+          </header>
+
+          <div class="detalle-datos">
+            <div class="dato">
+              <span class="dato-etiqueta">Fecha</span>
+              <strong class="dato-valor">{{ (r.fecha | date: 'dd/MM/yyyy') || 'Sin fecha' }}</strong>
+            </div>
+            <div class="dato">
+              <span class="dato-etiqueta">Chofer</span>
+              <strong class="dato-valor">{{ r.nombreChofer || 'Sin chofer' }}</strong>
+            </div>
+            <div class="dato">
+              <span class="dato-etiqueta">Paradas</span>
+              <strong class="dato-valor">{{ cantidadServicios(r) }}</strong>
+            </div>
+          </div>
+
+          <section class="itinerario-panel">
+            <div class="itinerario-encabezado">
+              <span class="itinerario-titulo">
+                <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 2v20" />
+                  <path d="M5 6h14" />
+                  <path d="M5 18h14" />
+                </svg>
+                Itinerario y puntos de control
+              </span>
+              <span class="itinerario-chofer">
+                Chofer: <strong>{{ r.nombreChofer || 'Sin chofer' }}</strong>
+              </span>
+            </div>
+
+            @if (serviciosOrdenados(r).length === 0) {
+              <p class="sin-paradas">
+                Esta ruta todavía no tiene servicios asignados. Se cargan desde la pantalla de
+                servicios.
+              </p>
+            } @else {
+              <div class="linea-tiempo">
+                @for (s of serviciosOrdenados(r); track s.id; let i = $index; let ultimo = $last) {
+                  <div class="parada" [class.parada-ultima]="ultimo">
+                    <span
+                      class="parada-marca"
+                      [class.parada-marca-inicio]="i === 0"
+                      [class.parada-marca-fin]="ultimo"
+                    ></span>
+                    <div class="parada-contenido">
+                      <span class="parada-etiqueta">Parada / control #{{ i + 1 }}</span>
+                      <p class="parada-nombre">{{ s.nombre }}</p>
+                      <p class="parada-direccion">{{ s.direccion }}</p>
+                      <span class="parada-chips">
+                        <span
+                          class="chip"
+                          [class.chip-alta]="s.prioridad === 'ALTA'"
+                          [class.chip-media]="s.prioridad === 'MEDIA'"
+                        >
+                          {{ s.prioridad }}
+                        </span>
+                        <span class="chip">{{ s.tipoResiduo }}</span>
+                        <span class="chip">{{ s.frecuencia }}</span>
+                      </span>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </section>
+        </article>
+      } @else {
+        <div class="detalle-panel">
+          <div class="detalle-vacio">
+            <span class="estado-icono" aria-hidden="true">
+              <svg class="icono" viewBox="0 0 24 24">
+                <circle cx="6" cy="19" r="3" />
+                <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" />
+                <circle cx="18" cy="5" r="3" />
+              </svg>
+            </span>
+            <h2>Elegí una ruta</h2>
+            <p>Seleccioná una ruta del listado para ver su chofer y sus paradas.</p>
+          </div>
+        </div>
+      }
+    </div>
   }
 </div>
 
-@if (error()) {
-  <p class="error">{{ error() }}</p>
-}
-
-@if (cargando()) {
-  <p>Cargando...</p>
-} @else if (rutasFiltradas().length === 0) {
-  <p>No hay rutas para mostrar.</p>
-} @else {
-  <table>
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Descripción</th>
-        <th>Fecha</th>
-        <th>Chofer</th>
-        <th>Servicios</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (r of rutasFiltradas(); track r.idRuta) {
-        <tr>
-          <td>{{ r.nombre }}</td>
-          <td class="descripcion">{{ r.descripcion }}</td>
-          <td>{{ r.fecha | date: 'dd/MM/yyyy' }}</td>
-          <td>{{ r.nombreChofer }}</td>
-          <td>{{ cantidadServicios(r) }}</td>
-          <td class="acciones">
-            <a [routerLink]="['/rutas', r.idRuta, 'editar']">Editar</a>
-            <a [routerLink]="['/rutas', r.idRuta, 'mapa']">Mapa</a> 
-            <button type="button" (click)="eliminar(r)">Eliminar</button>
-          </td>
-        </tr>
-      }
-    </tbody>
-  </table>
+@if (drawerAbierto()) {
+  <div class="drawer-backdrop" (click)="cerrarDrawer()" aria-hidden="true"></div>
+  <aside class="drawer" role="dialog" aria-modal="true" aria-label="Formulario de ruta">
+    <app-ruta-form
+      [rutaId]="rutaEditandoId()"
+      [embebido]="true"
+      (cerrar)="cerrarDrawer()"
+      (guardado)="alGuardar($event)"
+    />
+  </aside>
 }

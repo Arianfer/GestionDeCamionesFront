@@ -1,0 +1,185 @@
+<div class="camion-form" [class.camion-form--embebido]="embebido">
+  <header class="camion-form-encabezado">
+    <div class="camion-form-titulo">
+      <span class="camion-form-icono" aria-hidden="true">
+        <svg class="icono" viewBox="0 0 24 24">
+          <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
+          <path d="M15 18H9" />
+          <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14" />
+          <circle cx="17" cy="18" r="2" />
+          <circle cx="7" cy="18" r="2" />
+        </svg>
+      </span>
+      <div>
+        <h1>{{ esEdicion ? 'Editar Camión' : 'Nuevo Camión' }}</h1>
+        <p class="subtitulo">
+          {{
+            esEdicion
+              ? 'Actualizá los datos de la unidad de flota.'
+              : 'Completá los datos de la nueva unidad de flota.'
+          }}
+        </p>
+      </div>
+    </div>
+
+    @if (embebido) {
+      <button type="button" class="btn-cerrar" (click)="cancelar()" aria-label="Cerrar formulario">
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18 6 6 18" />
+          <path d="m6 6 12 12" />
+        </svg>
+      </button>
+    } @else {
+      <a routerLink="/camiones" class="btn btn-secundario">
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M19 12H5" />
+          <path d="m12 19-7-7 7-7" />
+        </svg>
+        <span>Volver a camiones</span>
+      </a>
+    }
+  </header>
+
+  @if (cargando()) {
+    <div class="form-panel">
+      <p class="estado-carga">Cargando camión...</p>
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="guardar()" class="form-panel" novalidate>
+      @if (error()) {
+        <p class="alerta" role="alert">
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+            <path d="M12 9v4" />
+            <path d="M12 17h.01" />
+          </svg>
+          <span>{{ error() }}</span>
+        </p>
+      }
+
+      <div class="form-grid">
+        <div class="campo">
+          <label for="patente">Patente / Dominio <span class="requerido">*</span></label>
+          <input
+            #patenteInput
+            id="patente"
+            type="text"
+            maxlength="7"
+            placeholder="AA 123 BB"
+            formControlName="patente"
+            [class.invalido]="form.controls.patente.touched && form.controls.patente.invalid"
+            (input)="soloPatente(patenteInput)"
+          />
+          @if (form.controls.patente.touched && form.controls.patente.invalid) {
+            <small class="error">
+              @if (form.controls.patente.errors?.['required']) {
+                La patente es obligatoria.
+              } @else {
+                Usá el formato AA123BB o ABC123.
+              }
+            </small>
+          }
+          @if (erroresBackend()['patente']) {
+            <small class="error">{{ erroresBackend()['patente'] }}</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="capacidadCarga">Capacidad de carga <span class="requerido">*</span></label>
+          <input
+            id="capacidadCarga"
+            type="number"
+            min="0"
+            step="1"
+            placeholder="Ej: 15000"
+            formControlName="capacidadCarga"
+            [class.invalido]="
+              form.controls.capacidadCarga.touched && form.controls.capacidadCarga.invalid
+            "
+          />
+          @if (
+            form.controls.capacidadCarga.touched && form.controls.capacidadCarga.invalid
+          ) {
+            <small class="error">La capacidad es obligatoria y no puede ser negativa.</small>
+          }
+          @if (erroresBackend()['capacidadCarga']) {
+            <small class="error">{{ erroresBackend()['capacidadCarga'] }}</small>
+          }
+        </div>
+
+        <div class="campo campo-completo">
+          <label for="tipo">Tipo <span class="requerido">*</span></label>
+          <select
+            id="tipo"
+            formControlName="tipo"
+            [class.invalido]="form.controls.tipo.touched && form.controls.tipo.invalid"
+          >
+            @for (t of tipos; track t.valor) {
+              <option [value]="t.valor">{{ t.etiqueta }}</option>
+            }
+          </select>
+          @if (erroresBackend()['tipo']) {
+            <small class="error">{{ erroresBackend()['tipo'] }}</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="consumoDieselPorKm">Consumo de diésel por km</label>
+          <input
+            id="consumoDieselPorKm"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="Ej: 0,35"
+            formControlName="consumoDieselPorKm"
+            [class.invalido]="
+              form.controls.consumoDieselPorKm.touched &&
+              form.controls.consumoDieselPorKm.invalid
+            "
+          />
+          @if (
+            form.controls.consumoDieselPorKm.touched &&
+            form.controls.consumoDieselPorKm.invalid
+          ) {
+            <small class="error">El consumo no puede ser negativo.</small>
+          }
+          @if (erroresBackend()['consumoDieselPorKm']) {
+            <small class="error">{{ erroresBackend()['consumoDieselPorKm'] }}</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="estadoCamion">Estado operativo <span class="requerido">*</span></label>
+          <select
+            id="estadoCamion"
+            formControlName="estadoCamion"
+            [class.invalido]="
+              form.controls.estadoCamion.touched && form.controls.estadoCamion.invalid
+            "
+          >
+            @for (e of estados; track e.valor) {
+              <option [value]="e.valor">{{ e.etiqueta }}</option>
+            }
+          </select>
+          @if (erroresBackend()['estadoCamion']) {
+            <small class="error">{{ erroresBackend()['estadoCamion'] }}</small>
+          }
+        </div>
+      </div>
+
+      <div class="botones">
+        @if (embebido) {
+          <button type="button" class="btn btn-secundario" (click)="cancelar()">Cancelar</button>
+        } @else {
+          <a routerLink="/camiones" class="btn btn-secundario">Cancelar</a>
+        }
+        <button type="submit" class="btn btn-primario" [disabled]="guardando()">
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+          <span>{{ guardando() ? 'Guardando...' : esEdicion ? 'Guardar cambios' : 'Guardar camión' }}</span>
+        </button>
+      </div>
+    </form>
+  }
+</div>

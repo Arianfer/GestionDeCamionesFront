@@ -1,36 +1,56 @@
-// usuario-list.ts
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { FormsModule } from '@angular/forms';
-import { UsuariosService } from '../usuarios.service';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { Usuario } from '../../../shared/models/usuario.model';
+import { UsuarioForm } from '../usuario-form/usuario-form';
+import { UsuariosService } from '../usuarios.service';
 
 @Component({
   selector: 'app-usuario-list',
-  imports: [RouterLink, FormsModule],
+  imports: [UsuarioForm],
   templateUrl: './usuario-list.html',
   styleUrl: './usuario-list.css',
 })
 export class UsuarioList implements OnInit {
-  private usuariosService = inject(UsuariosService);
-  private auth = inject(AuthService);
+  private readonly usuariosService = inject(UsuariosService);
+  private readonly auth = inject(AuthService);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
-  usuarios = signal<Usuario[]>([]);
-  dni = signal('');
-  cargando = signal(true);
-  error = signal('');
-  aviso = signal('');
+  readonly usuarios = signal<Usuario[]>([]);
+  readonly filtro = signal('');
+  readonly cargando = signal(true);
+  readonly error = signal('');
+  readonly drawerAbierto = signal(false);
+  readonly usuarioEditandoId = signal<number | null>(null);
 
-  ngOnInit() {
+  readonly filtrados = computed(() => {
+    const q = this.filtro().trim().toLowerCase();
+    if (!q) return this.usuarios();
+
+    return this.usuarios().filter(
+      (u) =>
+        `${u.nombre} ${u.apellido}`.toLowerCase().includes(q) ||
+        u.dni.includes(q) ||
+        u.email.toLowerCase().includes(q) ||
+        u.rol.toLowerCase().includes(q) ||
+        this.etiquetaRol(u.rol).toLowerCase().includes(q),
+    );
+  });
+
+  ngOnInit(): void {
     this.cargar();
+
+    if (this.route.snapshot.queryParamMap.get('nuevo') === '1') {
+      this.abrirNuevo();
+      this.router.navigate(['/usuarios'], { replaceUrl: true });
+    }
   }
 
-  cargar() {
+  cargar(): void {
     this.cargando.set(true);
     this.error.set('');
-    this.aviso.set('');
-    // El backend ya filtra: OFICINA solo recibe usuarios EMPLEADO
+
     this.usuariosService.getAll().subscribe({
       next: (data) => {
         this.usuarios.set(data);
@@ -43,41 +63,49 @@ export class UsuarioList implements OnInit {
     });
   }
 
-  buscarPorDni() {
-    const valor = this.dni().trim();
-    this.error.set('');
-    this.aviso.set('');
+  iniciales(u: Usuario): string {
+    return `${u.nombre.charAt(0)}${u.apellido.charAt(0)}`.toUpperCase();
+  }
 
-    if (!valor) {
-      this.cargar();
-      return;
-    }
-    if (!/^\d{7,8}$/.test(valor)) {
-      this.aviso.set('El DNI debe tener 7 u 8 números.');
-      return;
-    }
+  etiquetaRol(rol: Usuario['rol']): string {
+    const etiquetas: Record<Usuario['rol'], string> = {
+      ADMIN: 'Administrador',
+      OFICINA: 'Oficina',
+      EMPLEADO: 'Empleado',
+    };
+    return etiquetas[rol];
+  }
 
-    this.usuariosService.getByDni(valor).subscribe({
-      next: (u) => this.usuarios.set([u]),
-      error: () => {
-        this.usuarios.set([]);
-        this.aviso.set('No se encontró un usuario con ese DNI, o no tenés permiso para verlo.');
-      },
+  abrirNuevo(): void {
+    this.usuarioEditandoId.set(null);
+    this.drawerAbierto.set(true);
+  }
+
+  abrirEditar(usuario: Usuario): void {
+    this.usuarioEditandoId.set(usuario.id);
+    this.drawerAbierto.set(true);
+  }
+
+  cerrarDrawer(): void {
+    this.drawerAbierto.set(false);
+    this.usuarioEditandoId.set(null);
+  }
+
+  alGuardar(usuario: Usuario): void {
+    this.cerrarDrawer();
+    this.usuarios.update((lista) => {
+      const existe = lista.some((u) => u.id === usuario.id);
+      return existe
+        ? lista.map((u) => (u.id === usuario.id ? usuario : u))
+        : [...lista, usuario];
     });
   }
 
-  limpiar() {
-    this.dni.set('');
-    this.cargar();
-  }
-
-  // No se muestra "Desactivar" sobre la propia cuenta
   esPropio(u: Usuario): boolean {
     return String(u.id) === this.auth.getId();
   }
 
-  desactivar(u: Usuario) {
-    // Provisorio hasta tener shared/confirm-dialog
+  desactivar(u: Usuario): void {
     if (!confirm(`¿Desactivar a ${u.nombre} ${u.apellido}? No va a poder iniciar sesión.`)) return;
 
     this.usuariosService.desactivar(u.id).subscribe({

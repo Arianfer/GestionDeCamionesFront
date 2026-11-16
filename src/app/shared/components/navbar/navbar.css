@@ -4,6 +4,10 @@
   top: 0;
   z-index: 50;
   background-color: var(--color-fondo);
+  --navbar-alto: 6.2rem;
+  --navbar-margen-lateral: 5%;
+  --logo-contenedor: 50px;
+  --logo-imagen: 60px;
 }
 
 .navbar {
@@ -12,8 +16,8 @@
   grid-template-columns: 1fr auto 1fr; /* marca | píldora centrada | acciones */
   align-items: center;
   gap: 16px;
-  min-height: 64px;
-  padding: 8px 16px;
+  min-height: var(--navbar-alto);
+  padding: 10px var(--navbar-margen-lateral);
   background-color: var(--color-primario-oscuro);
   border-bottom: 1px solid var(--color-borde);
   box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 16px rgba(16, 24, 40, 0.06);
@@ -42,19 +46,26 @@
 }
 
 .marca-logo {
-  display: grid;
-  place-items: center;
-  width: 40px;
-  height: 40px;
+  position: relative;
+  width: var(--logo-contenedor);
+  height: var(--logo-contenedor);
+  flex-shrink: 0;
+  overflow: hidden;
   border-radius: 12px;
   background-color: var(--color-superficie);
-  color: #fff;
-  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.35);
+  color: var(--color-primario-oscuro);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.18);
 }
 
-.marca-logo .icono {
-  width: 22px;
-  height: 22px;
+.marca-imagen {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  width: var(--logo-imagen);
+  height: var(--logo-imagen);
+  max-width: none;
+  transform: translate(-50%, -50%);
 }
 
 .marca-texto {
@@ -78,18 +89,19 @@
 
 .marca-etiqueta {
   padding: 1px 8px;
-  border: 1px solid var(--color-marca-borde);
+  border: 1px solid var(--color-primario);
   border-radius: 6px;
-  background-color: var(--color-marca-suave);
-  color: var(--color-marca);
+  background-color: var(--color-superficie);
+  color: var(--color-primario-oscuro);
   font-size: 0.68rem;
   font-weight: 600;
 }
 
 .marca-sub {
+  color: var(--color-superficie);
   font-size: 0.7rem;
   font-weight: 500;
-  color: var(--color-texto-suave);
+  opacity: 0.72;
 }
 
 /* ---------- Contenido (desktop: sus hijos participan del grid del navbar) ---------- */
@@ -124,12 +136,12 @@
 }
 
 .pildora-link:hover {
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: var(--color-superficie);
 }
 
 .pildora-link.activo {
   background-color: var(--color-superficie);
-  color: var(--color-marca);
+  color: var(--color-primario-oscuro);
   font-weight: 600;
   box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12);
 }
@@ -160,8 +172,8 @@
 /* Inicio: relleno verde cuando está activo, contorno suave cuando no */
 .btn-inicio {
   background-color: var(--color-superficie);
-  border: 1px solid var(--color-marca-borde);
-  color: var(--color-marca);
+  border: 1px solid var(--color-borde);
+  color: var(--color-primario-oscuro);
 }
 
 .btn-inicio:hover {
@@ -169,10 +181,9 @@
 }
 
 .btn-inicio.activo {
-  background-color: var(--color-);
-  border-color: var(--color-marca);
-  color: #fff;
-  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.3);
+  background-color: var(--color-primario);
+  border-color: var(--color-primario);
+  color: var(--color-texto-claro);
 }
 
 .btn-logout {
@@ -183,8 +194,8 @@
 }
 
 .btn-logout:hover {
-  background-color: #fef2f2;
-  border-color: #fecaca;
+  background-color: var(--color-superficie);
+  border-color: var(--color-error);
   color: var(--color-error);
 }
 
@@ -202,11 +213,11 @@
 }
 
 .menu-toggle:hover {
-  background-color: var(--color-fondo-suave);
+  background-color: var(--color-fondo);
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-marca);
+  outline: 2px solid var(--color-primario);
   outline-offset: 2px;
 }
 

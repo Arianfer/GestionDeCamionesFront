@@ -1,0 +1,117 @@
+<article class="detalle-servicio" aria-label="Detalle del servicio">
+  <header class="detalle-encabezado">
+    <div class="detalle-titulo">
+      <div class="detalle-chips">
+        <span class="servicio-codigo">SRV-{{ servicio.id }}</span>
+        <span class="prioridad-badge" [attr.data-prioridad]="servicio.prioridad">
+          Prioridad {{ etiquetasPrioridad[servicio.prioridad] }}
+        </span>
+        <span class="frecuencia-chip">{{ etiquetasFrecuencia[servicio.frecuencia] }}</span>
+      </div>
+
+      <h2>{{ servicio.nombre }}</h2>
+
+      <p class="detalle-direccion">
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 10c0 4.99-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 14.99 4 10a8 8 0 0 1 16 0Z" />
+          <circle cx="12" cy="10" r="3" />
+        </svg>
+        <span>{{ servicio.direccion }}</span>
+      </p>
+    </div>
+
+    <div class="detalle-acciones">
+      <button type="button" class="btn-accion" (click)="editar.emit(servicio)">
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+        </svg>
+        <span>Editar</span>
+      </button>
+
+      <button
+        type="button"
+        class="btn-icono btn-icono-peligro"
+        [disabled]="eliminando"
+        (click)="eliminar.emit(servicio)"
+        title="Eliminar"
+        aria-label="Eliminar servicio"
+      >
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 6h18" />
+          <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+          <path d="m19 6-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+          <path d="M10 11v6" />
+          <path d="M14 11v6" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="detalle-datos">
+    <div class="dato">
+      <span class="dato-etiqueta">Cliente</span>
+      <strong class="dato-valor">{{ clienteNombre }}</strong>
+      <small class="dato-extra">CLI-{{ servicio.idCliente }}</small>
+    </div>
+
+    <div class="dato">
+      <span class="dato-etiqueta">Ruta</span>
+      <strong class="dato-valor">{{ rutaNombre }}</strong>
+      <small class="dato-extra">RUT-{{ servicio.idRuta }}</small>
+    </div>
+
+    <div class="dato">
+      <span class="dato-etiqueta">Tipo de residuo</span>
+      <strong class="dato-valor">{{ etiquetasResiduo[servicio.tipoResiduo] }}</strong>
+    </div>
+
+    <div class="dato">
+      <span class="dato-etiqueta">Frecuencia</span>
+      <strong class="dato-valor">{{ etiquetasFrecuencia[servicio.frecuencia] }}</strong>
+    </div>
+
+    <div class="dato">
+      <span class="dato-etiqueta">Prioridad</span>
+      <strong class="dato-valor dato-prioridad" [attr.data-prioridad]="servicio.prioridad">
+        {{ etiquetasPrioridad[servicio.prioridad] }}
+      </strong>
+    </div>
+
+    <div class="dato">
+      <span class="dato-etiqueta">Orden de visita</span>
+      <strong class="dato-valor">#{{ servicio.orden }}</strong>
+    </div>
+
+    <div class="dato">
+      <span class="dato-etiqueta">Latitud</span>
+      <strong class="dato-valor dato-coordenada">
+        {{ servicio.latitud | number: '1.4-6' }}
+      </strong>
+    </div>
+
+    <div class="dato">
+      <span class="dato-etiqueta">Longitud</span>
+      <strong class="dato-valor dato-coordenada">
+        {{ servicio.longitud | number: '1.4-6' }}
+      </strong>
+    </div>
+  </div>
+
+  <section class="detalle-mapa-panel">
+    <div class="mapa-encabezado">
+      <div>
+        <span class="mapa-titulo">Ubicación del punto de servicio</span>
+        <p class="mapa-descripcion">
+          Referencia geográfica del domicilio donde se realiza la recolección.
+        </p>
+      </div>
+
+      <span class="mapa-coordenadas">
+        {{ servicio.latitud | number: '1.4-6' }}, {{ servicio.longitud | number: '1.4-6' }}
+      </span>
+    </div>
+
+    <div #mapaDetalle class="detalle-mapa"></div>
+  </section>
+</article>

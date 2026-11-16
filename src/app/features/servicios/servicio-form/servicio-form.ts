@@ -1,4 +1,16 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  ViewChild,
+  inject,
+  signal,
+} from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -12,6 +24,7 @@ import { mensajeError } from '../mensaje-error';
 import {
   Frecuencia,
   Prioridad,
+  Servicio,
   ServicioRequest,
   TipoResiduo,
 } from '../../../shared/models/servicio.model';
@@ -36,6 +49,11 @@ export class ServicioForm implements OnInit, AfterViewInit, OnDestroy {
   private clienteService = inject(ClienteService);
   private rutasService = inject(RutasService);
 
+  @Input() servicioId: number | null = null;
+  @Input() embebido = false;
+  @Output() cerrar = new EventEmitter<void>();
+  @Output() guardado = new EventEmitter<Servicio>();
+
   @ViewChild('mapaPin') mapaContenedor?: ElementRef<HTMLDivElement>;
   private map?: L.Map;
   private marker?: L.Marker;
@@ -50,6 +68,8 @@ export class ServicioForm implements OnInit, AfterViewInit, OnDestroy {
   clientes = signal<Cliente[]>([]);
   rutas = signal<Ruta[]>([]);
   cargandoOpciones = signal(true);
+  private ultimosOrdenes = signal<Map<number, number>>(new Map());
+  private subRuta?: Subscription;
 
   readonly prioridades: Prioridad[] = ['ALTA', 'MEDIA', 'BAJA'];
   readonly tiposResiduo: TipoResiduo[] = ['GENERAL', 'RECICLABLE'];
@@ -81,12 +101,18 @@ export class ServicioForm implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit() {
     this.configurarAutocompletado();
+    this.configurarOrdenAutomatico();
     this.cargarOpciones();
 
-    const idParam = this.route.snapshot.paramMap.get('id');
-    if (!idParam) return;
+    const idParam = this.embebido
+      ? this.servicioId
+      : this.route.snapshot.paramMap.get('id')
+        ? Number(this.route.snapshot.paramMap.get('id'))
+        : null;
 
-    this.id = Number(idParam);
+    if (idParam === null) return;
+
+    this.id = idParam;
     this.form.controls.idCliente.disable();
 
     this.serviciosService.getById(this.id).subscribe({
@@ -118,6 +144,7 @@ export class ServicioForm implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.subBusqueda?.unsubscribe();
+    this.subRuta?.unsubscribe();
     this.map?.remove();
   }
 
@@ -133,6 +160,7 @@ export class ServicioForm implements OnInit, AfterViewInit, OnDestroy {
     this.map = L.map(this.mapaContenedor.nativeElement, {
       center: tieneCoords ? [lat!, lon!] : this.CENTRO_MDP,
       zoom: tieneCoords ? 16 : 12,
+      scrollWheelZoom: !this.embebido,
     });
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -239,21 +267,59 @@ export class ServicioForm implements OnInit, AfterViewInit, OnDestroy {
       });
   }
 
+  private configurarOrdenAutomatico() {
+    this.subRuta = this.form.controls.idRuta.valueChanges.subscribe((idRuta) => {
+      if (this.esEdicion) return;
+      this.form.controls.orden.setValue(idRuta > 0 ? this.siguienteOrden(idRuta) : 0);
+    });
+  }
+
+  private siguienteOrden(idRuta: number): number {
+    return (this.ultimosOrdenes().get(idRuta) ?? 0) + 1;
+  }
+
+  private actualizarOrdenAutomatico() {
+    if (this.esEdicion) return;
+
+    const idRuta = this.form.controls.idRuta.value;
+    if (idRuta > 0) {
+      this.form.controls.orden.setValue(this.siguienteOrden(idRuta));
+    }
+  }
+
+  private calcularUltimosOrdenes(servicios: Servicio[]) {
+    const ultimos = new Map<number, number>();
+
+    for (const servicio of servicios) {
+      if (!servicio.idRuta) continue;
+
+      const actual = ultimos.get(servicio.idRuta) ?? 0;
+      if (servicio.orden > actual) {
+        ultimos.set(servicio.idRuta, servicio.orden);
+      }
+    }
+
+    this.ultimosOrdenes.set(ultimos);
+  }
+
   private cargarOpciones() {
     this.cargandoOpciones.set(true);
 
     forkJoin({
       clientes: this.clienteService.obtenerClientes(),
       rutas: this.rutasService.getAll(),
+      servicios: this.serviciosService.getAll(),
     }).subscribe({
-      next: ({ clientes, rutas }) => {
+      next: ({ clientes, rutas, servicios }) => {
         this.clientes.set([...clientes].sort((a, b) => a.razonSocial.localeCompare(b.razonSocial)));
         this.rutas.set([...rutas].sort((a, b) => a.nombre.localeCompare(b.nombre)));
+        this.calcularUltimosOrdenes(servicios);
+        this.actualizarOrdenAutomatico();
         this.cargandoOpciones.set(false);
       },
       error: (err: HttpErrorResponse) => {
         this.cargandoOpciones.set(false);
-        this.error.set(mensajeError(err, 'cargar los clientes y las rutas'));
+        this.error.set(mensajeError(err, 'cargar las opciones del formulario'));
       },
     });
   }
@@ -308,10 +374,17 @@ export class ServicioForm implements OnInit, AfterViewInit, OnDestroy {
       ? this.serviciosService.actualizar(this.id!, body)
       : this.serviciosService.crear(body);
 
-peticion.subscribe({
-      next: () => {
+    peticion.subscribe({
+      next: (servicio) => {
+        this.guardando.set(false);
+
+        if (this.embebido) {
+          this.guardado.emit(servicio);
+          return;
+        }
+
         this.alertService.toastExito(
-          this.esEdicion ? 'Servicio actualizado correctamente' : 'Servicio creado correctamente'
+          this.esEdicion ? 'Servicio actualizado correctamente' : 'Servicio creado correctamente',
         );
         this.router.navigate(['/servicios']);
       },
@@ -331,5 +404,9 @@ peticion.subscribe({
         }
       },
     });
+  }
+
+  cancelar(): void {
+    if (this.embebido) this.cerrar.emit();
   }
 }

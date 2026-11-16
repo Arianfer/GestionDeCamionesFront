@@ -1,9 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
-import { ClienteRequest } from '../../../shared/models/cliente.model';
+import { Cliente, ClienteRequest } from '../../../shared/models/cliente.model';
 import { ClienteService } from '../cliente.service';
 
 @Component({
@@ -18,38 +18,54 @@ export class ClienteForm implements OnInit {
   private readonly router = inject(Router);
   private readonly clienteService = inject(ClienteService);
 
-  /** Si hay id en la URL (/clientes/:id/editar) estamos editando; si no, creando. */
-  private readonly id: number | null = (() => {
-    const param = this.route.snapshot.paramMap.get('id');
-    return param ? Number(param) : null;
-  })();
+  // Uso embebido (drawer): id recibido por input y eventos en lugar de navegación.
+  @Input() clienteId: number | null = null;
+  @Input() embebido = false;
+  @Output() cerrar = new EventEmitter<void>();
+  @Output() guardado = new EventEmitter<Cliente>();
 
-  readonly esEdicion = this.id !== null;
+  // null = alta, número = edición.
+  id: number | null = null;
+
   readonly cargando = signal(false);
   readonly guardando = signal(false);
   readonly error = signal<string | null>(null);
 
   // Mismas reglas que ClienteRequestDTO del back: CUIT de 11 números y razón social obligatoria.
   readonly form = this.fb.nonNullable.group({
-    cuit: ['', [Validators.required, Validators.pattern(/^\d{11}$/)]],
     razonSocial: ['', [Validators.required, Validators.pattern(/.*\S.*/)]],
+    cuit: ['', [Validators.required, Validators.pattern(/^\d{11}$/)]],
   });
-
-  get cuit() {
-    return this.form.controls.cuit;
-  }
 
   get razonSocial() {
     return this.form.controls.razonSocial;
   }
 
-  ngOnInit(): void {
-    if (this.id === null) return;
+  get cuit() {
+    return this.form.controls.cuit;
+  }
 
+  get esEdicion(): boolean {
+    return this.id !== null;
+  }
+
+  ngOnInit(): void {
+    const idParam = this.embebido
+      ? this.clienteId
+      : this.route.snapshot.paramMap.get('id')
+        ? Number(this.route.snapshot.paramMap.get('id'))
+        : null;
+
+    if (idParam === null) return;
+
+    this.id = idParam;
     this.cargando.set(true);
     this.clienteService.obtenerClientePorId(this.id).subscribe({
       next: (cliente) => {
-        this.form.patchValue({ cuit: cliente.cuit, razonSocial: cliente.razonSocial });
+        this.form.patchValue({
+          cuit: cliente.cuit,
+          razonSocial: cliente.razonSocial,
+        });
         this.cargando.set(false);
       },
       error: () => {
@@ -85,12 +101,23 @@ export class ClienteForm implements OnInit {
         : this.clienteService.actualizarCliente(this.id, datos);
 
     peticion.subscribe({
-      next: () => this.router.navigate(['/clientes']),
+      next: (cliente) => {
+        if (this.embebido) {
+          this.guardando.set(false);
+          this.guardado.emit(cliente);
+        } else {
+          this.router.navigate(['/clientes']);
+        }
+      },
       error: (err: HttpErrorResponse) => {
         this.guardando.set(false);
         this.manejarError(err);
       },
     });
+  }
+
+  cancelar(): void {
+    if (this.embebido) this.cerrar.emit();
   }
 
   private manejarError(err: HttpErrorResponse): void {
@@ -118,7 +145,7 @@ export class ClienteForm implements OnInit {
     if (err.status === 0) {
       this.error.set('No se pudo conectar con el servidor.');
     } else if (err.status === 500) {
-      // El back lanza RuntimeException sin manejador cuando el CUIT o la razón social ya existen.
+      // El back lanza RuntimeException cuando el CUIT o la razón social ya existen.
       this.error.set('No se pudo guardar. Verificá que el CUIT y la razón social no estén repetidos.');
     } else {
       this.error.set('Ocurrió un error inesperado. Probá de nuevo.');

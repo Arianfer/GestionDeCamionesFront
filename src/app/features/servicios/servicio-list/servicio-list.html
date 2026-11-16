@@ -1,77 +1,202 @@
-<header class="encabezado">
-  <div>
-    <h1>Servicios</h1>
-    <p class="subtitulo">Puntos de recolección de cada cliente</p>
-  </div>
-  <a routerLink="/servicios/nuevo" class="btn btn-primario">+ Nuevo servicio</a>
-</header>
+<div class="servicios">
+  <header class="servicios-encabezado">
+    <div class="servicios-titulo">
+      <h1>Catálogo de Servicios</h1>
+      <p class="subtitulo">
+        Seleccioná un servicio para consultar su cliente, ruta, frecuencia y ubicación exacta.
+      </p>
+    </div>
 
-<div class="filtros">
-  <select #selRuta (change)="cambiarFiltro(selRuta.value)">
-    <option value="">Todas las rutas</option>
-    @for (r of rutas(); track r.idRuta) {
-      <option [value]="r.idRuta">{{ r.nombre }}</option>
-    }
-  </select>
+    <div class="servicios-acciones">
+      <div class="filtro filtro-busqueda">
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
+        <input
+          #q
+          type="search"
+          placeholder="Buscar servicio, cliente o dirección..."
+          aria-label="Buscar servicios"
+          [value]="filtro()"
+          (input)="filtro.set(q.value)"
+        />
+      </div>
+
+      <select
+        #rutaSel
+        class="filtro-select"
+        aria-label="Filtrar por ruta"
+        [value]="filtroRuta() ?? ''"
+        (change)="cambiarFiltroRuta(rutaSel.value)"
+      >
+        <option value="">Todas las rutas</option>
+        @for (r of rutas(); track r.idRuta) {
+          <option [value]="r.idRuta">{{ r.nombre }}</option>
+        }
+      </select>
+
+      @if (filtro() || filtroRuta() !== null) {
+        <button
+          type="button"
+          class="btn-limpiar"
+          (click)="limpiarFiltros()"
+          aria-label="Limpiar filtros"
+          title="Limpiar filtros"
+        >
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
+        </button>
+      }
+
+      <button type="button" class="btn btn-primario" (click)="abrirNuevo()">
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
+        </svg>
+        <span>Nuevo Servicio</span>
+      </button>
+    </div>
+  </header>
+
+  @if (error()) {
+    <p class="alerta" role="alert">
+      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+        <path d="M12 9v4" />
+        <path d="M12 17h.01" />
+      </svg>
+      <span>{{ error() }}</span>
+    </p>
+  }
+
+  @if (cargando()) {
+    <div class="servicios-layout">
+      <div class="master-lista" aria-label="Cargando servicios">
+        @for (_ of [1, 2, 3, 4, 5]; track $index) {
+          <div class="cargando-item"></div>
+        }
+      </div>
+      <div class="detalle-panel detalle-cargando">
+        <div class="detalle-vacio">
+          <span class="estado-icono" aria-hidden="true">
+            <svg class="icono" viewBox="0 0 24 24">
+              <path d="M20 10c0 4.99-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 14.99 4 10a8 8 0 0 1 16 0Z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+          </span>
+          <h2>Cargando servicios</h2>
+          <p>Estamos preparando el listado y la ficha de ubicación.</p>
+        </div>
+      </div>
+    </div>
+  } @else if (serviciosFiltrados().length === 0) {
+    <div class="estado-vacio">
+      <span class="estado-icono" aria-hidden="true">
+        <svg class="icono" viewBox="0 0 24 24">
+          <path d="M20 10c0 4.99-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 14.99 4 10a8 8 0 0 1 16 0Z" />
+          <circle cx="12" cy="10" r="3" />
+        </svg>
+      </span>
+
+      @if (servicios().length === 0) {
+        <h2>Todavía no hay servicios</h2>
+        <p>Cargá el primer punto de recolección para empezar a organizar las rutas.</p>
+        <button type="button" class="btn btn-primario" (click)="abrirNuevo()">
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 12h14" />
+            <path d="M12 5v14" />
+          </svg>
+          <span>Crear primer servicio</span>
+        </button>
+      } @else {
+        <h2>No hay servicios para mostrar</h2>
+        <p>Probá con otro término de búsqueda o cambiá la ruta seleccionada.</p>
+        <button type="button" class="btn btn-secundario" (click)="limpiarFiltros()">
+          Limpiar filtros
+        </button>
+      }
+    </div>
+  } @else {
+    <div class="servicios-layout">
+      <section class="master-lista" aria-label="Listado de servicios">
+        @for (s of serviciosFiltrados(); track s.id) {
+          <button
+            type="button"
+            class="servicio-card"
+            [class.activa]="esSeleccionado(s)"
+            (click)="seleccionar(s)"
+          >
+            <span class="servicio-card-fila">
+              <span class="servicio-codigo">SRV-{{ s.id }}</span>
+              <span class="prioridad-badge" [attr.data-prioridad]="s.prioridad">
+                {{ etiquetasPrioridad[s.prioridad] }}
+              </span>
+            </span>
+
+            <span class="servicio-card-nombre">{{ s.nombre }}</span>
+
+            <span class="servicio-card-direccion">
+              <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M20 10c0 4.99-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 14.99 4 10a8 8 0 0 1 16 0Z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+              <span class="direccion-texto">{{ s.direccion }}</span>
+            </span>
+
+            <span class="servicio-card-pie">
+              <span class="meta-item">
+                <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 21h18" />
+                  <path d="M5 21V7l8-4v18" />
+                  <path d="M19 21V11l-6-4" />
+                </svg>
+                <span class="meta-texto">{{ clienteDe(s) }}</span>
+              </span>
+              <span class="servicio-parada">#{{ s.orden }}</span>
+            </span>
+          </button>
+        }
+      </section>
+
+      @if (servicioSeleccionado(); as s) {
+        <app-servicio-detalle
+          class="detalle-panel"
+          [servicio]="s"
+          [clienteNombre]="clienteDe(s)"
+          [rutaNombre]="rutaDe(s)"
+          [eliminando]="eliminandoId() === s.id"
+          (editar)="abrirEditar($event)"
+          (eliminar)="eliminar($event)"
+        />
+      } @else {
+        <div class="detalle-panel detalle-vacio-panel">
+          <div class="detalle-vacio">
+            <span class="estado-icono" aria-hidden="true">
+              <svg class="icono" viewBox="0 0 24 24">
+                <path d="M20 10c0 4.99-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 14.99 4 10a8 8 0 0 1 16 0Z" />
+                <circle cx="12" cy="10" r="3" />
+              </svg>
+            </span>
+            <h2>Elegí un servicio</h2>
+            <p>Seleccioná un punto del listado para ver todos sus atributos y su ubicación.</p>
+          </div>
+        </div>
+      }
+    </div>
+  }
 </div>
 
-@if (error()) {
-  <p class="alerta" role="alert">{{ error() }}</p>
-}
-
-@if (cargando()) {
-  <p class="estado">Cargando servicios…</p>
-} @else if (serviciosFiltrados().length === 0) {
-  @if (!error()) {
-    <p class="estado">No hay servicios para mostrar.</p>
-  }
-} @else {
-  <div class="tabla-contenedor">
-    <table>
-      <thead>
-        <tr>
-          <th>Orden</th>
-          <th>Servicio</th>
-          <th>Cliente</th>
-          <th>Ruta</th>
-          <th>Residuo</th>
-          <th>Prioridad</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (s of serviciosFiltrados(); track s.id) {
-          <tr>
-            <td>{{ s.orden }}</td>
-            <td class="celda-doble">
-              <span>{{ s.nombre }}</span>
-              <span class="secundario">{{ s.direccion }}</span>
-            </td>
-            <td>{{ clienteDe(s) }}</td>
-            <td>{{ rutaDe(s) }}</td>
-            <td class="celda-doble">
-              <span>{{ s.tipoResiduo }}</span>
-              <span class="secundario">{{ s.frecuencia }}</span>
-            </td>
-            <td>
-              <span class="badge" [class]="'badge badge-' + s.prioridad.toLowerCase()">
-                {{ s.prioridad }}
-              </span>
-            </td>
-            <td class="acciones">
-              <a class="btn-enlace" [routerLink]="['/servicios', s.id, 'editar']">Editar</a>
-              <button
-                type="button"
-                class="btn-enlace btn-enlace-peligro"
-                (click)="eliminar(s)"
-                [disabled]="eliminandoId() === s.id"
-              >
-                {{ eliminandoId() === s.id ? 'Eliminando…' : 'Eliminar' }}
-              </button>
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+@if (drawerAbierto()) {
+  <div class="drawer-backdrop" (click)="cerrarDrawer()" aria-hidden="true"></div>
+  <aside class="drawer" role="dialog" aria-modal="true" aria-label="Formulario de servicio">
+    <app-servicio-form
+      [servicioId]="servicioEditandoId()"
+      [embebido]="true"
+      (cerrar)="cerrarDrawer()"
+      (guardado)="alGuardar($event)"
+    />
+  </aside>
 }

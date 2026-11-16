@@ -1,48 +1,60 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import { Cliente } from '../../../shared/models/cliente.model';
 import { CuitPipe } from '../../../shared/pipes/cuit.pipe';
+import { ClienteForm } from '../cliente-form/cliente-form';
 import { ClienteService } from '../cliente.service';
 
 @Component({
   selector: 'app-cliente-list',
-  imports: [RouterLink, CuitPipe],
+  imports: [CuitPipe, ClienteForm],
   templateUrl: './cliente-list.html',
   styleUrl: './cliente-list.css',
 })
 export class ClienteList implements OnInit {
   private readonly clienteService = inject(ClienteService);
-  private readonly clientes = signal<Cliente[]>([]);
-  private readonly filtro = signal('');
-  private readonly cargando = signal(true);
-  private readonly error = signal<string | null>(null);
-  private readonly eliminandoId = signal<number | null>(null);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
 
-  /** Filtra por ID exacto, CUIT (con o sin guiones) o razón social. */
-  private readonly filtrados = computed(() => {
+  readonly clientes = signal<Cliente[]>([]);
+  readonly filtro = signal('');
+  readonly cargando = signal(true);
+  readonly error = signal<string | null>(null);
+  readonly eliminandoId = signal<number | null>(null);
+  readonly drawerAbierto = signal(false);
+  readonly clienteEditandoId = signal<number | null>(null);
+
+  readonly filtrados = computed(() => {
     const q = this.filtro().trim().toLowerCase();
     if (!q) return this.clientes();
+
     const qDigitos = q.replace(/\D/g, '');
     return this.clientes().filter(
       (c) =>
         String(c.id) === q ||
+        `cli-${c.id}` === q ||
         c.razonSocial.toLowerCase().includes(q) ||
-        (qDigitos.length > 0 && c.cuit.includes(qDigitos)),
+        (qDigitos.length > 0 && c.cuit.replace(/\D/g, '').includes(qDigitos)),
     );
   });
 
   ngOnInit(): void {
-    this.cargarCliente();
+    this.cargarClientes();
+
+    if (this.route.snapshot.queryParamMap.get('nuevo') === '1') {
+      this.abrirNuevo();
+      this.router.navigate(['/clientes'], { replaceUrl: true });
+    }
   }
 
-  cargarCliente(): void {
+  cargarClientes(): void {
     this.cargando.set(true);
     this.error.set(null);
     this.clienteService.obtenerClientes().subscribe({
       next: (clientes) => {
-        this.clientes.set(clientes);
+        this.clientes.set(this.ordenar(clientes));
         this.cargando.set(false);
       },
       error: (err: HttpErrorResponse) => {
@@ -56,6 +68,32 @@ export class ClienteList implements OnInit {
     });
   }
 
+  abrirNuevo(): void {
+    this.clienteEditandoId.set(null);
+    this.drawerAbierto.set(true);
+  }
+
+  abrirEditar(cliente: Cliente): void {
+    this.clienteEditandoId.set(cliente.id);
+    this.drawerAbierto.set(true);
+  }
+
+  cerrarDrawer(): void {
+    this.drawerAbierto.set(false);
+    this.clienteEditandoId.set(null);
+  }
+
+  alGuardar(cliente: Cliente): void {
+    this.cerrarDrawer();
+    this.clientes.update((lista) => {
+      const existe = lista.some((c) => c.id === cliente.id);
+      const actualizada = existe
+        ? lista.map((c) => (c.id === cliente.id ? cliente : c))
+        : [...lista, cliente];
+      return this.ordenar(actualizada);
+    });
+  }
+
   eliminarCliente(cliente: Cliente): void {
     // TODO: reemplazar por el confirm-dialog de shared/ cuando exista.
     if (!confirm(`¿Eliminar al cliente "${cliente.razonSocial}"?`)) return;
@@ -65,6 +103,7 @@ export class ClienteList implements OnInit {
     this.clienteService.eliminar(cliente.id).subscribe({
       next: () => {
         this.clientes.update((lista) => lista.filter((c) => c.id !== cliente.id));
+        if (this.clienteEditandoId() === cliente.id) this.cerrarDrawer();
         this.eliminandoId.set(null);
       },
       error: (err: HttpErrorResponse) => {
@@ -77,5 +116,9 @@ export class ClienteList implements OnInit {
         );
       },
     });
+  }
+
+  private ordenar(clientes: Cliente[]): Cliente[] {
+    return [...clientes].sort((a, b) => a.razonSocial.localeCompare(b.razonSocial, 'es'));
   }
 }

@@ -1,73 +1,189 @@
-<section class="pagina">
-  <header class="encabezado">
-    <div>
-      <h1>Camiones</h1>
-      <p class="subtitulo">{{ filtrados().length }} de {{ camiones().length }} camiones</p>
+<div class="camiones">
+  <header class="camiones-encabezado">
+    <div class="camiones-titulo">
+      <h1>Flota de Camiones</h1>
+      <p class="subtitulo">
+        Control de dominios, capacidad de carga, consumo de diésel por km y estado operativo.
+      </p>
+    </div>
+
+    <div class="camiones-acciones">
+      <div class="filtro filtro-busqueda">
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
+        <input
+          #q
+          type="search"
+          placeholder="Buscar patente o tipo..."
+          aria-label="Buscar camiones por patente, tipo o estado"
+          [value]="filtro()"
+          (input)="filtro.set(q.value)"
+        />
+      </div>
+
+      <select
+        #estadoSel
+        class="filtro-select"
+        aria-label="Filtrar por estado"
+        [value]="estadoFiltro()"
+        (change)="cambiarEstadoFiltro(estadoSel.value)"
+      >
+        <option value="">Todos los estados</option>
+        @for (e of estados; track e.valor) {
+          <option [value]="e.valor">{{ e.etiqueta }}</option>
+        }
+      </select>
+
+      <button type="button" class="btn btn-primario" (click)="abrirNuevo()">
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
+        </svg>
+        <span>Nuevo Camión</span>
+      </button>
     </div>
   </header>
 
-  <div class="barra">
-    <input
-      #q
-      type="search"
-      placeholder="Buscar por ID o patente"
-      aria-label="Buscar camiones por ID o patente"
-      [value]="filtro()"
-      (input)="filtro.set(q.value)"
-    />
-    <select
-      #estadoSel
-      aria-label="Filtrar por estado"
-      [value]="estadoFiltro()"
-      (change)="cambiarEstadoFiltro(estadoSel.value)"
-    >
-      <option value="">Todos los estados</option>
-      @for (e of estados; track e.valor) {
-        <option [value]="e.valor">{{ e.etiqueta }}</option>
-      }
-    </select>
-  </div>
-
   @if (error()) {
-    <p class="alerta" role="alert">{{ error() }}</p>
+    <p class="alerta" role="alert">
+      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+        <path d="M12 9v4" />
+        <path d="M12 17h.01" />
+      </svg>
+      <span>{{ error() }}</span>
+    </p>
   }
 
   @if (cargando()) {
-    <p class="estado">Cargando camiones…</p>
-  } @else if (filtrados().length === 0) {
-    <p class="estado">
-      @if (camiones().length === 0) {
-        Todavía no hay camiones cargados.
-      } @else {
-        Ningún camión coincide con los filtros.
+    <div class="camiones-grid" aria-label="Cargando camiones">
+      @for (_ of [1, 2, 3, 4, 5, 6]; track $index) {
+        <div class="cargando-item"></div>
       }
-    </p>
+    </div>
+  } @else if (filtrados().length === 0) {
+    <div class="estado-vacio">
+      <span class="estado-icono" aria-hidden="true">
+        <svg class="icono" viewBox="0 0 24 24">
+          <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" />
+          <path d="M15 18H9" />
+          <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.62l-3.48-4.35A1 1 0 0 0 17.52 8H14" />
+          <circle cx="17" cy="18" r="2" />
+          <circle cx="7" cy="18" r="2" />
+        </svg>
+      </span>
+
+      @if (camiones().length === 0) {
+        <h2>Todavía no hay camiones</h2>
+        <p>Agregá la primera unidad para empezar a organizar la flota.</p>
+        <button type="button" class="btn btn-primario" (click)="abrirNuevo()">
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 12h14" />
+            <path d="M12 5v14" />
+          </svg>
+          <span>Crear primer camión</span>
+        </button>
+      } @else {
+        <h2>No hay camiones para mostrar</h2>
+        <p>Probá con otra patente, tipo o estado operativo.</p>
+        <button
+          type="button"
+          class="btn btn-secundario"
+          (click)="filtro.set(''); estadoFiltro.set('')"
+        >
+          Limpiar filtros
+        </button>
+      }
+    </div>
   } @else {
-    <div class="tabla-contenedor">
-      <table>
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Patente</th>
-            <th>Tipo</th>
-            <th>Estado</th>
-            <th class="numero">Capacidad de carga</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (c of filtrados(); track c.id) {
-            <tr>
-              <td>{{ c.id }}</td>
-              <td>{{ c.patente | patente }}</td>
-              <td>{{ etiquetaTipo(c.tipo) }}</td>
-              <td>
-                <span class="badge" [attr.data-estado]="c.estadoCamion">{{ etiquetaEstado(c.estadoCamion) }}</span>
-              </td>
-              <td class="numero">{{ c.capacidadCarga }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
+    <div class="camiones-grid" aria-label="Flota de camiones">
+      @for (c of filtrados(); track c.id) {
+        <article class="camion-card">
+          <div>
+            <div class="camion-card-fila">
+              <span class="camion-patente">{{ c.patente | patente }}</span>
+              <span class="camion-estado" [attr.data-estado]="c.estadoCamion">
+                {{ etiquetaEstado(c.estadoCamion) }}
+              </span>
+            </div>
+
+            <h3>{{ etiquetaTipo(c.tipo) }}</h3>
+
+            <div class="camion-capacidad">
+              <span>Capacidad de carga:</span>
+              <strong>{{ c.capacidadCarga }} kg</strong>
+            </div>
+
+            <div class="camion-consumo">
+              <span class="camion-consumo-etiqueta">
+                <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 22h12" />
+                  <path d="M4 9h10" />
+                  <path d="M6 22V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v18" />
+                  <path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V9.83a2 2 0 0 0-.59-1.42L18 5" />
+                </svg>
+                Consumo de diésel por km
+              </span>
+              <span class="camion-consumo-valor">
+                @if (c.consumoDieselPorKm !== null) {
+                  {{ c.consumoDieselPorKm }} <small>L/km</small>
+                } @else {
+                  Sin dato
+                }
+              </span>
+            </div>
+          </div>
+
+          <div class="camion-card-pie">
+            <span class="camion-codigo">CAM-{{ c.id }}</span>
+            <div class="camion-card-acciones">
+              <button
+                type="button"
+                class="btn-icono"
+                (click)="abrirEditar(c)"
+                title="Editar"
+                aria-label="Editar camión"
+              >
+                <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                </svg>
+              </button>
+
+              <button
+                type="button"
+                class="btn-icono btn-icono-peligro"
+                [disabled]="eliminandoId() === c.id"
+                (click)="eliminar(c)"
+                title="Eliminar"
+                aria-label="Eliminar camión"
+              >
+                <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M3 6h18" />
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  <path d="m19 6-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                  <path d="M10 11v6" />
+                  <path d="M14 11v6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </article>
+      }
     </div>
   }
-</section>
+</div>
+
+@if (drawerAbierto()) {
+  <div class="drawer-backdrop" (click)="cerrarDrawer()" aria-hidden="true"></div>
+  <aside class="drawer" role="dialog" aria-modal="true" aria-label="Formulario de camión">
+    <app-camion-form
+      [camionId]="camionEditandoId()"
+      [embebido]="true"
+      (cerrar)="cerrarDrawer()"
+      (guardado)="alGuardar($event)"
+    />
+  </aside>
+}
