@@ -60,7 +60,9 @@
     <div class="campo">
       <label for="idCliente">Cliente</label>
       <select id="idCliente" formControlName="idCliente">
-        <option [ngValue]="0" disabled>Elegí un cliente</option>
+        <option [ngValue]="0" disabled>
+          {{ cargandoOpciones() ? 'Cargando clientes…' : 'Elegí un cliente' }}
+        </option>
         @for (c of clientes(); track c.id) {
           <option [ngValue]="c.id">{{ c.razonSocial }}</option>
         }
@@ -76,13 +78,18 @@
     <div class="campo">
       <label for="idRuta">Ruta</label>
       <select id="idRuta" formControlName="idRuta">
-        <option [ngValue]="0" disabled>Elegí una ruta</option>
+        <option [ngValue]="0" disabled>
+          {{ cargandoOpciones() ? 'Cargando rutas…' : 'Elegí una ruta' }}
+        </option>
         @for (r of rutas(); track r.idRuta) {
           <option [ngValue]="r.idRuta">{{ r.nombre }}</option>
         }
       </select>
       @if (form.controls.idRuta.touched && form.controls.idRuta.invalid) {
         <small class="error">Elegí una ruta.</small>
+      }
+      @if (!cargandoOpciones() && rutas().length === 0) {
+        <small class="ayuda">No hay rutas cargadas. Creá una desde la sección Rutas.</small>
       }
     </div>
   </div>

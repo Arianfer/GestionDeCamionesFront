@@ -13,6 +13,9 @@ import {
 } from '../../../shared/models/servicio.model';
 import { Cliente } from '../../../shared/models/cliente.model';
 import { Ruta } from '../../../shared/models/ruta.model';
+import { forkJoin } from 'rxjs';
+import { ClienteService } from '../../clientes/cliente.service';
+import { RutasService } from '../../rutas/rutas.service';
 
 @Component({
   selector: 'app-servicio-form',
@@ -26,6 +29,8 @@ export class ServicioForm implements OnInit {
   private router = inject(Router);
   private serviciosService = inject(ServiciosService);
   private georef = inject(GeorefService);
+  private clienteService = inject(ClienteService);
+  private rutasService = inject(RutasService);
 
   // null = alta, número = edición
   id: number | null = null;
@@ -34,9 +39,10 @@ export class ServicioForm implements OnInit {
   error = signal('');
   erroresBackend = signal<Record<string, string>>({});
 
-  // Se llenan desde la API en el paso 4 (SCRUM-111)
+    // Opciones de los desplegables, cargadas desde la API
   clientes = signal<Cliente[]>([]);
   rutas = signal<Ruta[]>([]);
+  cargandoOpciones = signal(true);
 
   // Mismos valores que los enums del backend
   readonly prioridades: Prioridad[] = ['ALTA', 'MEDIA', 'BAJA'];
@@ -67,6 +73,8 @@ export class ServicioForm implements OnInit {
   }
 
   ngOnInit() {
+    this.cargarOpciones();
+
     const idParam = this.route.snapshot.paramMap.get('id');
     if (!idParam) return;
 
@@ -89,6 +97,26 @@ export class ServicioForm implements OnInit {
           idRuta: s.idRuta,
         }),
       error: () => this.error.set('No se pudo cargar el servicio.'),
+    });
+  }
+
+  private cargarOpciones() {
+    this.cargandoOpciones.set(true);
+
+    forkJoin({
+      clientes: this.clienteService.obtenerClientes(),
+      rutas: this.rutasService.getAll(),
+    }).subscribe({
+      next: ({ clientes, rutas }) => {
+        // Orden alfabético para encontrar rápido en el desplegable
+        this.clientes.set([...clientes].sort((a, b) => a.razonSocial.localeCompare(b.razonSocial)));
+        this.rutas.set([...rutas].sort((a, b) => a.nombre.localeCompare(b.nombre)));
+        this.cargandoOpciones.set(false);
+      },
+      error: () => {
+        this.cargandoOpciones.set(false);
+        this.error.set('No se pudieron cargar los clientes y las rutas. Recargá la página.');
+      },
     });
   }
 
