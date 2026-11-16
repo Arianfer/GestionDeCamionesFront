@@ -273,7 +273,11 @@
         } @else {
           <div class="lista-resumen">
             @for (servicio of serviciosPrioritarios(); track servicio.id) {
-              <a class="servicio-resumen" [routerLink]="['/servicios', servicio.id, 'editar']">
+              <a
+                class="servicio-resumen"
+                routerLink="/servicios"
+                [queryParams]="{ editar: servicio.id }"
+              >
                 <div class="servicio-cabecera">
                   <span [class]="'prioridad prioridad-' + servicio.prioridad.toLowerCase()">
                     {{ etiquetaPrioridad(servicio.prioridad) }}

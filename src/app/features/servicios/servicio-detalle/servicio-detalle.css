@@ -1,0 +1,366 @@
+:host {
+  display: block;
+  color: var(--color-texto);
+  --servicio-tinte: color-mix(in srgb, var(--color-primario) 12%, var(--color-superficie));
+  --servicio-sombra: 0 1px 2px color-mix(in srgb, var(--color-texto) 6%, transparent);
+  --color-aviso: #b45309;
+  --color-aviso-fondo: #fff4e5;
+  --color-baja: #6b7280;
+}
+
+.icono {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.detalle-servicio {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 24px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 16px;
+  box-shadow: var(--servicio-sombra);
+}
+
+/* ---------- Encabezado ---------- */
+.detalle-encabezado {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.detalle-titulo {
+  min-width: 0;
+}
+
+.detalle-chips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.servicio-codigo {
+  padding: 3px 10px;
+  background: var(--color-primario);
+  border-radius: 8px;
+  color: var(--color-texto-claro);
+  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.prioridad-badge {
+  padding: 3px 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.prioridad-badge[data-prioridad='ALTA'] {
+  background: color-mix(in srgb, var(--color-error) 10%, var(--color-superficie));
+  color: var(--color-error);
+}
+
+.prioridad-badge[data-prioridad='MEDIA'] {
+  background: var(--color-aviso-fondo);
+  color: var(--color-aviso);
+}
+
+.prioridad-badge[data-prioridad='BAJA'] {
+  background: var(--color-fondo);
+  border-color: var(--color-borde);
+  color: var(--color-baja);
+}
+
+.frecuencia-chip {
+  padding: 3px 10px;
+  background: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  border-radius: 999px;
+  color: var(--color-texto);
+  font-size: 10.5px;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+.detalle-titulo h2 {
+  margin: 10px 0 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.detalle-direccion {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 7px 0 0;
+  color: var(--color-texto);
+  font-size: 12.5px;
+  line-height: 1.5;
+  opacity: 0.68;
+}
+
+.detalle-direccion .icono {
+  margin-top: 2px;
+  color: var(--color-primario-oscuro);
+  opacity: 1;
+}
+
+.detalle-acciones {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-accion {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--color-fondo);
+  border: 0;
+  border-radius: 12px;
+  color: var(--color-texto);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-accion:hover {
+  background: var(--color-primario);
+  color: var(--color-texto-claro);
+}
+
+.btn-accion .icono {
+  width: 13px;
+  height: 13px;
+}
+
+.btn-icono {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  background: var(--color-fondo);
+  border: 0;
+  border-radius: 12px;
+  color: var(--color-texto);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+
+.btn-icono:hover {
+  background: var(--color-primario);
+  color: var(--color-texto-claro);
+}
+
+.btn-icono-peligro:hover {
+  background: var(--color-error);
+  color: var(--color-texto-claro);
+}
+
+.btn-icono:disabled {
+  opacity: 0.4;
+  cursor: progress;
+}
+
+.btn-icono .icono {
+  width: 16px;
+  height: 16px;
+}
+
+.btn-accion:focus-visible,
+.btn-icono:focus-visible {
+  outline: 2px solid var(--color-primario);
+  outline-offset: 2px;
+}
+
+/* ---------- Datos ---------- */
+.detalle-datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  gap: 10px;
+}
+
+.dato {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  padding: 12px 14px;
+  background: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+}
+
+.dato-etiqueta {
+  color: var(--color-texto);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.52;
+}
+
+.dato-valor {
+  color: var(--color-texto);
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.dato-extra {
+  color: var(--color-texto);
+  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  opacity: 0.48;
+}
+
+.dato-coordenada {
+  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  font-size: 12.5px;
+}
+
+.dato-prioridad[data-prioridad='ALTA'] {
+  color: var(--color-error);
+}
+
+.dato-prioridad[data-prioridad='MEDIA'] {
+  color: var(--color-aviso);
+}
+
+.dato-prioridad[data-prioridad='BAJA'] {
+  color: var(--color-baja);
+}
+
+/* ---------- Mapa ---------- */
+.detalle-mapa-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  background: var(--color-fondo);
+  border: 1px solid var(--color-borde);
+  border-radius: 16px;
+}
+
+.mapa-encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mapa-titulo {
+  display: block;
+  color: var(--color-primario-oscuro);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.mapa-descripcion {
+  margin: 3px 0 0;
+  color: var(--color-texto);
+  font-size: 11.5px;
+  line-height: 1.45;
+  opacity: 0.58;
+}
+
+.mapa-coordenadas {
+  padding: 3px 9px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 999px;
+  color: var(--color-texto);
+  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0.75;
+}
+
+.detalle-mapa {
+  width: 100%;
+  height: 300px;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  background: var(--color-superficie);
+  z-index: 1;
+}
+
+@media (max-width: 1024px) {
+  .detalle-datos {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .detalle-servicio {
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .detalle-encabezado {
+    flex-direction: column;
+  }
+
+  .detalle-acciones {
+    width: 100%;
+  }
+
+  .btn-accion {
+    flex: 1;
+    justify-content: center;
+  }
+
+  .detalle-titulo h2 {
+    font-size: 19px;
+  }
+
+  .detalle-datos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .dato {
+    padding: 10px 11px;
+  }
+
+  .dato-valor {
+    font-size: 13px;
+  }
+
+  .mapa-coordenadas {
+    white-space: normal;
+  }
+
+  .detalle-mapa {
+    height: 240px;
+  }
+}

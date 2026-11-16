@@ -15,4 +15,5 @@ export interface CamionRequest {
   tipo: TipoCamion;
   estadoCamion: EstadoCamion;
   capacidadCarga: number;
+  consumoDieselPorKm?: number | null;
 }

@@ -1,198 +1,350 @@
-<h2>{{ esEdicion ? 'Editar servicio' : 'Nuevo servicio' }}</h2>
+<div class="servicio-form" [class.servicio-form--embebido]="embebido">
+  <header class="servicio-form-encabezado">
+    <div class="servicio-form-titulo">
+      <span class="servicio-form-icono" aria-hidden="true">
+        <svg class="icono" viewBox="0 0 24 24">
+          <path d="M20 10c0 4.99-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 14.99 4 10a8 8 0 0 1 16 0Z" />
+          <circle cx="12" cy="10" r="3" />
+        </svg>
+      </span>
+      <div>
+        <h1>{{ esEdicion ? 'Editar Servicio' : 'Nuevo Servicio' }}</h1>
+        <p class="subtitulo">
+          {{
+            esEdicion
+              ? 'Actualizá los datos y la ubicación del punto de recolección.'
+              : 'Completá los datos del nuevo punto de recolección.'
+          }}
+        </p>
+      </div>
+    </div>
 
-<form [formGroup]="form" (ngSubmit)="guardar()">
-  <!-- Nombre -->
-  <div class="campo">
-    <label for="nombre">Nombre del servicio</label>
-    <input id="nombre" type="text" formControlName="nombre" placeholder="Ej: Manolo Sucursal Alem" />
-    @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
-      <small class="error">El nombre es obligatorio.</small>
+    @if (embebido) {
+      <button
+        type="button"
+        class="btn-cerrar"
+        (click)="cancelar()"
+        aria-label="Cerrar formulario"
+      >
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M18 6 6 18" />
+          <path d="m6 6 12 12" />
+        </svg>
+      </button>
+    } @else {
+      <a routerLink="/servicios" class="btn btn-secundario">
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M19 12H5" />
+          <path d="m12 19-7-7 7-7" />
+        </svg>
+        <span>Volver a servicios</span>
+      </a>
     }
-    @if (erroresBackend()['nombre']) {
-      <small class="error">{{ erroresBackend()['nombre'] }}</small>
-    }
-  </div>
+  </header>
 
-  <!-- Dirección + Autocompletado -->
-  <div class="campo campo-autocompletado">
-    <label for="direccion">Dirección</label>
-    <div class="fila-busqueda">
-      <input
-        id="direccion"
-        type="text"
-        autocomplete="off"
-        formControlName="direccion"
-        placeholder="Ej: Alem 3800"
-        (input)="direccionEditada()"
-        (keydown.enter)="buscarDireccion($event)"
-      />
-      <button type="button" class="btn-secundario" (click)="buscarDireccion()" [disabled]="buscando()">
-        {{ buscando() ? 'Buscando…' : 'Buscar' }}
+  <form [formGroup]="form" (ngSubmit)="guardar()" class="form-panel" novalidate>
+    @if (error()) {
+      <p class="alerta" role="alert">
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+          <path d="M12 9v4" />
+          <path d="M12 17h.01" />
+        </svg>
+        <span>{{ error() }}</span>
+      </p>
+    }
+
+    <section class="form-seccion">
+      <div class="seccion-encabezado">
+        <span class="seccion-numero">01</span>
+        <div>
+          <h2>Datos generales</h2>
+          <p>Identificación del servicio y asignación operativa.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="campo campo-completo">
+          <label for="nombre">Nombre del servicio <span class="requerido">*</span></label>
+          <input
+            id="nombre"
+            type="text"
+            formControlName="nombre"
+            placeholder="Ej: Manolo Sucursal Alem"
+            [class.invalido]="form.controls.nombre.touched && form.controls.nombre.invalid"
+          />
+          @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
+            <small class="error">El nombre es obligatorio.</small>
+          }
+          @if (erroresBackend()['nombre']) {
+            <small class="error">{{ erroresBackend()['nombre'] }}</small>
+          }
+        </div>
+
+        <div class="campo campo-completo campo-autocompletado">
+          <label for="direccion">Dirección <span class="requerido">*</span></label>
+          <div class="fila-busqueda">
+            <input
+              id="direccion"
+              type="text"
+              autocomplete="off"
+              formControlName="direccion"
+              placeholder="Ej: Alem 3800"
+              [class.invalido]="
+                form.controls.direccion.touched && form.controls.direccion.invalid
+              "
+              (input)="direccionEditada()"
+              (keydown.enter)="buscarDireccion($event)"
+            />
+            <button
+              type="button"
+              class="btn btn-secundario"
+              (click)="buscarDireccion()"
+              [disabled]="buscando()"
+            >
+              <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.3-4.3" />
+              </svg>
+              <span>{{ buscando() ? 'Buscando...' : 'Buscar' }}</span>
+            </button>
+          </div>
+
+          @if (sugerencias().length > 0) {
+            <ul class="sugerencias">
+              @for (d of sugerencias(); track d.direccionFormateada + d.latitud) {
+                <li>
+                  <button type="button" (click)="elegirDireccion(d)">
+                    <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M20 10c0 4.99-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 14.99 4 10a8 8 0 0 1 16 0Z" />
+                      <circle cx="12" cy="10" r="3" />
+                    </svg>
+                    <span>{{ d.direccionFormateada }}</span>
+                  </button>
+                </li>
+              }
+            </ul>
+          }
+
+          @if (avisoDireccion()) {
+            <small class="error">{{ avisoDireccion() }}</small>
+          }
+          @if (erroresBackend()['direccion']) {
+            <small class="error">{{ erroresBackend()['direccion'] }}</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="idCliente">Cliente <span class="requerido">*</span></label>
+          <select
+            id="idCliente"
+            formControlName="idCliente"
+            [class.invalido]="
+              form.controls.idCliente.touched && form.controls.idCliente.invalid
+            "
+          >
+            <option [ngValue]="0" disabled>
+              {{ cargandoOpciones() ? 'Cargando clientes...' : 'Elegí un cliente' }}
+            </option>
+            @for (c of clientes(); track c.id) {
+              <option [ngValue]="c.id">{{ c.razonSocial }}</option>
+            }
+          </select>
+          @if (form.controls.idCliente.touched && form.controls.idCliente.invalid) {
+            <small class="error">Elegí un cliente.</small>
+          }
+          @if (esEdicion) {
+            <small class="ayuda">El cliente no se puede cambiar al editar.</small>
+          }
+          @if (erroresBackend()['idCliente']) {
+            <small class="error">{{ erroresBackend()['idCliente'] }}</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="idRuta">Ruta <span class="requerido">*</span></label>
+          <select
+            id="idRuta"
+            formControlName="idRuta"
+            [class.invalido]="form.controls.idRuta.touched && form.controls.idRuta.invalid"
+          >
+            <option [ngValue]="0" disabled>
+              {{ cargandoOpciones() ? 'Cargando rutas...' : 'Elegí una ruta' }}
+            </option>
+            @for (r of rutas(); track r.idRuta) {
+              <option [ngValue]="r.idRuta">{{ r.nombre }}</option>
+            }
+          </select>
+          @if (form.controls.idRuta.touched && form.controls.idRuta.invalid) {
+            <small class="error">Elegí una ruta.</small>
+          }
+          @if (!cargandoOpciones() && rutas().length === 0) {
+            <small class="ayuda">No hay rutas cargadas. Creá una desde la sección Rutas.</small>
+          }
+          @if (erroresBackend()['idRuta']) {
+            <small class="error">{{ erroresBackend()['idRuta'] }}</small>
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="form-seccion">
+      <div class="seccion-encabezado">
+        <span class="seccion-numero">02</span>
+        <div>
+          <h2>Ubicación del punto</h2>
+          <p>Buscá la dirección o marcá las coordenadas exactas sobre el mapa.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="campo">
+          <label for="latitud">Latitud <span class="requerido">*</span></label>
+          <input
+            id="latitud"
+            type="number"
+            step="0.000001"
+            formControlName="latitud"
+            placeholder="Ej: -38.0055"
+            [class.invalido]="
+              form.controls.latitud.touched && form.controls.latitud.invalid
+            "
+            (change)="onCoordenadasManuales()"
+          />
+          @if (erroresBackend()['latitud']) {
+            <small class="error">{{ erroresBackend()['latitud'] }}</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="longitud">Longitud <span class="requerido">*</span></label>
+          <input
+            id="longitud"
+            type="number"
+            step="0.000001"
+            formControlName="longitud"
+            placeholder="Ej: -57.5426"
+            [class.invalido]="
+              form.controls.longitud.touched && form.controls.longitud.invalid
+            "
+            (change)="onCoordenadasManuales()"
+          />
+          @if (erroresBackend()['longitud']) {
+            <small class="error">{{ erroresBackend()['longitud'] }}</small>
+          }
+        </div>
+
+        <div class="campo campo-completo">
+          <div class="mapa-header">
+            <span class="ayuda">
+              Hacé clic en el mapa o arrastrá el punto verde hasta la puerta o esquina exacta
+              del cliente.
+            </span>
+          </div>
+          <div #mapaPin class="mini-mapa"></div>
+          @if (
+            (form.controls.latitud.touched || form.controls.longitud.touched) &&
+            !tieneUbicacion()
+          ) {
+            <small class="error">Elegí una dirección o marcá el punto en el mapa.</small>
+          }
+          @if (erroresBackend()['latitud'] || erroresBackend()['longitud']) {
+            <small class="error">
+              {{ erroresBackend()['latitud'] || erroresBackend()['longitud'] }}
+            </small>
+          }
+        </div>
+      </div>
+    </section>
+
+    <section class="form-seccion">
+      <div class="seccion-encabezado">
+        <span class="seccion-numero">03</span>
+        <div>
+          <h2>Clasificación</h2>
+          <p>Prioridad, tipo de residuo y frecuencia de recolección.</p>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="campo">
+          <label for="prioridad">Prioridad</label>
+          <select id="prioridad" formControlName="prioridad">
+            @for (p of prioridades; track p) {
+              <option [ngValue]="p">{{ p }}</option>
+            }
+          </select>
+          @if (erroresBackend()['prioridad']) {
+            <small class="error">{{ erroresBackend()['prioridad'] }}</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="tipoResiduo">Tipo de residuo</label>
+          <select id="tipoResiduo" formControlName="tipoResiduo">
+            @for (t of tiposResiduo; track t) {
+              <option [ngValue]="t">{{ t }}</option>
+            }
+          </select>
+          @if (erroresBackend()['tipoResiduo']) {
+            <small class="error">{{ erroresBackend()['tipoResiduo'] }}</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="frecuencia">Frecuencia</label>
+          <select id="frecuencia" formControlName="frecuencia">
+            @for (f of frecuencias; track f) {
+              <option [ngValue]="f">{{ f }}</option>
+            }
+          </select>
+          @if (erroresBackend()['frecuencia']) {
+            <small class="error">{{ erroresBackend()['frecuencia'] }}</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="orden">Orden de visita</label>
+          <input
+            id="orden"
+            type="number"
+            min="0"
+            formControlName="orden"
+            [class.invalido]="form.controls.orden.touched && form.controls.orden.invalid"
+          />
+          @if (!esEdicion) {
+            <small class="ayuda">
+              @if (form.controls.idRuta.value > 0) {
+                Se asignó automáticamente después del último servicio de la ruta.
+              } @else {
+                Se calcula automáticamente al elegir una ruta.
+              }
+            </small>
+          }
+          @if (form.controls.orden.touched && form.controls.orden.invalid) {
+            <small class="error">El orden tiene que ser 0 o más.</small>
+          }
+          @if (erroresBackend()['orden']) {
+            <small class="error">{{ erroresBackend()['orden'] }}</small>
+          }
+        </div>
+      </div>
+    </section>
+
+    <div class="botones">
+      @if (embebido) {
+        <button type="button" class="btn btn-secundario" (click)="cancelar()">Cancelar</button>
+      } @else {
+        <a routerLink="/servicios" class="btn btn-secundario">Cancelar</a>
+      }
+      <button type="submit" class="btn btn-primario" [disabled]="guardando() || form.disabled">
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M20 6 9 17l-5-5" />
+        </svg>
+        <span>
+          {{ guardando() ? 'Guardando...' : esEdicion ? 'Guardar cambios' : 'Guardar servicio' }}
+        </span>
       </button>
     </div>
-
-    @if (sugerencias().length > 0) {
-      <ul class="sugerencias">
-        @for (d of sugerencias(); track d.direccionFormateada + d.latitud) {
-          <li>
-            <button type="button" (click)="elegirDireccion(d)">{{ d.direccionFormateada }}</button>
-          </li>
-        }
-      </ul>
-    }
-
-    @if (avisoDireccion()) {
-      <small class="error">{{ avisoDireccion() }}</small>
-    }
-    @if (erroresBackend()['direccion']) {
-      <small class="error">{{ erroresBackend()['direccion'] }}</small>
-    }
-  </div>
-
-  <!-- Coordenadas exactas + Mini-mapa arrastrable -->
-  <div class="fila">
-    <div class="campo">
-      <label for="latitud">Latitud</label>
-      <input
-        id="latitud"
-        type="number"
-        step="0.000001"
-        formControlName="latitud"
-        placeholder="Ej: -38.0055"
-        (change)="onCoordenadasManuales()"
-      />
-    </div>
-    <div class="campo">
-      <label for="longitud">Longitud</label>
-      <input
-        id="longitud"
-        type="number"
-        step="0.000001"
-        formControlName="longitud"
-        placeholder="Ej: -57.5426"
-        (change)="onCoordenadasManuales()"
-      />
-    </div>
-  </div>
-
-  <div class="campo">
-    <div class="mapa-header">
-      <span class="ayuda">
-        📍 Hacé clic en el mapa o <strong>arrastrá el punto verde</strong> hasta la puerta/esquina exacta del cliente.
-      </span>
-    </div>
-    <div #mapaPin class="mini-mapa"></div>
-    @if ((form.controls.latitud.touched || form.controls.longitud.touched) && !tieneUbicacion()) {
-      <small class="error">Elegí una dirección o marcá el punto en el mapa.</small>
-    }
-    @if (erroresBackend()['latitud'] || erroresBackend()['longitud']) {
-      <small class="error">{{ erroresBackend()['latitud'] || erroresBackend()['longitud'] }}</small>
-    }
-  </div>
-
-  <!-- Cliente y ruta -->
-  <div class="fila">
-    <div class="campo">
-      <label for="idCliente">Cliente</label>
-      <select id="idCliente" formControlName="idCliente">
-        <option [ngValue]="0" disabled>
-          {{ cargandoOpciones() ? 'Cargando clientes…' : 'Elegí un cliente' }}
-        </option>
-        @for (c of clientes(); track c.id) {
-          <option [ngValue]="c.id">{{ c.razonSocial }}</option>
-        }
-      </select>
-      @if (form.controls.idCliente.touched && form.controls.idCliente.invalid) {
-        <small class="error">Elegí un cliente.</small>
-      }
-      @if (esEdicion) {
-        <small class="ayuda">El cliente no se puede cambiar al editar.</small>
-      }
-      @if (erroresBackend()['idCliente']) {
-        <small class="error">{{ erroresBackend()['idCliente'] }}</small>
-      }
-    </div>
-
-    <div class="campo">
-      <label for="idRuta">Ruta</label>
-      <select id="idRuta" formControlName="idRuta">
-        <option [ngValue]="0" disabled>
-          {{ cargandoOpciones() ? 'Cargando rutas…' : 'Elegí una ruta' }}
-        </option>
-        @for (r of rutas(); track r.idRuta) {
-          <option [ngValue]="r.idRuta">{{ r.nombre }}</option>
-        }
-      </select>
-      @if (form.controls.idRuta.touched && form.controls.idRuta.invalid) {
-        <small class="error">Elegí una ruta.</small>
-      }
-      @if (!cargandoOpciones() && rutas().length === 0) {
-        <small class="ayuda">No hay rutas cargadas. Creá una desde la sección Rutas.</small>
-      }
-      @if (erroresBackend()['idRuta']) {
-        <small class="error">{{ erroresBackend()['idRuta'] }}</small>
-      }
-    </div>
-  </div>
-
-  <!-- Clasificación -->
-  <div class="fila">
-    <div class="campo">
-      <label for="prioridad">Prioridad</label>
-      <select id="prioridad" formControlName="prioridad">
-        @for (p of prioridades; track p) {
-          <option [ngValue]="p">{{ p }}</option>
-        }
-      </select>
-      @if (erroresBackend()['prioridad']) {
-        <small class="error">{{ erroresBackend()['prioridad'] }}</small>
-      }
-    </div>
-
-    <div class="campo">
-      <label for="tipoResiduo">Tipo de residuo</label>
-      <select id="tipoResiduo" formControlName="tipoResiduo">
-        @for (t of tiposResiduo; track t) {
-          <option [ngValue]="t">{{ t }}</option>
-        }
-      </select>
-      @if (erroresBackend()['tipoResiduo']) {
-        <small class="error">{{ erroresBackend()['tipoResiduo'] }}</small>
-      }
-    </div>
-
-    <div class="campo">
-      <label for="frecuencia">Frecuencia</label>
-      <select id="frecuencia" formControlName="frecuencia">
-        @for (f of frecuencias; track f) {
-          <option [ngValue]="f">{{ f }}</option>
-        }
-      </select>
-      @if (erroresBackend()['frecuencia']) {
-        <small class="error">{{ erroresBackend()['frecuencia'] }}</small>
-      }
-    </div>
-
-    <div class="campo">
-      <label for="orden">Orden de visita</label>
-      <input id="orden" type="number" min="0" formControlName="orden" />
-      @if (form.controls.orden.touched && form.controls.orden.invalid) {
-        <small class="error">El orden tiene que ser 0 o más.</small>
-      }
-      @if (erroresBackend()['orden']) {
-        <small class="error">{{ erroresBackend()['orden'] }}</small>
-      }
-    </div>
-  </div>
-
-  @if (error()) {
-    <p class="error">{{ error() }}</p>
-  }
-
-  <div class="botones">
-    <a routerLink="/servicios" class="btn-secundario">Cancelar</a>
-    <button type="submit" class="btn-primary" [disabled]="guardando() || form.disabled">
-      {{ guardando() ? 'Guardando...' : 'Guardar' }}
-    </button>
-  </div>
-</form>
+  </form>
+</div>
