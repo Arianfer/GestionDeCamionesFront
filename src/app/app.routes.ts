@@ -46,7 +46,7 @@ export const routes: Routes = [
         path: 'camiones',
         loadChildren: () =>
           import('./features/camiones/camiones.routes').then((m) => m.CAMIONES_ROUTES),
-        canActivate: [],
+        canActivate: [roleGuard],
         data: { roles: ['ADMIN', 'OFICINA'] },
       },
       {
