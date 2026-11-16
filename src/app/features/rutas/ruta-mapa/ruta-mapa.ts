@@ -171,7 +171,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         );
 
         this.rutaPolyline = L.polyline(latLngs, {
-          color: '#1a73e8',
+          color: '#2e7d32',
           weight: 5,
           opacity: 0.85
         }).addTo(this.map);
@@ -180,7 +180,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         if (!this.map) return;
         const fallback = paradas.map(p => [p.latitud, p.longitud] as [number, number]);
         this.rutaPolyline = L.polyline(fallback, {
-          color: '#1a73e8',
+          color: '#2e7d32',
           weight: 4,
           dashArray: '6, 6'
         }).addTo(this.map);

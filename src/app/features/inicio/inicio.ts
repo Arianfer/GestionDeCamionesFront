@@ -97,7 +97,7 @@ export class Inicio implements OnInit {
   readonly serviciosPrioritarios = computed(() =>
     [...this.servicios()]
       .sort((a, b) => PESO_PRIORIDAD[a.prioridad] - PESO_PRIORIDAD[b.prioridad] || a.orden - b.orden)
-      .slice(0, 4),
+      .slice(0, 3),
   );
 
   ngOnInit(): void {
@@ -148,6 +148,13 @@ export class Inicio implements OnInit {
 
   paradasDe(ruta: Ruta): number {
     return ruta.servicios?.length ?? 0;
+  }
+
+  resumenTrayecto(ruta: Ruta): string {
+    const servicios = [...(ruta.servicios ?? [])].sort((a, b) => a.orden - b.orden);
+    if (servicios.length === 0) return 'Sin paradas asignadas';
+    if (servicios.length === 1) return servicios[0].nombre;
+    return `${servicios[0].nombre} → ${servicios[servicios.length - 1].nombre}`;
   }
 
   formatearFecha(fecha: string | null): string {

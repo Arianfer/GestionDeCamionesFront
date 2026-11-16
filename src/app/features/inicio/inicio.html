@@ -33,6 +33,9 @@
     <path d="M5 12h14" />
     <path d="m12 5 7 7-7 7" />
   </symbol>
+  <symbol id="i-chevron" viewBox="0 0 24 24">
+    <path d="m9 18 6-6-6-6" />
+  </symbol>
   <symbol id="i-calendario" viewBox="0 0 24 24">
     <rect width="18" height="18" x="3" y="4" rx="2" />
     <path d="M16 2v4" />
@@ -70,10 +73,18 @@
 <div class="inicio">
   <header class="inicio-encabezado">
     <div class="inicio-presentacion">
-      <span class="inicio-rol">{{ rolUsuario() }}</span>
-      <h1>Hola, {{ nombreUsuario() }}</h1>
+      <span class="inicio-pill">
+        <span class="inicio-pill-punto" aria-hidden="true"></span>
+        <span>{{ rolUsuario() }}</span>
+      </span>
+      <h1>{{ puedeGestionar() ? 'Bienvenido, '+ nombreUsuario() : 'Mi jornada' }}</h1>
       <p class="subtitulo">
-        Resumen de rutas, flota, clientes y servicios de <strong>CIAGESER</strong>.
+        @if (puedeGestionar()) {
+          Resumen ejecutivo de rutas, disponibilidad de flota, clientes y servicios de
+          <strong>CIAGESER</strong>.
+        } @else {
+          Consultá tus paradas asignadas, el recorrido del día y el estado de tus tareas.
+        }
         @if (cargando()) {
           <span class="estado-carga">Actualizando indicadores…</span>
         }
@@ -82,7 +93,7 @@
 
     <div class="inicio-acciones">
       @if (puedeGestionar()) {
-        <a class="btn btn-primario" routerLink="/rutas/nuevo">
+        <a class="btn btn-primario" routerLink="/rutas" [queryParams]="{ nueva: 1 }">
           <svg class="icono" aria-hidden="true"><use href="#i-plus" /></svg>
           <span>Nueva ruta</span>
         </a>
@@ -110,7 +121,7 @@
       <a class="indicador" routerLink="/rutas">
         <div class="indicador-cabecera">
           <div>
-            <p class="indicador-etiqueta">Rutas</p>
+            <p class="indicador-etiqueta">Rutas activas</p>
             <p class="indicador-valor">{{ rutas().length }}</p>
           </div>
           <span class="indicador-icono" aria-hidden="true">
@@ -119,7 +130,10 @@
         </div>
         <div class="indicador-pie">
           <span class="indicador-detalle">{{ totalParadas() }} paradas</span>
-          <span class="enlace">Ver rutas</span>
+          <span class="enlace">
+            Ver rutas
+            <svg class="icono icono-xs" aria-hidden="true"><use href="#i-chevron" /></svg>
+          </span>
         </div>
       </a>
 
@@ -138,14 +152,17 @@
         </div>
         <div class="indicador-pie">
           <span class="indicador-detalle">{{ camionesEnRuta() }} en ruta</span>
-          <span class="enlace">Ver flota</span>
+          <span class="enlace">
+            Ver flota
+            <svg class="icono icono-xs" aria-hidden="true"><use href="#i-chevron" /></svg>
+          </span>
         </div>
       </a>
 
       <a class="indicador" routerLink="/clientes">
         <div class="indicador-cabecera">
           <div>
-            <p class="indicador-etiqueta">Clientes</p>
+            <p class="indicador-etiqueta">Clientes activos</p>
             <p class="indicador-valor">{{ clientes().length }}</p>
           </div>
           <span class="indicador-icono" aria-hidden="true">
@@ -154,7 +171,10 @@
         </div>
         <div class="indicador-pie">
           <span class="indicador-detalle">{{ usuariosActivos() }} usuarios activos</span>
-          <span class="enlace">Directorio</span>
+          <span class="enlace">
+            Directorio
+            <svg class="icono icono-xs" aria-hidden="true"><use href="#i-chevron" /></svg>
+          </span>
         </div>
       </a>
 
@@ -170,7 +190,10 @@
         </div>
         <div class="indicador-pie">
           <span class="indicador-detalle indicador-detalle-alerta">{{ serviciosAlta() }} prioridad alta</span>
-          <span class="enlace">Catálogo</span>
+          <span class="enlace">
+            Catálogo
+            <svg class="icono icono-xs" aria-hidden="true"><use href="#i-chevron" /></svg>
+          </span>
         </div>
       </a>
     </section>
@@ -180,11 +203,11 @@
         <header class="resumen-encabezado">
           <div class="resumen-titulo">
             <span class="resumen-icono" aria-hidden="true">
-              <svg class="icono"><use href="#i-ruta" /></svg>
+              <svg class="icono"><use href="#i-navegacion" /></svg>
             </span>
             <div>
-              <h2>Próximas rutas</h2>
-              <p class="subtitulo">Agenda operativa de los corredores asignados</p>
+              <h2>Rutas disponibles</h2>
+              <p class="subtitulo">Trayectos designados</p>
             </div>
           </div>
           <a class="btn-enlace" routerLink="/rutas">Ver todas</a>
@@ -207,24 +230,17 @@
                     <span class="ruta-codigo">RUT-{{ ruta.idRuta }}</span>
                     <span class="ruta-nombre">{{ ruta.nombre }}</span>
                   </div>
-                  <p class="ruta-descripcion">{{ ruta.descripcion || 'Sin descripción' }}</p>
-                  <div class="ruta-detalles">
-                    <span>
-                      <svg class="icono icono-sm" aria-hidden="true"><use href="#i-calendario" /></svg>
-                      {{ formatearFecha(ruta.fecha) }}
-                    </span>
-                    <span>
-                      <svg class="icono icono-sm" aria-hidden="true"><use href="#i-usuario" /></svg>
-                      {{ ruta.nombreChofer || 'Sin chofer' }}
-                    </span>
-                    <span>
-                      <svg class="icono icono-sm" aria-hidden="true"><use href="#i-ubicacion" /></svg>
-                      {{ paradasDe(ruta) }} paradas
-                    </span>
-                  </div>
+                  <p class="ruta-trayecto">
+                    <svg class="icono icono-sm" aria-hidden="true"><use href="#i-ubicacion" /></svg>
+                    <span>{{ resumenTrayecto(ruta) }}</span>
+                  </p>
+                </div>
+                <div class="ruta-meta">
+                  <span class="ruta-fecha">{{ formatearFecha(ruta.fecha) }}</span>
+                  <span class="ruta-paradas">{{ paradasDe(ruta) }} paradas</span>
                 </div>
                 <span class="ruta-flecha" aria-hidden="true">
-                  <svg class="icono icono-sm"><use href="#i-flecha" /></svg>
+                  <svg class="icono icono-xs"><use href="#i-chevron" /></svg>
                 </span>
               </a>
             }
@@ -240,7 +256,7 @@
             </span>
             <div>
               <h2>Servicios prioritarios</h2>
-              <p class="subtitulo">Puntos de recolección que requieren atención</p>
+              <p class="subtitulo">Puntos de recolección</p>
             </div>
           </div>
           <a class="btn-enlace" routerLink="/servicios">Ir a servicios</a>
@@ -263,7 +279,7 @@
                     {{ etiquetaPrioridad(servicio.prioridad) }}
                   </span>
                   <span class="servicio-direccion">
-                    <svg class="icono icono-sm" aria-hidden="true"><use href="#i-ubicacion" /></svg>
+                    <svg class="icono icono-xs" aria-hidden="true"><use href="#i-ubicacion" /></svg>
                     <span class="servicio-direccion-texto">{{ servicio.direccion }}</span>
                   </span>
                 </div>
@@ -293,7 +309,7 @@
               <strong>{{ camionesDisponibles() }}</strong>
               <span>Disponibles</span>
             </div>
-            <div class="flota-item">
+            <div class="flota-item flota-ruta">
               <strong>{{ camionesEnRuta() }}</strong>
               <span>En ruta</span>
             </div>

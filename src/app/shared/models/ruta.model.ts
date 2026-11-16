@@ -9,6 +9,9 @@ export interface Ruta {
   fecha: string | null;          // 'YYYY-MM-DD'
   idChofer: number;
   nombreChofer: string;
+  idCamion?: number | null;
+  patenteCamion?: string | null;
+  modeloCamion?: string | null;
 }
 
 /** Lo que se envía al crear (POST) o editar (PUT) */

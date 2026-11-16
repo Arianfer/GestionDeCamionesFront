@@ -1,9 +1,18 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RutasService } from '../rutas.service';
-import { RutaRequest } from '../../../shared/models/ruta.model';
+import { Ruta, RutaRequest } from '../../../shared/models/ruta.model';
 import { Servicio } from '../../../shared/models/servicio.model';
 import { Usuario } from '../../../shared/models/usuario.model';
 
@@ -18,6 +27,12 @@ export class RutaForm implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private rutasService = inject(RutasService);
+
+  // Uso embebido (drawer): id recibido por input y eventos en lugar de navegación
+  @Input() rutaId: number | null = null;
+  @Input() embebido = false;
+  @Output() cerrar = new EventEmitter<void>();
+  @Output() guardado = new EventEmitter<Ruta>();
 
   // null = alta, número = edición
   id: number | null = null;
@@ -56,9 +71,14 @@ export class RutaForm implements OnInit {
       error: () => this.error.set('No se pudieron cargar los choferes.'),
     });
 
-    const idParam = this.route.snapshot.paramMap.get('id');
-    if (idParam) {
-      this.id = Number(idParam);
+    const idParam = this.embebido
+      ? this.rutaId
+      : this.route.snapshot.paramMap.get('id')
+        ? Number(this.route.snapshot.paramMap.get('id'))
+        : null;
+
+    if (idParam !== null) {
+      this.id = idParam;
       this.rutasService.getById(this.id).subscribe({
         next: (r) => {
           this.form.patchValue({
@@ -100,7 +120,14 @@ export class RutaForm implements OnInit {
       : this.rutasService.crear(body);
 
     peticion.subscribe({
-      next: () => this.router.navigate(['/rutas']),
+      next: (r) => {
+        if (this.embebido) {
+          this.guardando.set(false);
+          this.guardado.emit(r);
+        } else {
+          this.router.navigate(['/rutas']);
+        }
+      },
       error: (err: HttpErrorResponse) => {
         this.guardando.set(false);
         if (err.status === 400 && err.error && typeof err.error === 'object') {
@@ -112,6 +139,12 @@ export class RutaForm implements OnInit {
         }
       },
     });
+  }
+
+  cancelar() {
+    if (this.embebido) {
+      this.cerrar.emit();
+    }
   }
 
   // ---- Reordenar servicios ----

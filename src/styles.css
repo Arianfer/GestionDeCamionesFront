@@ -19,7 +19,7 @@
 
 html, body {
   height: 100%;
-  font-family: system-ui, sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, sans-serif;
   background-color: var(--color-fondo);
   color: var(--color-texto);
 }
