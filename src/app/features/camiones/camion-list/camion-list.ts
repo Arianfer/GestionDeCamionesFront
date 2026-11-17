@@ -62,8 +62,15 @@ export class CamionList implements OnInit {
   ngOnInit(): void {
     this.cargar();
 
-    if (this.route.snapshot.queryParamMap.get('nuevo') === '1') {
+    const params = this.route.snapshot.queryParamMap;
+    const idEditar = Number(params.get('editar'));
+
+    if (params.get('nuevo') === '1') {
       this.abrirNuevo();
+      this.router.navigate(['/camiones'], { replaceUrl: true });
+    } else if (Number.isInteger(idEditar) && idEditar > 0) {
+      this.camionEditandoId.set(idEditar);
+      this.drawerAbierto.set(true);
       this.router.navigate(['/camiones'], { replaceUrl: true });
     }
   }

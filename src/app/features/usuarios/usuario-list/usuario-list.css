@@ -154,6 +154,30 @@
   font-size: 12.5px;
 }
 
+.alerta-cerrar {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-left: auto;
+  padding: 0;
+  flex-shrink: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  color: inherit;
+  cursor: pointer;
+}
+
+.alerta-cerrar:hover {
+  background: color-mix(in srgb, var(--color-error) 12%, transparent);
+}
+
+.alerta-cerrar:focus-visible {
+  outline: 2px solid var(--color-error);
+  outline-offset: 2px;
+}
+
 .cargando-item {
   height: 236px;
   background: var(--color-superficie);
