@@ -6,6 +6,8 @@ import { RutasService } from '../rutas.service';
 import { Ruta } from '../../../shared/models/ruta.model';
 import { Servicio } from '../../../shared/models/servicio.model';
 import { RutaForm } from '../ruta-form/ruta-form';
+import { HttpErrorResponse } from '@angular/common/http';
+import { mensajeError } from '../../../shared/utils/mensaje-error';
 
 @Component({
   selector: 'app-ruta-list',
@@ -96,8 +98,8 @@ export class RutaList implements OnInit {
 
         this.cargando.set(false);
       },
-      error: () => {
-        this.error.set('No se pudieron cargar las rutas.');
+      error: (err: HttpErrorResponse) => {
+        this.error.set(mensajeError(err, 'cargar las rutas'));
         this.cargando.set(false);
       },
     });
@@ -146,9 +148,11 @@ export class RutaList implements OnInit {
           this.seleccionadaId.set(lista[0]?.idRuta ?? null);
         }
       },
-      error: () =>
+      error: (err: HttpErrorResponse) =>
         this.error.set(
-          'No se pudo eliminar. Puede que la ruta tenga tareas asignadas.',
+          err.status === 500
+            ? 'No se pudo eliminar. Puede que la ruta tenga servicios o tareas asignadas.'
+            : mensajeError(err, 'eliminar la ruta'),
         ),
     });
   }

@@ -5,6 +5,8 @@ import { Router } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { AlertService } from '../../../core/services/alert.service';
 import { LoginRequest, AuthResponse } from '../../../shared/models/auth.model';
+import { HttpErrorResponse } from '@angular/common/http';
+import { mensajeError } from '../../../shared/utils/mensaje-error';
 
 @Component({
   selector: 'app-login',
@@ -46,10 +48,12 @@ export class Login {
           this.router.navigate(['/inicio']);
         }
       },
-      error: (err: any) => {
+      error: (err: HttpErrorResponse) => {
         this.isLoading = false;
-        this.errorMessage = 'DNI o contraseña incorrectos';
-        this.alertService.error('Error al iniciar sesión', 'DNI o contraseña incorrectos.');
+        // 401 "DNI o contraseña incorrectos", 400 "El usuario se encuentra inactivo…", 0 sin conexión
+        const mensaje = mensajeError(err, 'iniciar sesión');
+        this.errorMessage = mensaje;
+        this.alertService.error('Error al iniciar sesión', mensaje);
       }
     });
   }

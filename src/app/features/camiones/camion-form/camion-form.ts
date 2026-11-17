@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import {Component,EventEmitter,Input,OnInit,Output,inject,signal,} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { erroresDeValidacion, mensajeError } from '../../../shared/utils/mensaje-error';
 
 import {
   Camion,
@@ -91,9 +92,9 @@ export class CamionForm implements OnInit {
         });
         this.cargando.set(false);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.cargando.set(false);
-        this.error.set('No se pudo cargar el camión.');
+        this.error.set(mensajeError(err, 'cargar el camión'));
       },
     });
   }
@@ -140,27 +141,20 @@ export class CamionForm implements OnInit {
       error: (err: HttpErrorResponse) => {
         this.guardando.set(false);
 
-        if (err.status === 400 && err.error && typeof err.error === 'object') {
-          this.erroresBackend.set(err.error);
+        const campos = erroresDeValidacion(err);
+        if (campos) {
+          this.erroresBackend.set(campos);
           return;
         }
 
+        // El back todavía no tiene PUT /api/camiones/{id}: responde 405 (o 403 con el back viejo)
         if (this.esEdicion && (err.status === 403 || err.status === 405)) {
           this.error.set('El backend actual todavía no permite editar camiones.');
           return;
         }
 
-        if (err.status === 403) {
-          this.error.set('No tenés permiso para realizar esta acción.');
-          return;
-        }
-
-        if (err.status === 500) {
-          this.error.set('No se pudo guardar. Verificá que la patente no esté repetida.');
-          return;
-        }
-
-        this.error.set('No se pudo guardar el camión. Probá de nuevo.');
+        // 409 "Ya existe un camión registrado con la patente…", 400 de negocio, etc.
+        this.error.set(mensajeError(err, 'guardar el camión'));
       },
     });
   }
