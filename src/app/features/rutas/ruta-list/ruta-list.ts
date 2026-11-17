@@ -133,6 +133,15 @@ export class RutaList implements OnInit {
     this.cargar(r.idRuta);
   }
 
+  alReordenar(servicios: Servicio[]) {
+    const id = this.rutaEditandoId();
+    if (id === null) return;
+
+    this.rutas.update((rutas) =>
+      rutas.map((r) => (r.idRuta === id ? { ...r, servicios } : r)),
+    );
+  }
+
   eliminar(r: Ruta) {
     const n = this.cantidadServicios(r);
     const aviso = n > 0 ? `\n\nSe van a eliminar también sus ${n} servicios.` : '';

@@ -34,6 +34,7 @@ export class RutaForm implements OnInit {
   @Input() embebido = false;
   @Output() cerrar = new EventEmitter<void>();
   @Output() guardado = new EventEmitter<Ruta>();
+  @Output() reordenado = new EventEmitter<Servicio[]>();
 
   // null = alta, número = edición
   id: number | null = null;
@@ -50,9 +51,11 @@ export class RutaForm implements OnInit {
 
   // Servicios de la ruta (solo en edición) y estado del reordenamiento
   servicios = signal<Servicio[]>([]);
-  ordenModificado = signal(false);
   guardandoOrden = signal(false);
   mensajeOrden = signal('');
+  errorOrden = signal(false);
+  arrastrando = signal<number | null>(null);
+  destinoArrastre = signal<number | null>(null);
 
   form = this.fb.nonNullable.group({
     nombre: ['', [Validators.required, Validators.maxLength(50)]],
@@ -151,31 +154,75 @@ export class RutaForm implements OnInit {
 
   // ---- Reordenar servicios ----
 
-  mover(indice: number, direccion: -1 | 1) {
-    const destino = indice + direccion;
-    const lista = [...this.servicios()];
-    if (destino < 0 || destino >= lista.length) return;
+  iniciarArrastre(indice: number, evento: DragEvent) {
+    if (this.guardandoOrden()) {
+      evento.preventDefault();
+      return;
+    }
 
-    [lista[indice], lista[destino]] = [lista[destino], lista[indice]];
-    this.servicios.set(lista);
-    this.ordenModificado.set(true);
+    this.arrastrando.set(indice);
+    this.destinoArrastre.set(indice);
     this.mensajeOrden.set('');
+    this.errorOrden.set(false);
+
+    if (evento.dataTransfer) {
+      evento.dataTransfer.effectAllowed = 'move';
+      evento.dataTransfer.setData('text/plain', String(indice));
+    }
   }
 
-  guardarOrden() {
-    this.guardandoOrden.set(true);
-    this.mensajeOrden.set('');
+  sobreServicio(indice: number, evento: DragEvent) {
+    if (this.arrastrando() === null || this.guardandoOrden()) return;
 
-    const ids = this.servicios().map((s) => s.id);
-    this.rutasService.reordenarServicios(ids).subscribe({
+    evento.preventDefault();
+    if (evento.dataTransfer) evento.dataTransfer.dropEffect = 'move';
+    this.destinoArrastre.set(indice);
+  }
+
+  soltarServicio(indice: number, evento: DragEvent) {
+    evento.preventDefault();
+
+    const origen = this.arrastrando();
+    this.limpiarArrastre();
+
+    if (origen === null || origen === indice || this.guardandoOrden()) return;
+    this.reordenar(origen, indice);
+  }
+
+  finalizarArrastre() {
+    this.limpiarArrastre();
+  }
+
+  private limpiarArrastre() {
+    this.arrastrando.set(null);
+    this.destinoArrastre.set(null);
+  }
+
+  private reordenar(origen: number, destino: number) {
+    const anterior = this.servicios();
+    const lista = [...anterior];
+    const [servicio] = lista.splice(origen, 1);
+    lista.splice(destino, 0, servicio);
+
+    const actualizados = lista.map((s, i) => ({ ...s, orden: i + 1 }));
+
+    this.servicios.set(actualizados);
+    this.reordenado.emit(actualizados);
+    this.guardandoOrden.set(true);
+    this.errorOrden.set(false);
+    this.mensajeOrden.set('Guardando orden...');
+
+    this.rutasService.reordenarServicios(actualizados.map((s) => s.id)).subscribe({
       next: () => {
         this.guardandoOrden.set(false);
-        this.ordenModificado.set(false);
-        this.mensajeOrden.set('Orden guardado.');
+        this.mensajeOrden.set('Orden actualizado.');
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
+        this.servicios.set(anterior);
+        this.reordenado.emit(anterior);
         this.guardandoOrden.set(false);
-        this.mensajeOrden.set('No se pudo guardar el orden.');
+        this.errorOrden.set(true);
+        this.mensajeOrden.set(mensajeError(err, 'guardar el orden'));
       },
     });
   }

@@ -1,11 +1,24 @@
 import { Routes } from '@angular/router';
-import { RutaList } from './ruta-list/ruta-list';
-import { RutaForm } from './ruta-form/ruta-form';
-import { RutaMapa } from './ruta-mapa/ruta-mapa';
 
 export const RUTAS_ROUTES: Routes = [
-  { path: '', component: RutaList },
-  { path: 'nuevo', component: RutaForm },
-  { path: ':id/editar', component: RutaForm },
-  { path: ':id/mapa', component: RutaMapa },
+  {
+    path: '',
+    loadComponent: () =>
+      import('./ruta-list/ruta-list').then((m) => m.RutaList),
+  },
+  {
+    path: 'nuevo',
+    loadComponent: () =>
+      import('./ruta-form/ruta-form').then((m) => m.RutaForm),
+  },
+  {
+    path: ':id/editar',
+    loadComponent: () =>
+      import('./ruta-form/ruta-form').then((m) => m.RutaForm),
+  },
+  {
+    path: ':id/mapa',
+    loadComponent: () =>
+      import('./ruta-mapa/ruta-mapa').then((m) => m.RutaMapa),
+  },
 ];
