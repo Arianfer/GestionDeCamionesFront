@@ -56,6 +56,13 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./features/usuarios/usuarios.routes').then(m => m.USUARIOS_ROUTES),
       },
+      {
+        path: 'tareas',
+        canActivate: [roleGuard],
+        data: { roles: ['ADMIN', 'OFICINA'] },
+        loadChildren: () =>
+          import('./features/tareas/tareas.routes').then(m => m.TAREAS_ROUTES),
+      },
       { path: '', redirectTo: 'inicio', pathMatch: 'full' },
     ],
   },
