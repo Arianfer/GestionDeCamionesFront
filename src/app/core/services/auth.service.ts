@@ -44,4 +44,11 @@ export class AuthService {
   getId(): string | null {
     return localStorage.getItem('user_id');
   }
+
+  puedeGestionarUsuario(rol: string): boolean {
+    const rolActual = this.getRol();
+    return (
+      rolActual === 'ADMIN' || (rolActual === 'OFICINA' && rol === 'EMPLEADO')
+    );
+  }
 }

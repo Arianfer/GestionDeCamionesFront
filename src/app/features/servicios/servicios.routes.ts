@@ -1,4 +1,5 @@
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router, Routes } from '@angular/router';
 
 export const SERVICIOS_ROUTES: Routes = [
   {
@@ -8,12 +9,14 @@ export const SERVICIOS_ROUTES: Routes = [
   },
   {
     path: 'nuevo',
-    loadComponent: () =>
-      import('./servicio-form/servicio-form').then((m) => m.ServicioForm),
+    redirectTo: () =>
+      inject(Router).createUrlTree(['/servicios'], { queryParams: { nuevo: 1 } }),
   },
   {
     path: ':id/editar',
-    loadComponent: () =>
-      import('./servicio-form/servicio-form').then((m) => m.ServicioForm),
+    redirectTo: (route) =>
+      inject(Router).createUrlTree(['/servicios'], {
+        queryParams: { editar: route.params['id'] },
+      }),
   },
 ];

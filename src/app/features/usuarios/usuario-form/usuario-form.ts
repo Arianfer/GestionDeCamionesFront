@@ -35,11 +35,13 @@ export class UsuarioForm implements OnInit {
   @Output() guardado = new EventEmitter<Usuario>();
 
   id: number | null = null;
+  rolOriginal: Rol | null = null;
 
   readonly cargando = signal(false);
   readonly guardando = signal(false);
   readonly error = signal('');
   readonly erroresBackend = signal<Record<string, string>>({});
+  readonly sinPermiso = signal(false);
 
   readonly rolesDisponibles = computed<Rol[]>(() =>
     this.auth.getRol() === 'ADMIN' ? ['ADMIN', 'OFICINA', 'EMPLEADO'] : ['EMPLEADO'],
@@ -72,6 +74,16 @@ export class UsuarioForm implements OnInit {
 
     this.usuariosService.getById(this.id).subscribe({
       next: (usuario) => {
+        this.cargando.set(false);
+
+        if (!this.auth.puedeGestionarUsuario(usuario.rol)) {
+          this.sinPermiso.set(true);
+          this.error.set('No tenés permiso para editar este usuario.');
+          if (!this.embebido) this.router.navigate(['/usuarios']);
+          return;
+        }
+
+        this.rolOriginal = usuario.rol;
         this.form.patchValue({
           nombre: usuario.nombre,
           apellido: usuario.apellido,
@@ -79,7 +91,6 @@ export class UsuarioForm implements OnInit {
           email: usuario.email,
           rol: usuario.rol,
         });
-        this.cargando.set(false);
       },
       error: (err: HttpErrorResponse) => {
         this.cargando.set(false);
@@ -103,6 +114,15 @@ export class UsuarioForm implements OnInit {
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      return;
+    }
+
+    if (
+      !this.auth.puedeGestionarUsuario(this.form.controls.rol.value) ||
+      (this.rolOriginal !== null &&
+        !this.auth.puedeGestionarUsuario(this.rolOriginal))
+    ) {
+      this.error.set('No tenés permiso para guardar este usuario.');
       return;
     }
 

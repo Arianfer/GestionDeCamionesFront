@@ -1,4 +1,5 @@
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router, Routes } from '@angular/router';
 
 export const CAMIONES_ROUTES: Routes = [
   {
@@ -8,12 +9,14 @@ export const CAMIONES_ROUTES: Routes = [
   },
   {
     path: 'nuevo',
-    loadComponent: () =>
-      import('./camion-form/camion-form').then((m) => m.CamionForm),
+    redirectTo: () =>
+      inject(Router).createUrlTree(['/camiones'], { queryParams: { nuevo: 1 } }),
   },
   {
     path: ':id/editar',
-    loadComponent: () =>
-      import('./camion-form/camion-form').then((m) => m.CamionForm),
+    redirectTo: (route) =>
+      inject(Router).createUrlTree(['/camiones'], {
+        queryParams: { editar: route.params['id'] },
+      }),
   },
 ];

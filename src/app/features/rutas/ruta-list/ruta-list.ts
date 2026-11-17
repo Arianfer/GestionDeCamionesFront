@@ -52,8 +52,16 @@ export class RutaList implements OnInit {
   ngOnInit() {
     this.cargar();
 
-    if (this.route.snapshot.queryParamMap.get('nueva') === '1') {
+    const params = this.route.snapshot.queryParamMap;
+    const idEditar = Number(params.get('editar'));
+
+    if (params.get('nueva') === '1') {
       this.abrirNueva();
+      this.router.navigate(['/rutas'], { replaceUrl: true });
+    } else if (Number.isInteger(idEditar) && idEditar > 0) {
+      this.seleccionadaId.set(idEditar);
+      this.rutaEditandoId.set(idEditar);
+      this.drawerAbierto.set(true);
       this.router.navigate(['/rutas'], { replaceUrl: true });
     }
   }

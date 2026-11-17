@@ -1,20 +1,22 @@
-// src/app/features/usuarios/usuarios.routes.ts
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router, Routes } from '@angular/router';
 
 export const USUARIOS_ROUTES: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./usuario-list/usuario-list').then(m => m.UsuarioList),
+      import('./usuario-list/usuario-list').then((m) => m.UsuarioList),
   },
   {
     path: 'nuevo',
-    loadComponent: () =>
-      import('./usuario-form/usuario-form').then(m => m.UsuarioForm),
+    redirectTo: () =>
+      inject(Router).createUrlTree(['/usuarios'], { queryParams: { nuevo: 1 } }),
   },
   {
     path: ':id/editar',
-    loadComponent: () =>
-      import('./usuario-form/usuario-form').then(m => m.UsuarioForm),
+    redirectTo: (route) =>
+      inject(Router).createUrlTree(['/usuarios'], {
+        queryParams: { editar: route.params['id'] },
+      }),
   },
 ];

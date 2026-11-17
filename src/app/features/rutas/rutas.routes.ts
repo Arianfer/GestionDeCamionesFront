@@ -1,4 +1,5 @@
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router, Routes } from '@angular/router';
 
 export const RUTAS_ROUTES: Routes = [
   {
@@ -8,13 +9,15 @@ export const RUTAS_ROUTES: Routes = [
   },
   {
     path: 'nuevo',
-    loadComponent: () =>
-      import('./ruta-form/ruta-form').then((m) => m.RutaForm),
+    redirectTo: () =>
+      inject(Router).createUrlTree(['/rutas'], { queryParams: { nueva: 1 } }),
   },
   {
     path: ':id/editar',
-    loadComponent: () =>
-      import('./ruta-form/ruta-form').then((m) => m.RutaForm),
+    redirectTo: (route) =>
+      inject(Router).createUrlTree(['/rutas'], {
+        queryParams: { editar: route.params['id'] },
+      }),
   },
   {
     path: ':id/mapa',
