@@ -2,9 +2,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, EventEmitter, Input, OnInit, Output, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-
 import { Cliente, ClienteRequest } from '../../../shared/models/cliente.model';
 import { ClienteService } from '../cliente.service';
+import { erroresDeValidacion, mensajeError } from '../../../shared/utils/mensaje-error';
 
 @Component({
   selector: 'app-cliente-form',
@@ -68,9 +68,9 @@ export class ClienteForm implements OnInit {
         });
         this.cargando.set(false);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.cargando.set(false);
-        this.error.set('No se pudo cargar el cliente.');
+        this.error.set(mensajeError(err, 'cargar el cliente'));
       },
     });
   }
@@ -120,19 +120,13 @@ export class ClienteForm implements OnInit {
     if (this.embebido) this.cerrar.emit();
   }
 
-  private manejarError(err: HttpErrorResponse): void {
-    const body = err.error;
-
-    if (err.status === 400 && body && typeof body === 'object') {
-      // Error de negocio: { timestamp, error, status }
-      if (typeof body.error === 'string') {
-        this.error.set(body.error);
-        return;
-      }
-      // Error de validación: { campo: "mensaje" }
+    private manejarError(err: HttpErrorResponse): void {
+    // 400 de validación: se marca el error debajo de cada campo
+    const campos = erroresDeValidacion(err);
+    if (campos) {
       let hayErrorDeCampo = false;
       for (const campo of ['cuit', 'razonSocial'] as const) {
-        const mensaje = body[campo];
+        const mensaje = campos[campo];
         if (typeof mensaje === 'string') {
           this.form.controls[campo].setErrors({ servidor: mensaje });
           this.form.controls[campo].markAsTouched();
@@ -142,13 +136,7 @@ export class ClienteForm implements OnInit {
       if (hayErrorDeCampo) return;
     }
 
-    if (err.status === 0) {
-      this.error.set('No se pudo conectar con el servidor.');
-    } else if (err.status === 500) {
-      // El back lanza RuntimeException cuando el CUIT o la razón social ya existen.
-      this.error.set('No se pudo guardar. Verificá que el CUIT y la razón social no estén repetidos.');
-    } else {
-      this.error.set('Ocurrió un error inesperado. Probá de nuevo.');
-    }
+    // Todo lo demás (409 "ya existe", 400 de negocio, 404, sin conexión…)
+    this.error.set(mensajeError(err, 'guardar el cliente'));
   }
 }
