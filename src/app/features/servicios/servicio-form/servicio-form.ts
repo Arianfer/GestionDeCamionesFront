@@ -20,7 +20,7 @@ import { ServiciosService } from '../servicios.service';
 import { ClienteService } from '../../clientes/cliente.service';
 import { RutasService } from '../../rutas/rutas.service';
 import { DireccionNormalizada, GeorefService } from '../../../core/services/georef.service';
-import { mensajeError } from '../mensaje-error';
+import { mensajeError } from '../../../shared/utils/mensaje-error';
 import {
   Frecuencia,
   Prioridad,

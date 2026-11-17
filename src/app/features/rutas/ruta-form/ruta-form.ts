@@ -15,6 +15,7 @@ import { RutasService } from '../rutas.service';
 import { Ruta, RutaRequest } from '../../../shared/models/ruta.model';
 import { Servicio } from '../../../shared/models/servicio.model';
 import { Usuario } from '../../../shared/models/usuario.model';
+import { erroresDeValidacion, mensajeError } from '../../../shared/utils/mensaje-error';
 
 @Component({
   selector: 'app-ruta-form',
@@ -68,7 +69,7 @@ export class RutaForm implements OnInit {
   ngOnInit() {
     this.rutasService.obtenerChoferes().subscribe({
       next: (data) => this.usuarios.set(data),
-      error: () => this.error.set('No se pudieron cargar los choferes.'),
+      error: (err: HttpErrorResponse) => this.error.set(mensajeError(err, 'cargar los choferes')),
     });
 
     const idParam = this.embebido
@@ -92,7 +93,7 @@ export class RutaForm implements OnInit {
             [...(r.servicios ?? [])].sort((a, b) => a.orden - b.orden),
           );
         },
-        error: () => this.error.set('No se pudo cargar la ruta.'),
+        error: (err: HttpErrorResponse) => this.error.set(mensajeError(err, 'cargar la ruta')),
       });
     }
   }
@@ -130,12 +131,13 @@ export class RutaForm implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         this.guardando.set(false);
-        if (err.status === 400 && err.error && typeof err.error === 'object') {
-          this.erroresBackend.set(err.error);
+        const campos = erroresDeValidacion(err);
+        if (campos) {
+          this.erroresBackend.set(campos);
+          this.error.set('Revisá los campos marcados.');
         } else {
-          this.error.set(
-            'No se pudo guardar. Puede que ya exista una ruta con ese nombre.',
-          );
+          // 409 "Ya existe una ruta con el nombre…", 400 "El usuario asignado no es un Chofer", etc.
+          this.error.set(mensajeError(err, 'guardar la ruta'));
         }
       },
     });

@@ -4,6 +4,8 @@ import { AuthService } from '../../../core/services/auth.service';
 import { Usuario } from '../../../shared/models/usuario.model';
 import { UsuarioForm } from '../usuario-form/usuario-form';
 import { UsuariosService } from '../usuarios.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { mensajeError } from '../../../shared/utils/mensaje-error';
 
 @Component({
   selector: 'app-usuario-list',
@@ -56,8 +58,8 @@ export class UsuarioList implements OnInit {
         this.usuarios.set(data);
         this.cargando.set(false);
       },
-      error: () => {
-        this.error.set('No se pudieron cargar los usuarios.');
+      error: (err: HttpErrorResponse) => {
+        this.error.set(mensajeError(err, 'cargar los usuarios'));
         this.cargando.set(false);
       },
     });
@@ -113,7 +115,8 @@ export class UsuarioList implements OnInit {
         this.usuarios.update((lista) =>
           lista.map((x) => (x.id === u.id ? { ...x, activo: false } : x)),
         ),
-      error: () => this.error.set('No se pudo desactivar el usuario.'),
+      error: (err: HttpErrorResponse) =>
+        this.error.set(mensajeError(err, `desactivar a ${u.nombre} ${u.apellido}`)),
     });
   }
 }

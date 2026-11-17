@@ -14,6 +14,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { Rol, Usuario, UsuarioRequest } from '../../../shared/models/usuario.model';
 import { UsuariosService } from '../usuarios.service';
+import { erroresDeValidacion, mensajeError } from '../../../shared/utils/mensaje-error';
 
 @Component({
   selector: 'app-usuario-form',
@@ -80,9 +81,9 @@ export class UsuarioForm implements OnInit {
         });
         this.cargando.set(false);
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.cargando.set(false);
-        this.error.set('No se pudo cargar el usuario (o no tenés permiso para verlo).');
+        this.error.set(mensajeError(err, 'ver este usuario'));
       },
     });
   }
@@ -123,12 +124,13 @@ export class UsuarioForm implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         this.guardando.set(false);
-        if (err.status === 400 && err.error && typeof err.error === 'object') {
-          this.erroresBackend.set(err.error);
-        } else if (err.status === 403) {
-          this.error.set('No tenés permiso para realizar esta acción.');
+        const campos = erroresDeValidacion(err);
+        if (campos) {
+          this.erroresBackend.set(campos);
+          this.error.set('Revisá los campos marcados.');
         } else {
-          this.error.set('No se pudo guardar. Puede que el DNI o el email ya existan.');
+          // 409 "Ya existe un usuario con ese DNI" / "…con ese email", 403 por rol, etc.
+          this.error.set(mensajeError(err, 'guardar este usuario'));
         }
       },
     });

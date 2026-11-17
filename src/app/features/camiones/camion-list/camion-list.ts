@@ -6,6 +6,7 @@ import { Camion, EstadoCamion, TipoCamion } from '../../../shared/models/camion.
 import { PatentePipe } from '../../../shared/pipes/patente.pipe';
 import { CamionForm } from '../camion-form/camion-form';
 import { CamionesService } from '../camiones.service';
+import { mensajeError } from '../../../shared/utils/mensaje-error';
 
 @Component({
   selector: 'app-camion-list',
@@ -78,11 +79,7 @@ export class CamionList implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         this.cargando.set(false);
-        this.error.set(
-          err.status === 0
-            ? 'No se pudo conectar con el servidor.'
-            : 'No se pudieron cargar los camiones.',
-        );
+        this.error.set(mensajeError(err, 'cargar los camiones'));
       },
     });
   }
@@ -140,7 +137,7 @@ export class CamionList implements OnInit {
         this.error.set(
           err.status === 500
             ? 'No se pudo eliminar. Puede que el camión tenga rutas asociadas.'
-            : 'No se pudo eliminar el camión.',
+            : mensajeError(err, 'eliminar el camión'),
         );
       },
     });

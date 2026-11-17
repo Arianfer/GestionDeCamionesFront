@@ -6,6 +6,7 @@ import { Cliente } from '../../../shared/models/cliente.model';
 import { CuitPipe } from '../../../shared/pipes/cuit.pipe';
 import { ClienteForm } from '../cliente-form/cliente-form';
 import { ClienteService } from '../cliente.service';
+import { mensajeError } from '../../../shared/utils/mensaje-error';
 
 @Component({
   selector: 'app-cliente-list',
@@ -59,11 +60,7 @@ export class ClienteList implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         this.cargando.set(false);
-        this.error.set(
-          err.status === 0
-            ? 'No se pudo conectar con el servidor.'
-            : 'No se pudieron cargar los clientes.',
-        );
+        this.error.set(mensajeError(err, 'cargar los clientes'));
       },
     });
   }
@@ -112,7 +109,7 @@ export class ClienteList implements OnInit {
         this.error.set(
           err.status === 500
             ? 'No se pudo eliminar el cliente. Probablemente tenga servicios asociados.'
-            : 'No se pudo eliminar el cliente.',
+            : mensajeError(err, 'eliminar el cliente'),
         );
       },
     });

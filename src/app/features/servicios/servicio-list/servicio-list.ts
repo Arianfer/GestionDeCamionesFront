@@ -2,14 +2,13 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
-
 import { Cliente } from '../../../shared/models/cliente.model';
 import { Ruta } from '../../../shared/models/ruta.model';
 import { Servicio } from '../../../shared/models/servicio.model';
 import { AlertService } from '../../../core/services/alert.service';
 import { ClienteService } from '../../clientes/cliente.service';
 import { RutasService } from '../../rutas/rutas.service';
-import { mensajeError } from '../mensaje-error';
+import { mensajeError } from '../../../shared/utils/mensaje-error';
 import {
   ETIQUETAS_FRECUENCIA,
   ETIQUETAS_PRIORIDAD,
