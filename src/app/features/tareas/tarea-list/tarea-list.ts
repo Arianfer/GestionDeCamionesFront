@@ -13,7 +13,7 @@ import { CamionesService } from '../../camiones/camiones.service';
 import { RutasService } from '../../rutas/rutas.service';
 import { UsuariosService } from '../../usuarios/usuarios.service';
 import { TareaForm } from '../tarea-form/tarea-form';
-import { ESTADOS_TAREA, etiquetaEstado } from '../tarea-estados';
+import { ESTADOS_TAREA, accionEstado, etiquetaEstado, siguientesDe } from '../tarea-estados';
 import { TareasService } from '../tareas.service';
 
 @Component({
@@ -41,6 +41,9 @@ export class TareaList implements OnInit {
   readonly cargando = signal(true);
   readonly error = signal('');
   readonly drawerAbierto = signal(false);
+  readonly cambiandoId = signal<number | null>(null);
+
+  private readonly patentePipe = new PatentePipe();
 
   // La tarea solo trae ids. Estos mapas permiten buscar el camión, la ruta o el
   // chofer por id sin recorrer la lista entera cada vez (se recalculan solos
@@ -114,6 +117,42 @@ export class TareaList implements OnInit {
 
   etiquetaEstado(estado: EstadoTarea): string {
     return etiquetaEstado(estado);
+  }
+   
+  /** Estados a los que se puede pasar desde el actual (vacío si ya está cerrada). */
+  siguientes(t: Tarea): EstadoTarea[] {
+    return siguientesDe(t.estado);
+  }
+
+  accion(estado: EstadoTarea): string {
+    return accionEstado(estado);
+  }
+
+  cambiarEstado(t: Tarea, nuevoEstado: EstadoTarea): void {
+    // Cancelar libera el camión y no se puede deshacer: se pide confirmación.
+    if (
+      nuevoEstado === 'CANCELADO' &&
+      !confirm(
+        `¿Cancelar la tarea TAR-${t.id}? El camión ${this.patentePipe.transform(this.patente(t))} va a quedar disponible.`,
+      )
+    ) {
+      return;
+    }
+
+    this.cambiandoId.set(t.id);
+    this.tareasService.actualizarEstado(t.id, nuevoEstado).subscribe({
+      next: (actualizada) => {
+        this.tareas.update((lista) => lista.map((x) => (x.id === actualizada.id ? actualizada : x)));
+        this.cambiandoId.set(null);
+        this.alertService.toastExito(
+          `Tarea TAR-${actualizada.id} ${etiquetaEstado(actualizada.estado).toLowerCase()}`,
+        );
+      },
+      error: () => {
+        this.cambiandoId.set(null);
+        this.alertService.error('No se pudo cambiar el estado', 'Probá de nuevo.');
+      },
+    });
   }
 
   patente(t: Tarea): string {

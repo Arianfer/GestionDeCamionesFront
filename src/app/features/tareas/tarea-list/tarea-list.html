@@ -153,6 +153,21 @@
 
           <div class="tarea-card-pie">
             <span class="tarea-codigo">TAR-{{ t.id }}</span>
+            
+            <div class="tarea-card-acciones">
+              @for (siguiente of siguientes(t); track siguiente) {
+                <button
+                  type="button"
+                  class="btn btn-chico"
+                  [class.btn-primario]="siguiente !== 'CANCELADO'"
+                  [class.btn-peligro]="siguiente === 'CANCELADO'"
+                  [disabled]="cambiandoId() === t.id"
+                  (click)="cambiarEstado(t, siguiente)"
+                >
+                  {{ accion(siguiente) }}
+                </button>
+              }
+            </div>
           </div>
         </article>
       }
