@@ -13,48 +13,61 @@ export const routes: Routes = [
     path: 'chofer',
     component: RutaChoferComponent,
     canActivate: [authGuard, roleGuard],
+    canMatch: [authGuard, roleGuard],
     data: { roles: ['EMPLEADO'] },
   },
   {
     path: '',
     component: MainLayout,
     canActivate: [authGuard],
+    canMatch: [authGuard],
     children: [
       { path: 'inicio', component: Inicio },
       {
         path: 'rutas',
         canActivate: [roleGuard],
+        canMatch: [roleGuard],
         data: { roles: ['ADMIN', 'OFICINA'] },
         loadChildren: () =>
-          import('./features/rutas/rutas.routes').then(m => m.RUTAS_ROUTES),
+          import('./features/rutas/rutas.routes').then((m) => m.RUTAS_ROUTES),
       },
       {
         path: 'clientes',
         canActivate: [roleGuard],
+        canMatch: [roleGuard],
         data: { roles: ['ADMIN', 'OFICINA'] },
         loadChildren: () =>
-          import('./features/clientes/cliente.routes').then(m => m.CLIENTES_ROUTES)
+          import('./features/clientes/cliente.routes').then((m) => m.CLIENTES_ROUTES),
       },
       {
         path: 'servicios',
         canActivate: [roleGuard],
+        canMatch: [roleGuard],
         data: { roles: ['ADMIN', 'OFICINA'] },
         loadChildren: () =>
-          import('./features/servicios/servicios.routes').then(m => m.SERVICIOS_ROUTES),
+          import('./features/servicios/servicios.routes').then(
+            (m) => m.SERVICIOS_ROUTES,
+          ),
       },
       {
         path: 'camiones',
-        loadChildren: () =>
-          import('./features/camiones/camiones.routes').then((m) => m.CAMIONES_ROUTES),
         canActivate: [roleGuard],
+        canMatch: [roleGuard],
         data: { roles: ['ADMIN', 'OFICINA'] },
+        loadChildren: () =>
+          import('./features/camiones/camiones.routes').then(
+            (m) => m.CAMIONES_ROUTES,
+          ),
       },
       {
         path: 'usuarios',
         canActivate: [roleGuard],
+        canMatch: [roleGuard],
         data: { roles: ['ADMIN', 'OFICINA'] },
         loadChildren: () =>
-          import('./features/usuarios/usuarios.routes').then(m => m.USUARIOS_ROUTES),
+          import('./features/usuarios/usuarios.routes').then(
+            (m) => m.USUARIOS_ROUTES,
+          ),
       },
       {
         path: 'tareas',
@@ -68,6 +81,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'inicio'
-  }
+    redirectTo: 'inicio',
+  },
 ];

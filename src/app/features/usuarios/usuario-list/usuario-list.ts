@@ -26,11 +26,16 @@ export class UsuarioList implements OnInit {
   readonly drawerAbierto = signal(false);
   readonly usuarioEditandoId = signal<number | null>(null);
 
+  private idEditarPendiente: number | null = null;
+
   readonly filtrados = computed(() => {
     const q = this.filtro().trim().toLowerCase();
-    if (!q) return this.usuarios();
+    const visibles = this.usuarios().filter((u) =>
+      this.auth.puedeGestionarUsuario(u.rol),
+    );
+    if (!q) return visibles;
 
-    return this.usuarios().filter(
+    return visibles.filter(
       (u) =>
         `${u.nombre} ${u.apellido}`.toLowerCase().includes(q) ||
         u.dni.includes(q) ||
@@ -43,8 +48,14 @@ export class UsuarioList implements OnInit {
   ngOnInit(): void {
     this.cargar();
 
-    if (this.route.snapshot.queryParamMap.get('nuevo') === '1') {
+    const params = this.route.snapshot.queryParamMap;
+    const idEditar = Number(params.get('editar'));
+
+    if (params.get('nuevo') === '1') {
       this.abrirNuevo();
+      this.router.navigate(['/usuarios'], { replaceUrl: true });
+    } else if (Number.isInteger(idEditar) && idEditar > 0) {
+      this.idEditarPendiente = idEditar;
       this.router.navigate(['/usuarios'], { replaceUrl: true });
     }
   }
@@ -57,6 +68,12 @@ export class UsuarioList implements OnInit {
       next: (data) => {
         this.usuarios.set(data);
         this.cargando.set(false);
+
+        if (this.idEditarPendiente !== null) {
+          const id = this.idEditarPendiente;
+          this.idEditarPendiente = null;
+          this.abrirEditarId(id);
+        }
       },
       error: (err: HttpErrorResponse) => {
         this.error.set(mensajeError(err, 'cargar los usuarios'));
@@ -78,13 +95,39 @@ export class UsuarioList implements OnInit {
     return etiquetas[rol];
   }
 
+  cerrarError(): void {
+    this.error.set('');
+  }
+
   abrirNuevo(): void {
     this.usuarioEditandoId.set(null);
     this.drawerAbierto.set(true);
   }
 
   abrirEditar(usuario: Usuario): void {
+    if (!this.auth.puedeGestionarUsuario(usuario.rol)) {
+      this.error.set('No tenés permiso para editar este usuario.');
+      return;
+    }
+
     this.usuarioEditandoId.set(usuario.id);
+    this.drawerAbierto.set(true);
+  }
+
+  private abrirEditarId(id: number): void {
+    const usuario = this.usuarios().find((u) => u.id === id);
+
+    if (!usuario) {
+      this.error.set('No se encontró el usuario solicitado.');
+      return;
+    }
+
+    if (!this.auth.puedeGestionarUsuario(usuario.rol)) {
+      this.error.set('No tenés permiso para editar este usuario.');
+      return;
+    }
+
+    this.usuarioEditandoId.set(id);
     this.drawerAbierto.set(true);
   }
 
@@ -108,6 +151,11 @@ export class UsuarioList implements OnInit {
   }
 
   desactivar(u: Usuario): void {
+    if (!this.auth.puedeGestionarUsuario(u.rol)) {
+      this.error.set('No tenés permiso para modificar este usuario.');
+      return;
+    }
+
     if (!confirm(`¿Desactivar a ${u.nombre} ${u.apellido}? No va a poder iniciar sesión.`)) return;
 
     this.usuariosService.desactivar(u.id).subscribe({

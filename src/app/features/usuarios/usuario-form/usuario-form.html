@@ -37,7 +37,11 @@
     }
   </header>
 
-  @if (cargando()) {
+  @if (sinPermiso()) {
+    <div class="form-panel">
+      <p class="alerta" role="alert">No tenés permiso para editar este usuario.</p>
+    </div>
+  } @else if (cargando()) {
     <div class="form-panel">
       <p class="estado-carga">Cargando usuario...</p>
     </div>
@@ -157,7 +161,11 @@
         } @else {
           <a routerLink="/usuarios" class="btn btn-secundario">Cancelar</a>
         }
-        <button type="submit" class="btn btn-primario" [disabled]="guardando()">
+        <button
+          type="submit"
+          class="btn btn-primario"
+          [disabled]="guardando() || form.invalid"
+        >
           <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M20 6 9 17l-5-5" />
           </svg>

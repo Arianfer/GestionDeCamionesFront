@@ -337,7 +337,11 @@
       } @else {
         <a routerLink="/servicios" class="btn btn-secundario">Cancelar</a>
       }
-      <button type="submit" class="btn btn-primario" [disabled]="guardando() || form.disabled">
+      <button
+        type="submit"
+        class="btn btn-primario"
+        [disabled]="guardando() || form.disabled || form.invalid"
+      >
         <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M20 6 9 17l-5-5" />
         </svg>

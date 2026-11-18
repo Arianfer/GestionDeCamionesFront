@@ -52,8 +52,16 @@ export class RutaList implements OnInit {
   ngOnInit() {
     this.cargar();
 
-    if (this.route.snapshot.queryParamMap.get('nueva') === '1') {
+    const params = this.route.snapshot.queryParamMap;
+    const idEditar = Number(params.get('editar'));
+
+    if (params.get('nueva') === '1') {
       this.abrirNueva();
+      this.router.navigate(['/rutas'], { replaceUrl: true });
+    } else if (Number.isInteger(idEditar) && idEditar > 0) {
+      this.seleccionadaId.set(idEditar);
+      this.rutaEditandoId.set(idEditar);
+      this.drawerAbierto.set(true);
       this.router.navigate(['/rutas'], { replaceUrl: true });
     }
   }
@@ -131,6 +139,15 @@ export class RutaList implements OnInit {
     this.drawerAbierto.set(false);
     this.seleccionadaId.set(r.idRuta);
     this.cargar(r.idRuta);
+  }
+
+  alReordenar(servicios: Servicio[]) {
+    const id = this.rutaEditandoId();
+    if (id === null) return;
+
+    this.rutas.update((rutas) =>
+      rutas.map((r) => (r.idRuta === id ? { ...r, servicios } : r)),
+    );
   }
 
   eliminar(r: Ruta) {

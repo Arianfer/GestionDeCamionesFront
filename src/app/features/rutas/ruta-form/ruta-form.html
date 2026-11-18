@@ -42,7 +42,13 @@
     <div class="form-grid">
       <div class="campo campo-completo">
         <label for="nombre">Nombre <span class="requerido">*</span></label>
-        <input id="nombre" type="text" formControlName="nombre" maxlength="50" />
+        <input
+          id="nombre"
+          type="text"
+          formControlName="nombre"
+          maxlength="50"
+          [class.invalido]="form.controls.nombre.touched && form.controls.nombre.invalid"
+        />
         @if (form.controls.nombre.touched && form.controls.nombre.invalid) {
           <small class="error">El nombre es obligatorio (máximo 50 caracteres).</small>
         }
@@ -53,7 +59,15 @@
 
       <div class="campo campo-completo">
         <label for="descripcion">Descripción <span class="requerido">*</span></label>
-        <textarea id="descripcion" rows="3" formControlName="descripcion" maxlength="400"></textarea>
+        <textarea
+          id="descripcion"
+          rows="3"
+          formControlName="descripcion"
+          maxlength="400"
+          [class.invalido]="
+            form.controls.descripcion.touched && form.controls.descripcion.invalid
+          "
+        ></textarea>
         @if (form.controls.descripcion.touched && form.controls.descripcion.invalid) {
           <small class="error">La descripción es obligatoria (máximo 400 caracteres).</small>
         }
@@ -64,7 +78,12 @@
 
       <div class="campo">
         <label for="fecha">Fecha <span class="requerido">*</span></label>
-        <input id="fecha" type="date" formControlName="fecha" />
+        <input
+          id="fecha"
+          type="date"
+          formControlName="fecha"
+          [class.invalido]="form.controls.fecha.touched && form.controls.fecha.invalid"
+        />
         @if (form.controls.fecha.touched && form.controls.fecha.invalid) {
           <small class="error">La fecha es obligatoria.</small>
         }
@@ -75,7 +94,13 @@
 
       <div class="campo">
         <label for="idChofer">Chofer <span class="requerido">*</span></label>
-        <select id="idChofer" formControlName="idChofer">
+        <select
+          id="idChofer"
+          formControlName="idChofer"
+          [class.invalido]="
+            form.controls.idChofer.touched && form.controls.idChofer.invalid
+          "
+        >
           <option [ngValue]="null" disabled>Seleccioná un chofer</option>
           @for (c of choferes(); track c.id) {
             <option [ngValue]="c.id">{{ c.apellido }}, {{ c.nombre }} ({{ c.dni }})</option>
@@ -107,7 +132,11 @@
       } @else {
         <a routerLink="/rutas" class="btn btn-secundario">Cancelar</a>
       }
-      <button type="submit" class="btn btn-primario" [disabled]="guardando()">
+      <button
+        type="submit"
+        class="btn btn-primario"
+        [disabled]="guardando() || form.invalid"
+      >
         {{ guardando() ? 'Guardando...' : 'Guardar ruta' }}
       </button>
     </div>
@@ -118,10 +147,12 @@
       <header class="servicios-encabezado">
         <div>
           <h2>Servicios de la ruta</h2>
-          <p class="subtitulo">El orden de la lista es el orden en que el chofer va a visitar los puntos.</p>
+          <p class="subtitulo">
+            Arrastrá los servicios para cambiar el orden en que el chofer visita los puntos.
+          </p>
         </div>
         @if (mensajeOrden()) {
-          <span class="mensaje" [class.mensaje-error]="mensajeOrden().startsWith('No')">
+          <span class="mensaje" [class.mensaje-error]="errorOrden()">
             {{ mensajeOrden() }}
           </span>
         }
@@ -133,47 +164,37 @@
         </p>
       } @else {
         <ol class="lista-servicios">
-          @for (s of servicios(); track s.id; let i = $index; let ultimo = $last) {
-            <li>
+          @for (s of servicios(); track s.id; let i = $index) {
+            <li
+              [draggable]="!guardandoOrden()"
+              [class.arrastrando]="arrastrando() === i"
+              [class.destino-arrastre]="
+                destinoArrastre() === i && arrastrando() !== null && arrastrando() !== i
+              "
+              (dragstart)="iniciarArrastre(i, $event)"
+              (dragover)="sobreServicio(i, $event)"
+              (drop)="soltarServicio(i, $event)"
+              (dragend)="finalizarArrastre()"
+              title="Arrastrá para reordenar"
+            >
               <span class="posicion">{{ i + 1 }}</span>
               <span class="detalle">
                 <strong>{{ s.nombre }}</strong>
                 <small>{{ s.direccion }}</small>
               </span>
-              <span class="mover">
-                <button
-                  type="button"
-                  class="btn-mover"
-                  (click)="mover(i, -1)"
-                  [disabled]="i === 0"
-                  aria-label="Subir"
-                >
-                  ↑
-                </button>
-                <button
-                  type="button"
-                  class="btn-mover"
-                  (click)="mover(i, 1)"
-                  [disabled]="ultimo"
-                  aria-label="Bajar"
-                >
-                  ↓
-                </button>
+              <span class="asidero" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="9" cy="6" r="1.5" />
+                  <circle cx="15" cy="6" r="1.5" />
+                  <circle cx="9" cy="12" r="1.5" />
+                  <circle cx="15" cy="12" r="1.5" />
+                  <circle cx="9" cy="18" r="1.5" />
+                  <circle cx="15" cy="18" r="1.5" />
+                </svg>
               </span>
             </li>
           }
         </ol>
-
-        <div class="botones botones-servicios">
-          <button
-            type="button"
-            class="btn btn-primario"
-            [disabled]="!ordenModificado() || guardandoOrden()"
-            (click)="guardarOrden()"
-          >
-            {{ guardandoOrden() ? 'Guardando...' : 'Guardar orden' }}
-          </button>
-        </div>
       }
     </section>
   }
