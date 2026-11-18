@@ -1,0 +1,183 @@
+<div class="tareas">
+  <header class="tareas-encabezado">
+    <div class="tareas-titulo">
+      <h1>Tareas diarias</h1>
+      <p class="subtitulo">
+        Seguimiento de cada jornada: camión asignado, ruta, chofer y estado de la tarea.
+      </p>
+    </div>
+
+    <div class="tareas-acciones">
+      <div class="filtro filtro-busqueda">
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
+        <input
+          #q
+          type="search"
+          placeholder="Buscar patente, ruta o chofer..."
+          aria-label="Buscar tareas por descripción, patente, ruta o chofer"
+          [value]="filtro()"
+          (input)="filtro.set(q.value)"
+        />
+      </div>
+
+      <select
+        #estadoSel
+        class="filtro-select"
+        aria-label="Filtrar por estado"
+        [value]="estadoFiltro()"
+        (change)="cambiarEstadoFiltro(estadoSel.value)"
+      >
+        <option value="">Todos los estados</option>
+        @for (e of estados; track e.valor) {
+          <option [value]="e.valor">{{ e.etiqueta }}</option>
+        }
+      </select>
+
+      <button type="button" class="btn btn-primario" (click)="abrirNuevo()">
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
+        </svg>
+        <span>Nueva Tarea</span>
+      </button>
+    </div>
+  </header>
+
+  @if (error()) {
+    <p class="alerta" role="alert">
+      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+        <path d="M12 9v4" />
+        <path d="M12 17h.01" />
+      </svg>
+      <span>{{ error() }}</span>
+    </p>
+  }
+
+  @if (cargando()) {
+    <div class="tareas-grid" aria-label="Cargando tareas">
+      @for (_ of [1, 2, 3, 4, 5, 6]; track $index) {
+        <div class="cargando-item"></div>
+      }
+    </div>
+  } @else if (filtradas().length === 0) {
+    <div class="estado-vacio">
+      <span class="estado-icono" aria-hidden="true">
+        <svg class="icono" viewBox="0 0 24 24">
+          <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+          <path d="M12 11h4" />
+          <path d="M12 16h4" />
+          <path d="M8 11h.01" />
+          <path d="M8 16h.01" />
+        </svg>
+      </span>
+
+      @if (tareas().length === 0) {
+        <h2>Todavía no hay tareas</h2>
+        <p>Asigná un camión y una ruta a un chofer para crear la primera tarea del día.</p>
+        <button type="button" class="btn btn-primario" (click)="abrirNuevo()">
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 12h14" />
+            <path d="M12 5v14" />
+          </svg>
+          <span>Crear primera tarea</span>
+        </button>
+      } @else {
+        <h2>No hay tareas para mostrar</h2>
+        <p>Probá con otra patente, ruta, chofer o estado.</p>
+        <button
+          type="button"
+          class="btn btn-secundario"
+          (click)="filtro.set(''); estadoFiltro.set('')"
+        >
+          Limpiar filtros
+        </button>
+      }
+    </div>
+  } @else {
+    <div class="tareas-grid" aria-label="Listado de tareas">
+      @for (t of filtradas(); track t.id) {
+        <article class="tarea-card">
+          <div>
+            <div class="tarea-card-fila">
+              <span class="tarea-patente">{{ patente(t) | patente }}</span>
+              <span class="tarea-estado" [attr.data-estado]="t.estado">
+                {{ etiquetaEstado(t.estado) }}
+              </span>
+            </div>
+
+            <h3>{{ t.descripcion || 'Sin descripción' }}</h3>
+
+            <dl class="tarea-datos">
+              <div class="tarea-dato">
+                <dt>
+                  <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="6" cy="19" r="3" />
+                    <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" />
+                    <circle cx="18" cy="5" r="3" />
+                  </svg>
+                  Ruta
+                </dt>
+                <dd>{{ nombreRuta(t) }}</dd>
+              </div>
+
+              <div class="tarea-dato">
+                <dt>
+                  <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                  </svg>
+                  Chofer
+                </dt>
+                <dd>{{ nombreChofer(t) }}</dd>
+              </div>
+
+              <div class="tarea-dato">
+                <dt>
+                  <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M8 2v4" />
+                    <path d="M16 2v4" />
+                    <rect width="18" height="18" x="3" y="4" rx="2" />
+                    <path d="M3 10h18" />
+                  </svg>
+                  Ejecución
+                </dt>
+                <dd>{{ t.fechaEjecucion | date: 'dd/MM/yyyy HH:mm' }}</dd>
+              </div>
+            </dl>
+          </div>
+
+          <div class="tarea-card-pie">
+            <span class="tarea-codigo">TAR-{{ t.id }}</span>
+            
+            <div class="tarea-card-acciones">
+              @for (siguiente of siguientes(t); track siguiente) {
+                <button
+                  type="button"
+                  class="btn btn-chico"
+                  [class.btn-primario]="siguiente !== 'CANCELADO'"
+                  [class.btn-peligro]="siguiente === 'CANCELADO'"
+                  [disabled]="cambiandoId() === t.id"
+                  (click)="cambiarEstado(t, siguiente)"
+                >
+                  {{ accion(siguiente) }}
+                </button>
+              }
+            </div>
+          </div>
+        </article>
+      }
+    </div>
+  }
+</div>
+
+@if (drawerAbierto()) {
+  <div class="drawer-backdrop" (click)="cerrarDrawer()" aria-hidden="true"></div>
+  <aside class="drawer" role="dialog" aria-modal="true" aria-label="Formulario de tarea">
+    <app-tarea-form (cerrar)="cerrarDrawer()" (guardado)="alGuardar($event)" />
+  </aside>
+}
