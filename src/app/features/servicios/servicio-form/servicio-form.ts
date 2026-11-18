@@ -224,14 +224,6 @@ export class ServicioForm implements OnInit, AfterViewInit, OnDestroy {
     this.actualizarPinMapa(latRedondeada, lonRedondeada, this.map?.getZoom() ?? 16);
   }
 
-  onCoordenadasManuales() {
-    const lat = this.form.controls.latitud.value;
-    const lon = this.form.controls.longitud.value;
-    if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
-      this.actualizarPinMapa(lat, lon, 16);
-    }
-  }
-
   // ---------- Autocompletado ----------
 
   private configurarAutocompletado() {

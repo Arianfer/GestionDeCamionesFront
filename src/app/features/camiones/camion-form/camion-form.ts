@@ -3,14 +3,18 @@ import {Component,EventEmitter,Input,OnInit,Output,inject,signal,} from '@angula
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { erroresDeValidacion, mensajeError } from '../../../shared/utils/mensaje-error';
-
-import {
-  Camion,
-  CamionRequest,
-  EstadoCamion,
-  TipoCamion,
-} from '../../../shared/models/camion.model';
+import {Camion,CamionRequest,EstadoCamion,TipoCamion,} from '../../../shared/models/camion.model';
 import { CamionesService } from '../camiones.service';
+
+/** Valores por defecto según el tipo de camión. Se usan al crear; al editar se respeta lo guardado. */
+const CONFIG_POR_TIPO: Record<
+  TipoCamion,
+  { capacidadCarga: number; consumoDieselPorKm: number }
+> = {
+  RECOLECTOR: { capacidadCarga: 15000, consumoDieselPorKm: 0.35 },
+  BARRIOS_PRIVADOS: { capacidadCarga: 10000, consumoDieselPorKm: 0.3 },
+  DAILY: { capacidadCarga: 3500, consumoDieselPorKm: 0.22 },
+};
 
 @Component({
   selector: 'app-camion-form',
@@ -58,15 +62,34 @@ export class CamionForm implements OnInit {
       'DISPONIBLE',
       Validators.required,
     ),
-    capacidadCarga: this.fb.control<number | null>(null, [
-      Validators.required,
-      Validators.min(0),
-    ]),
-    consumoDieselPorKm: this.fb.control<number | null>(null, [Validators.min(0)]),
+    capacidadCarga: this.fb.control<number | null>(
+      CONFIG_POR_TIPO.RECOLECTOR.capacidadCarga,
+      [Validators.required, Validators.min(0)],
+    ),
+    consumoDieselPorKm: this.fb.control<number | null>(
+      CONFIG_POR_TIPO.RECOLECTOR.consumoDieselPorKm,
+      [Validators.min(0)],
+    ),
   });
 
   get esEdicion(): boolean {
     return this.id !== null;
+  }
+
+  /** Valores que se asignan automáticamente al tipo seleccionado (solo al crear). */
+  get valoresPorTipo(): { capacidadCarga: number; consumoDieselPorKm: number } {
+    return CONFIG_POR_TIPO[this.form.controls.tipo.value];
+  }
+
+  alCambiarTipo(event: Event): void {
+    if (this.esEdicion) return;
+
+    const tipo = (event.target as HTMLSelectElement).value as TipoCamion;
+    const config = CONFIG_POR_TIPO[tipo];
+    this.form.patchValue({
+      capacidadCarga: config.capacidadCarga,
+      consumoDieselPorKm: config.consumoDieselPorKm,
+    });
   }
 
   ngOnInit(): void {

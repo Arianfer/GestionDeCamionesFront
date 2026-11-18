@@ -34,10 +34,14 @@
 /* ---------- Encabezado ---------- */
 .tareas-encabezado {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
+}
+
+.tareas-titulo {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .tareas-encabezado h1 {
@@ -58,9 +62,15 @@
 
 .tareas-acciones {
   display: flex;
-  flex-wrap: wrap;
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 10px;
+}
+
+.tareas-acciones .btn {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* ---------- Botones ---------- */
@@ -150,6 +160,8 @@
 }
 
 .filtro input {
+  flex: 1 1 auto;
+  width: 100%;
   min-width: 0;
   padding: 9px 0;
   background: transparent;
@@ -161,10 +173,14 @@
 }
 
 .filtro-busqueda {
+  flex: 0 1 280px;
   width: 280px;
+  min-width: 130px;
 }
 
 .filtro-select {
+  flex: 0 1 150px;
+  min-width: 110px;
   padding: 9px 12px;
   background: var(--color-superficie);
   border: 1px solid var(--color-borde);
@@ -455,6 +471,19 @@
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1024px) {
+  .tareas-encabezado {
+    flex-wrap: wrap;
+  }
+
+  .tareas-titulo,
+  .tareas-acciones {
+    flex: 1 1 100%;
+  }
+
+  .tareas-acciones {
+    flex-wrap: wrap;
+  }
+
   .tareas-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -476,7 +505,9 @@
   }
 
   .filtro-select {
+    flex: 1 1 100%;
     width: 100%;
+    min-width: 0;
   }
 
   .tareas-acciones .btn {
