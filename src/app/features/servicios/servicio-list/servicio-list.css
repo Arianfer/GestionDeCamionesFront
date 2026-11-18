@@ -39,10 +39,14 @@
 /* ---------- Encabezado ---------- */
 .servicios-encabezado {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
+}
+
+.servicios-titulo {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .servicios-encabezado h1 {
@@ -63,9 +67,15 @@
 
 .servicios-acciones {
   display: flex;
-  flex-wrap: wrap;
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 10px;
+}
+
+.servicios-acciones .btn {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* ---------- Botones ---------- */
@@ -136,6 +146,8 @@
 }
 
 .filtro input {
+  flex: 1 1 auto;
+  width: 100%;
   min-width: 0;
   padding: 9px 0;
   background: transparent;
@@ -147,10 +159,14 @@
 }
 
 .filtro-busqueda {
+  flex: 0 1 280px;
   width: 280px;
+  min-width: 130px;
 }
 
 .filtro-select {
+  flex: 0 1 210px;
+  min-width: 110px;
   max-width: 210px;
   padding: 9px 12px;
   background: var(--color-superficie);
@@ -484,6 +500,19 @@
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1024px) {
+  .servicios-encabezado {
+    flex-wrap: wrap;
+  }
+
+  .servicios-titulo,
+  .servicios-acciones {
+    flex: 1 1 100%;
+  }
+
+  .servicios-acciones {
+    flex-wrap: wrap;
+  }
+
   .servicios-layout {
     grid-template-columns: 1fr;
   }

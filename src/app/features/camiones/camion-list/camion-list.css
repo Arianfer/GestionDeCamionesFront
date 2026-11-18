@@ -35,10 +35,14 @@
 /* ---------- Encabezado flotante ---------- */
 .camiones-encabezado {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
+}
+
+.camiones-titulo {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .camiones-encabezado h1 {
@@ -59,9 +63,15 @@
 
 .camiones-acciones {
   display: flex;
-  flex-wrap: wrap;
+  flex: 0 1 auto;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 10px;
+}
+
+.camiones-acciones .btn {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 /* ---------- Botones ---------- */
@@ -131,6 +141,8 @@
 }
 
 .filtro input {
+  flex: 1 1 auto;
+  width: 100%;
   min-width: 0;
   padding: 9px 0;
   background: transparent;
@@ -142,10 +154,14 @@
 }
 
 .filtro-busqueda {
+  flex: 0 1 244px;
   width: 244px;
+  min-width: 130px;
 }
 
 .filtro-select {
+  flex: 0 1 150px;
+  min-width: 110px;
   padding: 9px 12px;
   background: var(--color-superficie);
   border: 1px solid var(--color-borde);
@@ -480,6 +496,19 @@
 
 /* ---------- Responsive ---------- */
 @media (max-width: 1024px) {
+  .camiones-encabezado {
+    flex-wrap: wrap;
+  }
+
+  .camiones-titulo,
+  .camiones-acciones {
+    flex: 1 1 100%;
+  }
+
+  .camiones-acciones {
+    flex-wrap: wrap;
+  }
+
   .camiones-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -501,7 +530,9 @@
   }
 
   .filtro-select {
+    flex: 1 1 100%;
     width: 100%;
+    min-width: 0;
   }
 
   .camiones-acciones .btn {

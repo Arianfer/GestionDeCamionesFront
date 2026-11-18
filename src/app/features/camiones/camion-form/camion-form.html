@@ -84,69 +84,80 @@
           }
         </div>
 
-        <div class="campo">
-          <label for="capacidadCarga">Capacidad de carga <span class="requerido">*</span></label>
-          <input
-            id="capacidadCarga"
-            type="number"
-            min="0"
-            step="1"
-            placeholder="Ej: 15000"
-            formControlName="capacidadCarga"
-            [class.invalido]="
+        @if (esEdicion) {
+          <div class="campo">
+            <label for="capacidadCarga">Capacidad de carga <span class="requerido">*</span></label>
+            <input
+              id="capacidadCarga"
+              type="number"
+              min="0"
+              step="1"
+              placeholder="Ej: 15000"
+              formControlName="capacidadCarga"
+              [class.invalido]="
+                form.controls.capacidadCarga.touched && form.controls.capacidadCarga.invalid
+              "
+            />
+            @if (
               form.controls.capacidadCarga.touched && form.controls.capacidadCarga.invalid
-            "
-          />
-          @if (
-            form.controls.capacidadCarga.touched && form.controls.capacidadCarga.invalid
-          ) {
-            <small class="error">La capacidad es obligatoria y no puede ser negativa.</small>
-          }
-          @if (erroresBackend()['capacidadCarga']) {
-            <small class="error">{{ erroresBackend()['capacidadCarga'] }}</small>
-          }
-        </div>
+            ) {
+              <small class="error">La capacidad es obligatoria y no puede ser negativa.</small>
+            }
+            @if (erroresBackend()['capacidadCarga']) {
+              <small class="error">{{ erroresBackend()['capacidadCarga'] }}</small>
+            }
+          </div>
+        }
 
         <div class="campo campo-completo">
           <label for="tipo">Tipo <span class="requerido">*</span></label>
           <select
             id="tipo"
             formControlName="tipo"
+            (change)="alCambiarTipo($event)"
             [class.invalido]="form.controls.tipo.touched && form.controls.tipo.invalid"
           >
             @for (t of tipos; track t.valor) {
               <option [value]="t.valor">{{ t.etiqueta }}</option>
             }
           </select>
+          @if (!esEdicion) {
+            <small class="ayuda">
+              Capacidad y consumo se asignan automáticamente: {{ valoresPorTipo.capacidadCarga }} kg ·
+              {{ valoresPorTipo.consumoDieselPorKm }} L/km. Podés ajustarlos al editar el camión.
+            </small>
+          }
           @if (erroresBackend()['tipo']) {
             <small class="error">{{ erroresBackend()['tipo'] }}</small>
           }
         </div>
 
-        <div class="campo">
-          <label for="consumoDieselPorKm">Consumo de diésel por km</label>
-          <input
-            id="consumoDieselPorKm"
-            type="number"
-            min="0"
-            step="0.01"
-            placeholder="Ej: 0,35"
-            formControlName="consumoDieselPorKm"
-            [class.invalido]="
+        @if (esEdicion) {
+          <div class="campo">
+            <label for="consumoDieselPorKm">Consumo de diésel por km</label>
+            <input
+              id="consumoDieselPorKm"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="Ej: 0,35"
+              formControlName="consumoDieselPorKm"
+              [class.invalido]="
+                form.controls.consumoDieselPorKm.touched &&
+                form.controls.consumoDieselPorKm.invalid
+              "
+            />
+            @if (
               form.controls.consumoDieselPorKm.touched &&
               form.controls.consumoDieselPorKm.invalid
-            "
-          />
-          @if (
-            form.controls.consumoDieselPorKm.touched &&
-            form.controls.consumoDieselPorKm.invalid
-          ) {
-            <small class="error">El consumo no puede ser negativo.</small>
-          }
-          @if (erroresBackend()['consumoDieselPorKm']) {
-            <small class="error">{{ erroresBackend()['consumoDieselPorKm'] }}</small>
-          }
-        </div>
+            ) {
+              <small class="error">El consumo no puede ser negativo.</small>
+            }
+            @if (erroresBackend()['consumoDieselPorKm']) {
+              <small class="error">{{ erroresBackend()['consumoDieselPorKm'] }}</small>
+            }
+          </div>
+        }
 
         <div class="campo">
           <label for="estadoCamion">Estado operativo <span class="requerido">*</span></label>

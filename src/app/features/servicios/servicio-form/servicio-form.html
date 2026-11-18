@@ -181,8 +181,15 @@
           @if (!cargandoOpciones() && rutas().length === 0) {
             <small class="ayuda">No hay rutas cargadas. Creá una desde la sección Rutas.</small>
           }
+          <small class="ayuda">
+            El orden de visita se asigna automáticamente y se puede ajustar arrastrando los
+            servicios en la edición de la ruta.
+          </small>
           @if (erroresBackend()['idRuta']) {
             <small class="error">{{ erroresBackend()['idRuta'] }}</small>
+          }
+          @if (erroresBackend()['orden']) {
+            <small class="error">{{ erroresBackend()['orden'] }}</small>
           }
         </div>
       </div>
@@ -193,52 +200,16 @@
         <span class="seccion-numero">02</span>
         <div>
           <h2>Ubicación del punto</h2>
-          <p>Buscá la dirección o marcá las coordenadas exactas sobre el mapa.</p>
+          <p>Buscá la dirección o marcá el punto exacto sobre el mapa.</p>
         </div>
       </div>
 
       <div class="form-grid">
-        <div class="campo">
-          <label for="latitud">Latitud <span class="requerido">*</span></label>
-          <input
-            id="latitud"
-            type="number"
-            step="0.000001"
-            formControlName="latitud"
-            placeholder="Ej: -38.0055"
-            [class.invalido]="
-              form.controls.latitud.touched && form.controls.latitud.invalid
-            "
-            (change)="onCoordenadasManuales()"
-          />
-          @if (erroresBackend()['latitud']) {
-            <small class="error">{{ erroresBackend()['latitud'] }}</small>
-          }
-        </div>
-
-        <div class="campo">
-          <label for="longitud">Longitud <span class="requerido">*</span></label>
-          <input
-            id="longitud"
-            type="number"
-            step="0.000001"
-            formControlName="longitud"
-            placeholder="Ej: -57.5426"
-            [class.invalido]="
-              form.controls.longitud.touched && form.controls.longitud.invalid
-            "
-            (change)="onCoordenadasManuales()"
-          />
-          @if (erroresBackend()['longitud']) {
-            <small class="error">{{ erroresBackend()['longitud'] }}</small>
-          }
-        </div>
-
         <div class="campo campo-completo">
           <div class="mapa-header">
             <span class="ayuda">
               Hacé clic en el mapa o arrastrá el punto verde hasta la puerta o esquina exacta
-              del cliente.
+              del cliente. La ubicación se guarda automáticamente.
             </span>
           </div>
           <div #mapaPin class="mini-mapa"></div>
@@ -303,31 +274,6 @@
           }
         </div>
 
-        <div class="campo">
-          <label for="orden">Orden de visita</label>
-          <input
-            id="orden"
-            type="number"
-            min="0"
-            formControlName="orden"
-            [class.invalido]="form.controls.orden.touched && form.controls.orden.invalid"
-          />
-          @if (!esEdicion) {
-            <small class="ayuda">
-              @if (form.controls.idRuta.value > 0) {
-                Se asignó automáticamente después del último servicio de la ruta.
-              } @else {
-                Se calcula automáticamente al elegir una ruta.
-              }
-            </small>
-          }
-          @if (form.controls.orden.touched && form.controls.orden.invalid) {
-            <small class="error">El orden tiene que ser 0 o más.</small>
-          }
-          @if (erroresBackend()['orden']) {
-            <small class="error">{{ erroresBackend()['orden'] }}</small>
-          }
-        </div>
       </div>
     </section>
 
