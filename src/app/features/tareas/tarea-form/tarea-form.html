@@ -1,0 +1,162 @@
+<div class="tarea-form">
+  <header class="tarea-form-encabezado">
+    <div class="tarea-form-titulo">
+      <span class="tarea-form-icono" aria-hidden="true">
+        <svg class="icono" viewBox="0 0 24 24">
+          <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+          <path d="M12 11h4" />
+          <path d="M12 16h4" />
+          <path d="M8 11h.01" />
+          <path d="M8 16h.01" />
+        </svg>
+      </span>
+      <div>
+        <h1>Nueva Tarea</h1>
+        <p class="subtitulo">Asigná un camión disponible y una ruta a un chofer.</p>
+      </div>
+    </div>
+
+    <button type="button" class="btn-cerrar" (click)="cancelar()" aria-label="Cerrar formulario">
+      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M18 6 6 18" />
+        <path d="m6 6 12 12" />
+      </svg>
+    </button>
+  </header>
+
+  @if (cargando()) {
+    <div class="form-panel">
+      <p class="estado-carga">Cargando camiones, rutas y choferes...</p>
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="guardar()" class="form-panel" novalidate>
+      @if (error()) {
+        <p class="alerta" role="alert">
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+            <path d="M12 9v4" />
+            <path d="M12 17h.01" />
+          </svg>
+          <span>{{ error() }}</span>
+        </p>
+      }
+
+      <div class="form-grid">
+        <div class="campo">
+          <label for="descripcion">Descripción</label>
+          <input
+            id="descripcion"
+            type="text"
+            maxlength="100"
+            placeholder="Ej: Recolección turno mañana"
+            formControlName="descripcion"
+            [class.invalido]="form.controls.descripcion.touched && form.controls.descripcion.invalid"
+          />
+          @if (form.controls.descripcion.touched && form.controls.descripcion.invalid) {
+            <small class="error">La descripción no puede superar los 100 caracteres.</small>
+          }
+          @if (erroresBackend()['descripcion']) {
+            <small class="error">{{ erroresBackend()['descripcion'] }}</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="fechaEjecucion">Fecha y hora de ejecución <span class="requerido">*</span></label>
+          <input
+            id="fechaEjecucion"
+            type="datetime-local"
+            formControlName="fechaEjecucion"
+            [class.invalido]="
+              form.controls.fechaEjecucion.touched && form.controls.fechaEjecucion.invalid
+            "
+          />
+          @if (form.controls.fechaEjecucion.touched && form.controls.fechaEjecucion.invalid) {
+            <small class="error">Indicá cuándo se va a ejecutar la tarea.</small>
+          }
+          @if (erroresBackend()['fechaEjecucion']) {
+            <small class="error">{{ erroresBackend()['fechaEjecucion'] }}</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="idCamion">Camión <span class="requerido">*</span></label>
+          <select
+            id="idCamion"
+            formControlName="idCamion"
+            [class.invalido]="form.controls.idCamion.touched && form.controls.idCamion.invalid"
+          >
+            <option [ngValue]="null" disabled>Seleccioná un camión</option>
+            @for (c of camionesDisponibles(); track c.id) {
+              <option [ngValue]="c.id">{{ c.patente | patente }} · {{ c.capacidadCarga }} kg</option>
+            }
+          </select>
+          @if (camionesDisponibles().length === 0) {
+            <small class="error">
+              No hay camiones disponibles. Se libera uno al completar o cancelar su tarea.
+            </small>
+          } @else if (form.controls.idCamion.touched && form.controls.idCamion.invalid) {
+            <small class="error">Elegí un camión.</small>
+          } @else {
+            <small class="ayuda">Solo se listan los camiones en estado Disponible.</small>
+          }
+          @if (erroresBackend()['idCamion']) {
+            <small class="error">{{ erroresBackend()['idCamion'] }}</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="idRuta">Ruta <span class="requerido">*</span></label>
+          <select
+            id="idRuta"
+            formControlName="idRuta"
+            [class.invalido]="form.controls.idRuta.touched && form.controls.idRuta.invalid"
+          >
+            <option [ngValue]="null" disabled>Seleccioná una ruta</option>
+            @for (r of rutas(); track r.idRuta) {
+              <option [ngValue]="r.idRuta">{{ r.nombre }}</option>
+            }
+          </select>
+          @if (form.controls.idRuta.touched && form.controls.idRuta.invalid) {
+            <small class="error">Elegí una ruta.</small>
+          }
+          @if (erroresBackend()['idRuta']) {
+            <small class="error">{{ erroresBackend()['idRuta'] }}</small>
+          }
+        </div>
+
+        <div class="campo">
+          <label for="idUsuario">Chofer <span class="requerido">*</span></label>
+          <select
+            id="idUsuario"
+            formControlName="idUsuario"
+            [class.invalido]="form.controls.idUsuario.touched && form.controls.idUsuario.invalid"
+          >
+            <option [ngValue]="null" disabled>Seleccioná un chofer</option>
+            @for (u of choferes(); track u.id) {
+              <option [ngValue]="u.id">{{ u.apellido }}, {{ u.nombre }}</option>
+            }
+          </select>
+          @if (form.controls.idUsuario.touched && form.controls.idUsuario.invalid) {
+            <small class="error">Elegí un chofer.</small>
+          } @else {
+            <small class="ayuda">Al elegir la ruta se sugiere su chofer; podés cambiarlo.</small>
+          }
+          @if (erroresBackend()['idUsuario']) {
+            <small class="error">{{ erroresBackend()['idUsuario'] }}</small>
+          }
+        </div>
+      </div>
+
+      <div class="botones">
+        <button type="button" class="btn btn-secundario" (click)="cancelar()">Cancelar</button>
+        <button type="submit" class="btn btn-primario" [disabled]="guardando()">
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M20 6 9 17l-5-5" />
+          </svg>
+          <span>{{ guardando() ? 'Guardando...' : 'Crear tarea' }}</span>
+        </button>
+      </div>
+    </form>
+  }
+</div>

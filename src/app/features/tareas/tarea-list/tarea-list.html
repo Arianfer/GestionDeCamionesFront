@@ -35,6 +35,14 @@
           <option [value]="e.valor">{{ e.etiqueta }}</option>
         }
       </select>
+
+      <button type="button" class="btn btn-primario" (click)="abrirNuevo()">
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 12h14" />
+          <path d="M12 5v14" />
+        </svg>
+        <span>Nueva Tarea</span>
+      </button>
     </div>
   </header>
 
@@ -70,7 +78,14 @@
 
       @if (tareas().length === 0) {
         <h2>Todavía no hay tareas</h2>
-        <p>Cuando se asigne un camión y una ruta a un chofer, la tarea va a aparecer acá.</p>
+        <p>Asigná un camión y una ruta a un chofer para crear la primera tarea del día.</p>
+        <button type="button" class="btn btn-primario" (click)="abrirNuevo()">
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 12h14" />
+            <path d="M12 5v14" />
+          </svg>
+          <span>Crear primera tarea</span>
+        </button>
       } @else {
         <h2>No hay tareas para mostrar</h2>
         <p>Probá con otra patente, ruta, chofer o estado.</p>
@@ -144,3 +159,10 @@
     </div>
   }
 </div>
+
+@if (drawerAbierto()) {
+  <div class="drawer-backdrop" (click)="cerrarDrawer()" aria-hidden="true"></div>
+  <aside class="drawer" role="dialog" aria-modal="true" aria-label="Formulario de tarea">
+    <app-tarea-form (cerrar)="cerrarDrawer()" (guardado)="alGuardar($event)" />
+  </aside>
+}
