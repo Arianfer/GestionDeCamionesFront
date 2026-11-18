@@ -9,14 +9,267 @@
   flex-direction: column;
   height: 100%;
   width: 100%;
-  background: #ffffff;
+  background: #f5f7f6;
   overflow: hidden;
   position: relative;
 }
 
+/* =========================================================
+   VISTA 1: INICIO SEMANAL (ESTÉTICA TARJETAS CIAGESER)
+   ========================================================= */
+.semana-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 18px;
+  background: #1b5e20;
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.14);
+  z-index: 10;
+}
+
+.semana-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.semana-logo {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  font-size: 20px;
+}
+
+.semana-header h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.semana-header p {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  opacity: 0.85;
+}
+
+.semana-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 18px 16px 28px;
+}
+
+.dias-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.dia-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  text-align: left;
+  width: 100%;
+  padding: 16px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.dia-card:not(:disabled):active {
+  transform: scale(0.985);
+}
+
+/* Día actual (HOY) resaltado con reborde verde */
+.dia-card.es-hoy {
+  border: 2.5px solid #16a34a;
+  background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 38%);
+  box-shadow: 0 6px 18px rgba(22, 163, 74, 0.16);
+}
+
+/* Otros días que no son hoy: apagados / gris */
+.dia-card:not(.es-hoy) {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+  color: #64748b;
+}
+
+.dia-card.sin-tarea {
+  opacity: 0.62;
+  cursor: default;
+}
+
+.dia-card.tiene-tarea:not(.es-hoy):hover {
+  border-color: #94a3b8;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+.dia-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.dia-badge-abrev {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 10px;
+  border-radius: 10px;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.dia-badge-abrev.hoy {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.pill-hoy {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #16a34a;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pill-asignado {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #334155;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pill-libre {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.dia-card-centro {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.dia-nombre {
+  font-size: 18px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.dia-card:not(.es-hoy) .dia-nombre {
+  color: #475569;
+}
+
+.dia-fecha {
+  font-size: 13px;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.dia-detalle {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 12.5px;
+}
+
+.dia-card.es-hoy .dia-detalle {
+  background: #ffffff;
+  border-color: #bbf7d0;
+}
+
+.dia-detalle.vacio {
+  align-items: center;
+  justify-content: center;
+  padding: 16px 12px;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.detalle-fila {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.detalle-fila span {
+  color: #64748b;
+}
+
+.detalle-fila strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.dia-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #e2e8f0;
+  font-size: 12px;
+}
+
+.tar-id {
+  font-family: ui-monospace, Consolas, monospace;
+  font-weight: 700;
+  color: #94a3b8;
+}
+
+.accion-ingresar {
+  font-weight: 700;
+  color: #15803d;
+}
+
+.dia-card:not(.es-hoy) .accion-ingresar {
+  color: #475569;
+}
+
+.dia-card.skeleton {
+  height: 170px;
+  background: #e2e8f0;
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% { opacity: 0.5; }
+}
+
+/* =========================================================
+   VISTA 2: MAPA DE NAVEGACIÓN DEL CHOFER
+   ========================================================= */
 .top-card {
   background: #ffffff;
-  padding: 14px 16px;
+  padding: 12px 14px;
   border-bottom: 1px solid #e2e8f0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   z-index: 10;
@@ -44,26 +297,43 @@
 .parada-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
+  flex-wrap: nowrap;
+  gap: 5px;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.btn-volver-mini,
+.badge-contador,
+.badge-residuo,
+.btn-lista-mini,
+.btn-salir-mini {
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-size: 11px;
+  padding: 4px 7px;
+  border-radius: 8px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.btn-volver-mini {
+  background: #f1f5f9;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+  cursor: pointer;
 }
 
 .badge-contador {
   background: #1e293b;
   color: #ffffff;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 12px;
+  border-radius: 10px;
 }
 
 .badge-residuo {
   background: #e2e8f0;
   color: #334155;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 12px;
+  border-radius: 10px;
 }
 
 .badge-residuo.reciclable {
@@ -71,21 +341,28 @@
   color: #166534;
 }
 
+.btn-lista-mini {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+  cursor: pointer;
+}
+
+.btn-lista-mini:active {
+  transform: scale(0.96);
+}
+
 .btn-salir-mini {
   margin-left: auto;
   background: #fee2e2;
   color: #b91c1c;
   border: none;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
   cursor: pointer;
 }
 
 .titulo-parada {
   margin: 0;
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 700;
   color: #0f172a;
 }
@@ -94,6 +371,17 @@
   margin: 4px 0 0 0;
   font-size: 14px;
   color: #475569;
+}
+
+.obs-parada {
+  margin: 6px 0 0 0;
+  padding: 4px 10px;
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #9a3412;
 }
 
 .mapa-container {
@@ -218,6 +506,158 @@
 
 .btn-cancelar { background: #e2e8f0; color: #334155; }
 .btn-confirmar { background: #0f172a; color: #ffffff; }
+
+/* Panel desplegable con la lista completa del día */
+.sheet-lista {
+  max-height: 82dvh;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 16px 20px;
+}
+
+.lista-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  margin-bottom: 10px;
+}
+
+.lista-header h3 {
+  margin: 0;
+  font-size: 17px;
+  color: #0f172a;
+}
+
+.lista-header p {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: #64748b;
+}
+
+.btn-cerrar-lista {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.lista-scroll {
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 2px;
+}
+
+.lista-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  cursor: pointer;
+}
+
+.lista-item.actual {
+  border: 2px solid #1a73e8;
+  background: #eff6ff;
+}
+
+.lista-item.completada {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  opacity: 0.78;
+}
+
+.lista-item.falla {
+  background: #fef2f2;
+  border-color: #fecaca;
+  opacity: 0.82;
+}
+
+.lista-num {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #334155;
+  font-size: 12px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+  margin-top: 2px;
+}
+
+.lista-item.actual .lista-num {
+  background: #1a73e8;
+  color: #ffffff;
+}
+
+.lista-item.completada .lista-num {
+  background: #16a34a;
+  color: #ffffff;
+}
+
+.lista-item.falla .lista-num {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.lista-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.lista-titulo-fila {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.lista-titulo-fila strong {
+  font-size: 14px;
+  color: #0f172a;
+}
+
+.lista-dir {
+  font-size: 12.5px;
+  color: #64748b;
+}
+
+.lista-obs {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #9a3412;
+  margin-top: 2px;
+}
+
+.tag-actual,
+.tag-ok,
+.tag-fail {
+  flex-shrink: 0;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.tag-actual { background: #1a73e8; color: #ffffff; }
+.tag-ok     { background: #dcfce7; color: #166534; }
+.tag-fail   { background: #fee2e2; color: #b91c1c; }
 
 ::ng-deep .parada-circle {
   display: flex;

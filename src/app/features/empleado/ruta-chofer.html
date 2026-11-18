@@ -1,89 +1,246 @@
 <div class="app-chofer">
-  <header class="top-card">
-    @if (cargando()) {
-      <div class="info-central">Cargando hoja de ruta...</div>
-    } @else if (errorMsg()) {
-      <div class="info-central error-text">{{ errorMsg() }}</div>
-    } @else if (rutaFinalizada()) {
-      <div class="info-central exito-text">
-        <strong>🎉 ¡Recorrido Finalizado!</strong>
-        <span>Todas las paradas fueron gestionadas.</span>
+  @if (vista() === 'DIAS') {
+    <!-- VISTA 1: INICIO SEMANAL DEL CHOFER (LUNES A DOMINGO) -->
+    <header class="semana-header">
+      <div class="semana-brand">
+        <span class="semana-logo">🚛</span>
+        <div>
+          <h1>Mis Recorridos</h1>
+          <p>Seleccioná el día de tu hoja de ruta</p>
+        </div>
       </div>
-    } @else if (paradaActual(); as actual) {
-      <div class="parada-header">
-        <span class="badge-contador">Parada {{ indiceActual() + 1 }} de {{ paradas().length }}</span>
-        <span class="badge-residuo" [class.reciclable]="actual.tipoResiduo === 'RECICLABLE'">
-          {{ actual.tipoResiduo }}
-        </span>
-        <button class="btn-salir-mini" (click)="salir()">Salir</button>
-      </div>
-      <h2 class="titulo-parada">Siguiente: {{ actual.nombre }}</h2>
-      <p class="direccion-parada">📍 {{ actual.direccion }}</p>
-    }
-  </header>
+      <button class="btn-salir-mini" (click)="salir()">Salir</button>
+    </header>
 
-  <main class="mapa-container">
-    <div #mapContainer class="leaflet-map"></div>
+    <main class="semana-body">
+      @if (cargando()) {
+        <div class="dias-grid">
+          @for (_ of [1, 2, 3, 4, 5, 6, 7]; track $index) {
+            <div class="dia-card skeleton"></div>
+          }
+        </div>
+      } @else if (errorMsg()) {
+        <div class="estado-box error-text">{{ errorMsg() }}</div>
+      } @else {
+        <div class="dias-grid">
+          @for (dia of diasSemana(); track dia.fechaIso) {
+            <button
+              type="button"
+              class="dia-card"
+              [class.es-hoy]="dia.esHoy"
+              [class.tiene-tarea]="!!dia.tarea"
+              [class.sin-tarea]="!dia.tarea"
+              [disabled]="!dia.tarea"
+              (click)="seleccionarDia(dia)"
+            >
+              <div class="dia-card-top">
+                <span class="dia-badge-abrev" [class.hoy]="dia.esHoy">{{ dia.abreviatura }}</span>
+
+                @if (dia.esHoy) {
+                  <span class="pill-hoy">● Hoy</span>
+                } @else if (dia.tarea) {
+                  <span class="pill-asignado">● Asignado</span>
+                } @else {
+                  <span class="pill-libre">Sin ruta</span>
+                }
+              </div>
+
+              <div class="dia-card-centro">
+                <strong class="dia-nombre">{{ dia.nombreDia }}</strong>
+                <span class="dia-fecha">{{ dia.fechaCorta }}</span>
+              </div>
+
+              @if (dia.tarea; as t) {
+                <div class="dia-detalle">
+                  <div class="detalle-fila">
+                    <span>Ruta</span>
+                    <strong>{{ dia.nombreRuta }}</strong>
+                  </div>
+                  @if (dia.patenteCamion) {
+                    <div class="detalle-fila">
+                      <span>Camión</span>
+                      <strong>{{ dia.patenteCamion }}</strong>
+                    </div>
+                  }
+                  @if (dia.horaEjecucion) {
+                    <div class="detalle-fila">
+                      <span>Salida</span>
+                      <strong>{{ dia.horaEjecucion }} hs</strong>
+                    </div>
+                  }
+                </div>
+
+                <div class="dia-card-footer">
+                  <span class="tar-id">TAR-{{ t.id }}</span>
+                  <span class="accion-ingresar">Iniciar recorrido →</span>
+                </div>
+              } @else {
+                <div class="dia-detalle vacio">
+                  <span>Sin recorrido asignado</span>
+                </div>
+              }
+            </button>
+          }
+        </div>
+      }
+    </main>
+  } @else {
+    <!-- VISTA 2: MAPA DE NAVEGACIÓN DEL DÍA SELECCIONADO -->
+    <header class="top-card">
+      @if (cargandoMapa()) {
+        <div class="parada-header">
+          <button class="btn-volver-mini" (click)="volverADias()">← Días</button>
+          <span class="info-central">Cargando hoja de ruta...</span>
+        </div>
+      } @else if (errorMsg()) {
+        <div class="parada-header">
+          <button class="btn-volver-mini" (click)="volverADias()">← Días</button>
+          <span class="info-central error-text">{{ errorMsg() }}</span>
+        </div>
+      } @else if (rutaFinalizada()) {
+        <div class="parada-header">
+          <button class="btn-volver-mini" (click)="volverADias()">← Días</button>
+          <button class="btn-lista-mini" (click)="listaAbierta.set(true)">📋 Lista</button>
+          <button class="btn-salir-mini" (click)="salir()">Salir</button>
+        </div>
+        <div class="info-central exito-text">
+          <strong>🎉 ¡Recorrido Finalizado!</strong>
+          <span>Todas las paradas fueron gestionadas.</span>
+        </div>
+      } @else if (paradaActual(); as actual) {
+        <div class="parada-header">
+          <button class="btn-volver-mini" (click)="volverADias()">← Días</button>
+          <span class="badge-contador">Parada {{ indiceActual() + 1 }} de {{ paradas().length }}</span>
+          <span class="badge-residuo" [class.reciclable]="actual.tipoResiduo === 'RECICLABLE'">
+            {{ actual.tipoResiduo }}
+          </span>
+          <button class="btn-lista-mini" (click)="listaAbierta.set(true)">📋 Lista</button>
+          <button class="btn-salir-mini" (click)="salir()">Salir</button>
+        </div>
+        <h2 class="titulo-parada">Siguiente: {{ actual.nombre }}</h2>
+        <p class="direccion-parada">📍 {{ actual.direccion }}</p>
+        @if (actual.motivo) {
+          <p class="obs-parada">📝 Observación: {{ actual.motivo }}</p>
+        }
+      }
+    </header>
+
+    <main class="mapa-container">
+      <div #mapContainer class="leaflet-map"></div>
+
+      @if (paradaActual()) {
+        <button class="fab-navegar" (click)="abrirNavegacionGps()">
+          🧭 Navegar GPS
+        </button>
+      }
+    </main>
 
     @if (paradaActual()) {
-      <button class="fab-navegar" (click)="abrirNavegacionGps()">
-        🧭 Navegar GPS
-      </button>
+      <footer class="bottom-controls">
+        <button class="btn-accion btn-falla" (click)="abrirModalFalla()" aria-label="No recolectado">
+          ✖
+          <span>No hecho</span>
+        </button>
+
+        <button class="btn-accion btn-exito" (click)="marcarCompletada()" aria-label="Completado">
+          ✔
+          <span>Hecho</span>
+        </button>
+
+        <button class="btn-accion btn-alerta" (click)="abrirModalIncidencia()" aria-label="Observación">
+          ✎
+          <span>Observación</span>
+        </button>
+      </footer>
     }
-  </main>
 
-  @if (paradaActual()) {
-    <footer class="bottom-controls">
-      <button class="btn-accion btn-falla" (click)="abrirModalFalla()" aria-label="No recolectado">
-        ✖
-        <span>No hecho</span>
-      </button>
-
-      <button class="btn-accion btn-exito" (click)="marcarCompletada()" aria-label="Completado">
-        ✔
-        <span>Hecho</span>
-      </button>
-
-      <button class="btn-accion btn-alerta" (click)="abrirModalIncidencia()" aria-label="Inconveniente">
-        ❗
-        <span>Novedad</span>
-      </button>
-    </footer>
-  }
-
-  @if (modalActivo()) {
-    <div class="modal-backdrop" (click)="modalActivo.set(null)">
-      <div class="bottom-sheet" (click)="$event.stopPropagation()">
-        @if (modalActivo() === 'FALLA') {
-          <h3>❌ Motivo de no recolección</h3>
-          <select class="sheet-input" [ngModel]="motivoSeleccionado()" (ngModelChange)="motivoSeleccionado.set($event)">
-            @for (m of motivosFalla; track m) {
-              <option [value]="m">{{ m }}</option>
+    @if (modalActivo()) {
+      <div class="modal-backdrop" (click)="modalActivo.set(null)">
+        <div class="bottom-sheet" (click)="$event.stopPropagation()">
+          @if (modalActivo() === 'FALLA') {
+            <h3>❌ Motivo de no recolección</h3>
+            <select class="sheet-input" [ngModel]="motivoSeleccionado()" (ngModelChange)="motivoSeleccionado.set($event)">
+              @for (m of motivosFalla; track m) {
+                <option [value]="m">{{ m }}</option>
+              }
+            </select>
+            @if (motivoSeleccionado() === 'Otros') {
+              <input
+                type="text"
+                class="sheet-input"
+                placeholder="Escribí el motivo..."
+                [ngModel]="textoObservacion()"
+                (ngModelChange)="textoObservacion.set($event)">
             }
-          </select>
-          @if (motivoSeleccionado() === 'Otros') {
+          } @else {
+            <h3>📝 Registrar observación</h3>
             <input
               type="text"
               class="sheet-input"
-              placeholder="Escribí el motivo..."
+              placeholder="Ej: Contenedor roto o desbordado..."
               [ngModel]="textoObservacion()"
               (ngModelChange)="textoObservacion.set($event)">
           }
-        } @else {
-          <h3>❗ Reportar inconveniente</h3>
-          <input
-            type="text"
-            class="sheet-input"
-            placeholder="Ej: Contenedor roto o desbordado..."
-            [ngModel]="textoObservacion()"
-            (ngModelChange)="textoObservacion.set($event)">
-        }
 
-        <div class="sheet-actions">
-          <button class="btn-cancelar" (click)="modalActivo.set(null)">Cancelar</button>
-          <button class="btn-confirmar" (click)="confirmarModal()">Confirmar</button>
+          <div class="sheet-actions">
+            <button class="btn-cancelar" (click)="modalActivo.set(null)">Cancelar</button>
+            <button class="btn-confirmar" (click)="confirmarModal()">Confirmar</button>
+          </div>
         </div>
       </div>
-    </div>
+    }
+
+    @if (listaAbierta()) {
+      <div class="modal-backdrop" (click)="listaAbierta.set(false)">
+        <div class="bottom-sheet sheet-lista" (click)="$event.stopPropagation()">
+          <div class="lista-header">
+            <div>
+              <h3>📋 Hoja de ruta completa</h3>
+              <p>{{ ruta()?.nombre }} · {{ paradas().length }} paradas</p>
+            </div>
+            <button type="button" class="btn-cerrar-lista" (click)="listaAbierta.set(false)">✕</button>
+          </div>
+
+          <div class="lista-scroll">
+            @for (p of paradas(); track p.id; let i = $index) {
+              <div
+                class="lista-item"
+                [class.actual]="i === indiceActual()"
+                [class.completada]="p.estadoParada === 'COMPLETADA'"
+                [class.falla]="p.estadoParada === 'FALLA'"
+                (click)="irAParada(i)"
+              >
+                <div class="lista-num">
+                  @if (p.estadoParada === 'COMPLETADA') {
+                    ✓
+                  } @else if (p.estadoParada === 'FALLA') {
+                    ✕
+                  } @else {
+                    {{ i + 1 }}
+                  }
+                </div>
+
+                <div class="lista-info">
+                  <div class="lista-titulo-fila">
+                    <strong>{{ p.nombre }}</strong>
+                    @if (i === indiceActual()) {
+                      <span class="tag-actual">Actual</span>
+                    } @else if (p.estadoParada === 'COMPLETADA') {
+                      <span class="tag-ok">Hecho</span>
+                    } @else if (p.estadoParada === 'FALLA') {
+                      <span class="tag-fail">No hecho</span>
+                    }
+                  </div>
+                  <span class="lista-dir">{{ p.direccion }}</span>
+                  @if (p.motivo) {
+                    <span class="lista-obs">📝 {{ p.motivo }}</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    }
   }
 </div>

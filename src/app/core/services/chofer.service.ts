@@ -15,7 +15,6 @@ export interface ServicioParada {
   orden: number;
   idRuta?: number;
   idCliente?: number;
-  // Campos auxiliares solo para el estado visual en la pantalla del chofer
   estadoParada?: 'PENDIENTE' | 'COMPLETADA' | 'FALLA' | 'INCIDENCIA';
   motivo?: string;
 }
@@ -46,10 +45,16 @@ export interface TareaActiva {
 export class ChoferService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/tareas`;
+  private rutasUrl = `${environment.apiUrl}/rutas`;
 
   // Trae la ruta asignada con sus paradas ya ordenadas por el campo 'orden'
   obtenerMiRuta(choferId: number): Observable<RutaChofer> {
     return this.http.get<RutaChofer>(`${this.apiUrl}/mi-ruta/${choferId}`);
+  }
+
+  // Trae una ruta específica por su ID (para abrir la tarea del día seleccionado)
+  obtenerRutaPorId(idRuta: number): Observable<RutaChofer> {
+    return this.http.get<RutaChofer>(`${this.rutasUrl}/${idRuta}`);
   }
 
   // Trae las tareas activas (PENDIENTE o EN_CURSO) del chofer
