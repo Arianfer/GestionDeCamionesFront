@@ -11,6 +11,7 @@ import { PatentePipe } from '../../../shared/pipes/patente.pipe';
 import { CamionesService } from '../../camiones/camiones.service';
 import { RutasService } from '../../rutas/rutas.service';
 import { UsuariosService } from '../../usuarios/usuarios.service';
+import { erroresDeCampos, mensajeErrorTarea } from '../tarea-errores';
 import { TareasService } from '../tareas.service';
 
 @Component({
@@ -115,12 +116,15 @@ export class TareaForm implements OnInit {
       error: (err: HttpErrorResponse) => {
         this.guardando.set(false);
 
-        if (err.status === 400 && err.error && typeof err.error === 'object') {
-          this.erroresBackend.set(err.error);
+        // Validación de campos: se muestra debajo de cada input
+        const campos = erroresDeCampos(err);
+        if (campos) {
+          this.erroresBackend.set(campos);
           return;
         }
 
-        this.error.set('No se pudo crear la tarea. Probá de nuevo.');
+        // Errores de negocio (ej. camión no disponible): se muestran arriba del form
+        this.error.set(mensajeErrorTarea(err, 'crear la tarea'));
       },
     });
   }

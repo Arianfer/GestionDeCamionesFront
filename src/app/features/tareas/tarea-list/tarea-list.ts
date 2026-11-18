@@ -13,6 +13,7 @@ import { CamionesService } from '../../camiones/camiones.service';
 import { RutasService } from '../../rutas/rutas.service';
 import { UsuariosService } from '../../usuarios/usuarios.service';
 import { TareaForm } from '../tarea-form/tarea-form';
+import { mensajeErrorTarea } from '../tarea-errores';
 import { ESTADOS_TAREA, accionEstado, etiquetaEstado, siguientesDe } from '../tarea-estados';
 import { TareasService } from '../tareas.service';
 
@@ -148,9 +149,12 @@ export class TareaList implements OnInit {
           `Tarea TAR-${actualizada.id} ${etiquetaEstado(actualizada.estado).toLowerCase()}`,
         );
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
         this.cambiandoId.set(null);
-        this.alertService.error('No se pudo cambiar el estado', 'Probá de nuevo.');
+        this.alertService.error(
+          'No se pudo cambiar el estado',
+          mensajeErrorTarea(err, 'cambiar el estado de la tarea'),
+        );      
       },
     });
   }
