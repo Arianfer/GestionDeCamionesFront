@@ -38,15 +38,28 @@ export class AlertService {
     });
   }
 
-  async confirmarEliminacion(entidad: string, detalle?: string): Promise<boolean> {
+  /** Confirmación con la misma animación y estilo que ya usa el alta de servicios. */
+  async confirmar({
+    titulo,
+    texto = 'Esta acción no se puede deshacer.',
+    confirmText = 'Sí, eliminar',
+    icon = 'warning',
+    confirmColor = '#dc3545',
+  }: {
+    titulo: string;
+    texto?: string;
+    confirmText?: string;
+    icon?: 'warning' | 'question' | 'info' | 'error';
+    confirmColor?: string;
+  }): Promise<boolean> {
     const res = await Swal.fire({
-      title: `¿Eliminar ${entidad}?`,
-      text: detalle || 'Esta acción no se puede deshacer.',
-      icon: 'warning',
+      title: titulo,
+      text: texto,
+      icon,
       showCancelButton: true,
-      confirmButtonColor: '#dc3545',
+      confirmButtonColor: confirmColor,
       cancelButtonColor: '#6c757d',
-      confirmButtonText: 'Sí, eliminar',
+      confirmButtonText: confirmText,
       cancelButtonText: 'Cancelar',
       reverseButtons: true
     });
@@ -73,6 +86,14 @@ export class AlertService {
     return res.isConfirmed;
   }
 
+  confirmarEliminacion(entidad: string, detalle?: string): Promise<boolean> {
+    return this.confirmarAccion(
+      `¿Eliminar ${entidad}?`,
+      detalle ?? 'Esta acción no se puede deshacer.',
+      'Sí, eliminar',
+    );
+  }
+
   async confirmarLogout(): Promise<boolean> {
     const res = await Swal.fire({
       title: '¿Cerrar sesión?',
@@ -87,4 +108,6 @@ export class AlertService {
     });
     return res.isConfirmed;
   }
+
 }
+

@@ -210,9 +210,10 @@ export class ServicioList implements OnInit {
   }
 
   async eliminar(s: Servicio): Promise<void> {
-    const ok = await this.alertService.confirmarEliminacion(
-      `el servicio "${s.nombre}"`,
+    const ok = await this.alertService.confirmarAccion(
+      `¿Eliminar el servicio "${s.nombre}"?`,
       `Ubicación: ${s.direccion}. Esta acción no se puede deshacer.`,
+      'Sí, eliminar',
     );
     if (!ok) return;
 

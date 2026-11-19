@@ -16,10 +16,10 @@ import { mensajeError } from '../../../shared/utils/mensaje-error';
 })
 export class UsuarioList implements OnInit {
   private readonly usuariosService = inject(UsuariosService);
+  private readonly alertService = inject(AlertService);
   private readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly alertService = inject(AlertService);
 
   readonly usuarios = signal<Usuario[]>([]);
   readonly filtro = signal('');

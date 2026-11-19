@@ -2,6 +2,7 @@ import {
   AfterViewInit,
   Component,
   ElementRef,
+  computed,
   EventEmitter,
   Input,
   OnDestroy,
@@ -31,7 +32,7 @@ import {
 import { Cliente } from '../../../shared/models/cliente.model';
 import { Ruta } from '../../../shared/models/ruta.model';
 import { AlertService } from '../../../core/services/alert.service';
-
+import { normalizar } from '../../../shared/utils/normalizar';
 
 @Component({
   selector: 'app-servicio-form',
@@ -66,7 +67,25 @@ export class ServicioForm implements OnInit, AfterViewInit, OnDestroy {
   erroresBackend = signal<Record<string, string>>({});
 
   clientes = signal<Cliente[]>([]);
+  clienteBusqueda = signal('');
+  clientesDesplegados = signal(false);
+  clientesFiltrados = computed(() => {
+    const q = normalizar(this.clienteBusqueda());
+    const coincidentes = q
+      ? this.clientes().filter((c) => normalizar(`${c.razonSocial} ${c.cuit}`).includes(q))
+      : this.clientes();
+    return coincidentes.slice(0, 12);
+  });
   rutas = signal<Ruta[]>([]);
+  rutaBusqueda = signal('');
+  rutasDesplegados = signal(false);
+  rutasFiltrados = computed(() => {
+    const q = normalizar(this.rutaBusqueda());
+    const coincidentes = q
+      ? this.rutas().filter((r) => normalizar(r.nombre).includes(q))
+      : this.rutas();
+    return coincidentes.slice(0, 12);
+  });
   cargandoOpciones = signal(true);
   private ultimosOrdenes = signal<Map<number, number>>(new Map());
   private subRuta?: Subscription;
@@ -129,6 +148,8 @@ export class ServicioForm implements OnInit, AfterViewInit, OnDestroy {
           idCliente: s.idCliente,
           idRuta: s.idRuta,
         });
+        this.sincronizarTextoCliente();
+        this.sincronizarTextoRuta();
         this.actualizarPinMapa(s.latitud, s.longitud, 16);
       },
       error: (err: HttpErrorResponse) => {
@@ -259,6 +280,76 @@ export class ServicioForm implements OnInit, AfterViewInit, OnDestroy {
       });
   }
 
+  // ---------- Selección de cliente con búsqueda ----------
+
+  onClienteBusqueda(valor: string): void {
+    this.clienteBusqueda.set(valor);
+    this.clientesDesplegados.set(true);
+
+    const seleccionado = this.clientes().find(
+      (c) => c.id === this.form.controls.idCliente.value,
+    );
+    if (!seleccionado || normalizar(seleccionado.razonSocial) !== normalizar(valor)) {
+      this.form.controls.idCliente.setValue(0);
+    }
+  }
+
+  elegirCliente(cliente: Cliente, evento?: Event): void {
+    evento?.preventDefault();
+    this.form.controls.idCliente.setValue(cliente.id);
+    this.form.controls.idCliente.markAsTouched();
+    this.form.controls.idCliente.markAsDirty();
+    this.clienteBusqueda.set(cliente.razonSocial);
+    this.clientesDesplegados.set(false);
+  }
+
+  elegirPrimerCliente(evento: Event): void {
+    const primero = this.clientesFiltrados()[0];
+    if (primero) {
+      evento.preventDefault();
+      this.elegirCliente(primero);
+    }
+  }
+
+  sincronizarTextoCliente(): void {
+    const cliente = this.clientes().find((c) => c.id === this.form.controls.idCliente.value);
+    if (cliente) this.clienteBusqueda.set(cliente.razonSocial);
+  }
+
+  // ---------- Selección de ruta con búsqueda ----------
+
+  onRutaBusqueda(valor: string): void {
+    this.rutaBusqueda.set(valor);
+    this.rutasDesplegados.set(true);
+
+    const seleccionada = this.rutas().find((r) => r.idRuta === this.form.controls.idRuta.value);
+    if (!seleccionada || normalizar(seleccionada.nombre) !== normalizar(valor)) {
+      this.form.controls.idRuta.setValue(0);
+    }
+  }
+
+  elegirRuta(ruta: Ruta, evento?: Event): void {
+    evento?.preventDefault();
+    this.form.controls.idRuta.setValue(ruta.idRuta);
+    this.form.controls.idRuta.markAsTouched();
+    this.form.controls.idRuta.markAsDirty();
+    this.rutaBusqueda.set(ruta.nombre);
+    this.rutasDesplegados.set(false);
+  }
+
+  elegirPrimerRuta(evento: Event): void {
+    const primera = this.rutasFiltrados()[0];
+    if (primera) {
+      evento.preventDefault();
+      this.elegirRuta(primera);
+    }
+  }
+
+  sincronizarTextoRuta(): void {
+    const ruta = this.rutas().find((r) => r.idRuta === this.form.controls.idRuta.value);
+    if (ruta) this.rutaBusqueda.set(ruta.nombre);
+  }
+
   private configurarOrdenAutomatico() {
     this.subRuta = this.form.controls.idRuta.valueChanges.subscribe((idRuta) => {
       if (this.esEdicion) return;
@@ -304,7 +395,9 @@ export class ServicioForm implements OnInit, AfterViewInit, OnDestroy {
     }).subscribe({
       next: ({ clientes, rutas, servicios }) => {
         this.clientes.set([...clientes].sort((a, b) => a.razonSocial.localeCompare(b.razonSocial)));
+        this.sincronizarTextoCliente();
         this.rutas.set([...rutas].sort((a, b) => a.nombre.localeCompare(b.nombre)));
+        this.sincronizarTextoRuta();
         this.calcularUltimosOrdenes(servicios);
         this.actualizarOrdenAutomatico();
         this.cargandoOpciones.set(false);

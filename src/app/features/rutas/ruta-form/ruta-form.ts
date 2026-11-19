@@ -16,6 +16,7 @@ import { Ruta, RutaRequest } from '../../../shared/models/ruta.model';
 import { Servicio } from '../../../shared/models/servicio.model';
 import { Usuario } from '../../../shared/models/usuario.model';
 import { erroresDeValidacion, mensajeError } from '../../../shared/utils/mensaje-error';
+import { normalizar } from '../../../shared/utils/normalizar';
 
 @Component({
   selector: 'app-ruta-form',
@@ -48,6 +49,17 @@ export class RutaForm implements OnInit {
   choferes = computed(() =>
     this.usuarios().filter((u) => u.rol === 'EMPLEADO' && u.activo),
   );
+  choferBusqueda = signal('');
+  choferesDesplegados = signal(false);
+  choferesFiltrados = computed(() => {
+    const q = normalizar(this.choferBusqueda());
+    const coincidentes = q
+      ? this.choferes().filter((u) =>
+          normalizar(`${u.apellido} ${u.nombre} ${u.dni}`).includes(q),
+        )
+      : this.choferes();
+    return coincidentes.slice(0, 12);
+  });
 
   // Servicios de la ruta (solo en edición) y estado del reordenamiento
   servicios = signal<Servicio[]>([]);
@@ -71,7 +83,10 @@ export class RutaForm implements OnInit {
 
   ngOnInit() {
     this.rutasService.obtenerChoferes().subscribe({
-      next: (data) => this.usuarios.set(data),
+      next: (data) => {
+        this.usuarios.set(data);
+        this.sincronizarTextoChofer();
+      },
       error: (err: HttpErrorResponse) => this.error.set(mensajeError(err, 'cargar los choferes')),
     });
 
@@ -92,6 +107,7 @@ export class RutaForm implements OnInit {
             idChofer: r.idChofer,
           });
           // servicios puede venir null; los ordeno por "orden"
+          this.sincronizarTextoChofer();
           this.servicios.set(
             [...(r.servicios ?? [])].sort((a, b) => a.orden - b.orden),
           );
@@ -99,6 +115,44 @@ export class RutaForm implements OnInit {
         error: (err: HttpErrorResponse) => this.error.set(mensajeError(err, 'cargar la ruta')),
       });
     }
+  }
+
+  // ---------- Selección de chofer con búsqueda ----------
+
+  onChoferBusqueda(valor: string): void {
+    this.choferBusqueda.set(valor);
+    this.choferesDesplegados.set(true);
+
+    const seleccionado = this.choferes().find((u) => u.id === this.form.controls.idChofer.value);
+    if (!seleccionado || normalizar(this.etiquetaChofer(seleccionado)) !== normalizar(valor)) {
+      this.form.controls.idChofer.setValue(null);
+    }
+  }
+
+  elegirChofer(chofer: Usuario, evento?: Event): void {
+    evento?.preventDefault();
+    this.form.controls.idChofer.setValue(chofer.id);
+    this.form.controls.idChofer.markAsTouched();
+    this.form.controls.idChofer.markAsDirty();
+    this.choferBusqueda.set(this.etiquetaChofer(chofer));
+    this.choferesDesplegados.set(false);
+  }
+
+  elegirPrimerChofer(evento: Event): void {
+    const primero = this.choferesFiltrados()[0];
+    if (primero) {
+      evento.preventDefault();
+      this.elegirChofer(primero);
+    }
+  }
+
+  sincronizarTextoChofer(): void {
+    const chofer = this.choferes().find((u) => u.id === this.form.controls.idChofer.value);
+    if (chofer) this.choferBusqueda.set(this.etiquetaChofer(chofer));
+  }
+
+  etiquetaChofer(u: Usuario): string {
+    return `${u.apellido}, ${u.nombre} (${u.dni})`;
   }
 
   guardar() {

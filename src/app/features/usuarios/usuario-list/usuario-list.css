@@ -471,7 +471,7 @@
 .drawer-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 40;
+  z-index: 1000;
   background: rgba(15, 23, 20, 0.38);
   backdrop-filter: blur(2px);
   animation: aparecer-fondo 0.18s ease-out;
@@ -482,7 +482,7 @@
   top: 0;
   right: 0;
   bottom: 0;
-  z-index: 50;
+  z-index: 1001;
   width: min(448px, 100vw);
   overflow-y: auto;
   background: var(--color-fondo);

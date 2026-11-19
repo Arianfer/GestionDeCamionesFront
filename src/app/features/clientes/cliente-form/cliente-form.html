@@ -2,14 +2,7 @@
   <header class="cliente-form-encabezado">
     <div class="cliente-form-titulo">
       <span class="cliente-form-icono" aria-hidden="true">
-        <svg class="icono" viewBox="0 0 24 24">
-          <path d="M3 21h18" />
-          <path d="M5 21V7l8-4v18" />
-          <path d="M19 21V11l-6-4" />
-          <path d="M9 9h.01" />
-          <path d="M9 13h.01" />
-          <path d="M9 17h.01" />
-        </svg>
+        <svg class="icono" viewBox="0 0 24 24"><use href="#i-edificio" /></svg>
       </span>
       <div>
         <h1>{{ esEdicion ? 'Editar Cliente' : 'Nuevo Cliente' }}</h1>
@@ -25,17 +18,11 @@
 
     @if (embebido) {
       <button type="button" class="btn-cerrar" (click)="cancelar()" aria-label="Cerrar formulario">
-        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M18 6 6 18" />
-          <path d="m6 6 12 12" />
-        </svg>
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cerrar" /></svg>
       </button>
     } @else {
       <a routerLink="/clientes" class="btn btn-secundario">
-        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M19 12H5" />
-          <path d="m12 19-7-7 7-7" />
-        </svg>
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-volver" /></svg>
         <span>Volver a clientes</span>
       </a>
     }
@@ -49,11 +36,7 @@
     <form [formGroup]="form" (ngSubmit)="guardar()" class="form-panel" novalidate>
       @if (error()) {
         <p class="alerta" role="alert">
-          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-            <path d="M12 9v4" />
-            <path d="M12 17h.01" />
-          </svg>
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-alerta" /></svg>
           <span>{{ error() }}</span>
         </p>
       }
@@ -117,9 +100,7 @@
           class="btn btn-primario"
           [disabled]="guardando() || form.invalid"
         >
-          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M20 6 9 17l-5-5" />
-          </svg>
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check-simple" /></svg>
           <span>{{ guardando() ? 'Guardando...' : esEdicion ? 'Guardar cambios' : 'Guardar cliente' }}</span>
         </button>
       </div>

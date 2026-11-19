@@ -17,9 +17,9 @@ import { mensajeError } from '../../../shared/utils/mensaje-error';
 })
 export class ClienteList implements OnInit {
   private readonly clienteService = inject(ClienteService);
+  private readonly alertService = inject(AlertService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly alertService = inject(AlertService);
 
   readonly clientes = signal<Cliente[]>([]);
   readonly filtro = signal('');
@@ -102,8 +102,10 @@ export class ClienteList implements OnInit {
   }
 
   async eliminarCliente(cliente: Cliente): Promise<void> {
-    const confirmado = await this.alertService.confirmarEliminacion(
-      `al cliente "${cliente.razonSocial}"`,
+    const confirmado = await this.alertService.confirmarAccion(
+      `¿Eliminar al cliente "${cliente.razonSocial}"?`,
+      'Esta acción no se puede deshacer.',
+      'Sí, eliminar',
     );
     if (!confirmado) return;
 

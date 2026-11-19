@@ -9,10 +9,7 @@
 
     <div class="tareas-acciones">
       <div class="filtro filtro-busqueda">
-        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.3-4.3" />
-        </svg>
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-buscar" /></svg>
         <input
           #q
           type="search"
@@ -37,10 +34,7 @@
       </select>
 
       <button type="button" class="btn btn-primario" (click)="abrirNuevo()">
-        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M5 12h14" />
-          <path d="M12 5v14" />
-        </svg>
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus" /></svg>
         <span>Nueva Tarea</span>
       </button>
     </div>
@@ -48,11 +42,7 @@
 
   @if (error()) {
     <p class="alerta" role="alert">
-      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-        <path d="M12 9v4" />
-        <path d="M12 17h.01" />
-      </svg>
+      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-alerta" /></svg>
       <span>{{ error() }}</span>
     </p>
   }
@@ -66,24 +56,14 @@
   } @else if (filtradas().length === 0) {
     <div class="estado-vacio">
       <span class="estado-icono" aria-hidden="true">
-        <svg class="icono" viewBox="0 0 24 24">
-          <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
-          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-          <path d="M12 11h4" />
-          <path d="M12 16h4" />
-          <path d="M8 11h.01" />
-          <path d="M8 16h.01" />
-        </svg>
+        <svg class="icono" viewBox="0 0 24 24"><use href="#i-tarea" /></svg>
       </span>
 
       @if (tareas().length === 0) {
         <h2>Todavía no hay tareas</h2>
         <p>Asigná un camión y una ruta a un chofer para crear la primera tarea del día.</p>
         <button type="button" class="btn btn-primario" (click)="abrirNuevo()">
-          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M5 12h14" />
-            <path d="M12 5v14" />
-          </svg>
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus" /></svg>
           <span>Crear primera tarea</span>
         </button>
       } @else {
@@ -115,11 +95,7 @@
             <dl class="tarea-datos">
               <div class="tarea-dato">
                 <dt>
-                  <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
-                    <circle cx="6" cy="19" r="3" />
-                    <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" />
-                    <circle cx="18" cy="5" r="3" />
-                  </svg>
+                  <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-ruta" /></svg>
                   Ruta
                 </dt>
                 <dd>{{ nombreRuta(t) }}</dd>

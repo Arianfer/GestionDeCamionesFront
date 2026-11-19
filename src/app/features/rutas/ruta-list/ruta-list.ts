@@ -2,25 +2,77 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { catchError, forkJoin, of } from 'rxjs';
+import { AlertService } from '../../../core/services/alert.service';
+import { CamionesService } from '../../camiones/camiones.service';
+import { TareasService } from '../../tareas/tareas.service';
+import { Camion } from '../../../shared/models/camion.model';
 import { RutasService } from '../rutas.service';
 import { Ruta } from '../../../shared/models/ruta.model';
 import { Servicio } from '../../../shared/models/servicio.model';
+import { Tarea } from '../../../shared/models/tarea.model';
+import { PatentePipe } from '../../../shared/pipes/patente.pipe';
 import { RutaForm } from '../ruta-form/ruta-form';
 import { HttpErrorResponse } from '@angular/common/http';
 import { mensajeError } from '../../../shared/utils/mensaje-error';
-import { AlertService } from '../../../core/services/alert.service';
+
+/** Una asignación futura derivada de una tarea pendiente. */
+interface UnidadRuta {
+  idTarea: number | null;
+  patente: string;
+  modelo: string;
+  fechaEjecucion: string;
+}
 
 @Component({
   selector: 'app-ruta-list',
-  imports: [RouterLink, FormsModule, DatePipe, RutaForm],
+  imports: [RouterLink, FormsModule, DatePipe, PatentePipe, RutaForm],
   templateUrl: './ruta-list.html',
   styleUrl: './ruta-list.css',
 })
 export class RutaList implements OnInit {
   private rutasService = inject(RutasService);
+  private camionesService = inject(CamionesService);
+  private tareasService = inject(TareasService);
+  private alertService = inject(AlertService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
-  private alertService = inject(AlertService);
+
+  private tareas = signal<Tarea[]>([]);
+  private camiones = signal<Camion[]>([]);
+
+  /**
+   * El DTO de rutas no incluye la unidad asignada. La derivamos de las tareas
+   * (que sí traen idRuta + idCamion) cruzadas con el catálogo de camiones.
+   * Solo se muestran asignaciones vigentes: tareas PENDIENTES con fecha futura.
+   */
+  private readonly unidadesPorRuta = computed(() => {
+    const porId = new Map(this.camiones().map((c) => [c.id, c]));
+    const porRuta = new Map<number, UnidadRuta[]>();
+    const ahora = Date.now();
+    const ordenadas = [...this.tareas()]
+      .filter(
+        (tarea) =>
+          tarea.estado === 'PENDIENTE' &&
+          new Date(tarea.fechaEjecucion).getTime() > ahora,
+      )
+      .sort((a, b) => a.fechaEjecucion.localeCompare(b.fechaEjecucion));
+
+    for (const tarea of ordenadas) {
+      const camion = porId.get(tarea.idCamion);
+      if (!camion) continue;
+
+      const lista = porRuta.get(tarea.idRuta) ?? [];
+      lista.push({
+        idTarea: tarea.id,
+        patente: camion.patente,
+        modelo: '',
+        fechaEjecucion: tarea.fechaEjecucion,
+      });
+      porRuta.set(tarea.idRuta, lista);
+    }
+    return porRuta;
+  });
 
   rutas = signal<Ruta[]>([]);
   texto = signal('');
@@ -83,16 +135,33 @@ export class RutaList implements OnInit {
     return `${servicios[0].nombre} → ${servicios[servicios.length - 1].nombre}`;
   }
 
-  unidadAsignada(r: Ruta): string {
+  /** Unidades pendientes y futuras de la ruta, con fallback al DTO. */
+  unidadesDeRuta(r: Ruta): UnidadRuta[] {
+    const derivadas = this.unidadesPorRuta().get(r.idRuta) ?? [];
+    if (derivadas.length > 0) return derivadas;
+
     const patente = (r.patenteCamion ?? '').trim();
     const modelo = (r.modeloCamion ?? '').trim();
-    if (!patente && !modelo) return 'Sin unidad asignada';
-    return [patente, modelo].filter(Boolean).join(' · ');
+    if (!patente && !modelo) return [];
+
+    return [{ idTarea: null, patente, modelo, fechaEjecucion: '' }];
+  }
+
+  /** Enriquecimiento optativo: si falla, la lista sigue funcionando igual que antes. */
+  private cargarUnidades(): void {
+    forkJoin({
+      tareas: this.tareasService.obtenerTodas().pipe(catchError(() => of([] as Tarea[]))),
+      camiones: this.camionesService.obtenerTodos().pipe(catchError(() => of([] as Camion[]))),
+    }).subscribe(({ tareas, camiones }) => {
+      this.tareas.set(tareas);
+      this.camiones.set(camiones);
+    });
   }
 
   cargar(idSeleccionar?: number | null) {
     this.cargando.set(true);
     this.error.set('');
+    this.cargarUnidades();
     this.rutasService.getAll().subscribe({
       next: (data) => {
         const ordenadas = [...data].sort(
@@ -154,16 +223,17 @@ export class RutaList implements OnInit {
     );
   }
 
-  async eliminar(r: Ruta) {
+  async eliminar(r: Ruta): Promise<void> {
     const n = this.cantidadServicios(r);
     const detalle =
       n > 0
         ? `Se van a eliminar también sus ${n} servicios. Esta acción no se puede deshacer.`
         : 'Esta acción no se puede deshacer.';
 
-    const confirmado = await this.alertService.confirmarEliminacion(
-      `la ruta "${r.nombre}"`,
+    const confirmado = await this.alertService.confirmarAccion(
+      `¿Eliminar la ruta "${r.nombre}"?`,
       detalle,
+      'Sí, eliminar',
     );
     if (!confirmado) return;
 

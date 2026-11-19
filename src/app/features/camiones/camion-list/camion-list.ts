@@ -17,9 +17,9 @@ import { mensajeError } from '../../../shared/utils/mensaje-error';
 })
 export class CamionList implements OnInit {
   private readonly camionesService = inject(CamionesService);
+  private readonly alertService = inject(AlertService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly alertService = inject(AlertService);
 
   readonly estados: { valor: EstadoCamion; etiqueta: string }[] = [
     { valor: 'DISPONIBLE', etiqueta: 'Disponible' },
@@ -133,8 +133,10 @@ export class CamionList implements OnInit {
   }
 
   async eliminar(camion: Camion): Promise<void> {
-    const confirmado = await this.alertService.confirmarEliminacion(
-      `el camión ${camion.patente}`,
+    const confirmado = await this.alertService.confirmarAccion(
+      `¿Eliminar el camión ${camion.patente}?`,
+      'Esta acción no se puede deshacer.',
+      'Sí, eliminar',
     );
     if (!confirmado) return;
 
