@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { AlertService } from '../../../core/services/alert.service';
 import { AuthService } from '../../../core/services/auth.service';
 
 type Icono = 'inicio' | 'rutas' | 'clientes' | 'servicios' | 'usuarios' | 'camiones' | 'tareas';
@@ -19,6 +20,7 @@ interface NavLink {
 })
 export class Navbar {
   private authService = inject(AuthService);
+  private alertService = inject(AlertService);
 
   private readonly links: NavLink[] = [
     { label: 'Inicio',    path: '/inicio',    icono: 'inicio',    roles: ['ADMIN', 'OFICINA', 'EMPLEADO'] },
@@ -51,8 +53,12 @@ export class Navbar {
     this.menuAbierto.set(false);
   }
 
-  onLogout(): void {
+  async onLogout(): Promise<void> {
     this.cerrarMenu();
+    const confirmado = await this.alertService.confirmarLogout();
+    if (!confirmado) return;
+
     this.authService.logout();
+    this.alertService.toastInfo('Sesión cerrada');
   }
 }
