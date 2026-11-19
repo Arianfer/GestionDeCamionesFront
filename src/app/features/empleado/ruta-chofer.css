@@ -98,8 +98,8 @@
   box-shadow: 0 6px 18px rgba(22, 163, 74, 0.16);
 }
 
-/* Otros días que no son hoy: apagados / gris */
-.dia-card:not(.es-hoy) {
+/* Otros días que no son hoy: neutros */
+.dia-card:not(.es-hoy):not(.estado-completado):not(.estado-en-curso) {
   background: #f8fafc;
   border-color: #e2e8f0;
   color: #64748b;
@@ -110,9 +110,49 @@
   cursor: default;
 }
 
-.dia-card.tiene-tarea:not(.es-hoy):hover {
-  border-color: #94a3b8;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+.dia-card.tiene-tarea:hover {
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.09);
+}
+
+/* Tarea completada: verde y siempre habilitada para entrar */
+.dia-card.estado-completado {
+  border: 2px solid #16a34a;
+  background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 42%);
+  color: #0f172a;
+}
+
+.dia-card.estado-completado .dia-nombre {
+  color: #14532d;
+}
+
+.dia-card.estado-completado .dia-detalle {
+  background: #ffffff;
+  border-color: #bbf7d0;
+}
+
+.dia-card.estado-completado .accion-ingresar {
+  color: #15803d;
+}
+
+/* Tarea en curso / trabajando: amarillo */
+.dia-card.estado-en-curso {
+  border: 2px solid #eab308;
+  background: linear-gradient(180deg, #fefce8 0%, #ffffff 42%);
+  color: #0f172a;
+  box-shadow: 0 4px 14px rgba(234, 179, 8, 0.16);
+}
+
+.dia-card.estado-en-curso .dia-nombre {
+  color: #713f12;
+}
+
+.dia-card.estado-en-curso .dia-detalle {
+  background: #ffffff;
+  border-color: #fde047;
+}
+
+.dia-card.estado-en-curso .accion-ingresar {
+  color: #a16207;
 }
 
 .dia-card-top {
@@ -149,6 +189,24 @@
   font-weight: 700;
 }
 
+.pill-completado {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #16a34a;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.pill-en-curso {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #facc15;
+  color: #422006;
+  font-size: 11px;
+  font-weight: 800;
+}
+
 .pill-asignado {
   padding: 3px 10px;
   border-radius: 999px;
@@ -180,7 +238,7 @@
   color: #0f172a;
 }
 
-.dia-card:not(.es-hoy) .dia-nombre {
+.dia-card:not(.es-hoy):not(.estado-completado):not(.estado-en-curso) .dia-nombre {
   color: #475569;
 }
 
@@ -250,7 +308,7 @@
   color: #15803d;
 }
 
-.dia-card:not(.es-hoy) .accion-ingresar {
+.dia-card:not(.es-hoy):not(.estado-completado):not(.estado-en-curso) .accion-ingresar {
   color: #475569;
 }
 

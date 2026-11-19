@@ -30,13 +30,21 @@
               [class.es-hoy]="dia.esHoy"
               [class.tiene-tarea]="!!dia.tarea"
               [class.sin-tarea]="!dia.tarea"
+              [class.estado-completado]="dia.tarea?.estado === 'COMPLETADO'"
+              [class.estado-en-curso]="dia.tarea?.estado === 'EN_CURSO'"
               [disabled]="!dia.tarea"
               (click)="seleccionarDia(dia)"
             >
               <div class="dia-card-top">
-                <span class="dia-badge-abrev" [class.hoy]="dia.esHoy">{{ dia.abreviatura }}</span>
+                <span class="dia-badge-abrev" [class.hoy]="dia.esHoy">
+                  {{ dia.abreviatura }} @if (dia.esHoy) { · HOY }
+                </span>
 
-                @if (dia.esHoy) {
+                @if (dia.tarea?.estado === 'COMPLETADO') {
+                  <span class="pill-completado">✔ Tarea completada</span>
+                } @else if (dia.tarea?.estado === 'EN_CURSO') {
+                  <span class="pill-en-curso">● En actividad</span>
+                } @else if (dia.esHoy && dia.tarea) {
                   <span class="pill-hoy">● Hoy</span>
                 } @else if (dia.tarea) {
                   <span class="pill-asignado">● Asignado</span>
@@ -72,7 +80,15 @@
 
                 <div class="dia-card-footer">
                   <span class="tar-id">TAR-{{ t.id }}</span>
-                  <span class="accion-ingresar">Iniciar recorrido →</span>
+                  <span class="accion-ingresar">
+                    @if (t.estado === 'COMPLETADO') {
+                      Ver recorrido →
+                    } @else if (t.estado === 'EN_CURSO') {
+                      Continuar recorrido →
+                    } @else {
+                      Iniciar recorrido →
+                    }
+                  </span>
                 </div>
               } @else {
                 <div class="dia-detalle vacio">

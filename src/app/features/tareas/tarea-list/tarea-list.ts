@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { forkJoin } from 'rxjs';
 
 import { AlertService } from '../../../core/services/alert.service';
@@ -23,7 +23,7 @@ import { TareasService } from '../tareas.service';
   templateUrl: './tarea-list.html',
   styleUrl: './tarea-list.css',
 })
-export class TareaList implements OnInit {
+export class TareaList implements OnInit, OnDestroy {
   private readonly tareasService = inject(TareasService);
   private readonly camionesService = inject(CamionesService);
   private readonly rutasService = inject(RutasService);
@@ -45,10 +45,13 @@ export class TareaList implements OnInit {
   readonly cambiandoId = signal<number | null>(null);
 
   private readonly patentePipe = new PatentePipe();
+  private pollingTimer: ReturnType<typeof setInterval> | null = null;
+  private readonly onVisibilityChange = () => {
+    if (!document.hidden) {
+      this.refrescarSilencioso();
+    }
+  };
 
-  // La tarea solo trae ids. Estos mapas permiten buscar el camión, la ruta o el
-  // chofer por id sin recorrer la lista entera cada vez (se recalculan solos
-  // cuando cambia el signal del que dependen).
   private readonly camionesPorId = computed(
     () => new Map(this.camiones().map((c) => [c.id, c] as const)),
   );
@@ -82,6 +85,16 @@ export class TareaList implements OnInit {
 
   ngOnInit(): void {
     this.cargar();
+    // Actualiza estados automáticamente cada 5 segundos y al volver a la pestaña
+    this.pollingTimer = setInterval(() => this.refrescarSilencioso(), 5000);
+    document.addEventListener('visibilitychange', this.onVisibilityChange);
+  }
+
+  ngOnDestroy(): void {
+    if (this.pollingTimer) {
+      clearInterval(this.pollingTimer);
+    }
+    document.removeEventListener('visibilitychange', this.onVisibilityChange);
   }
 
   cargar(): void {
@@ -112,15 +125,24 @@ export class TareaList implements OnInit {
     });
   }
 
+  private refrescarSilencioso(): void {
+    if (this.cambiandoId() !== null) return;
+
+    this.tareasService.obtenerTodas().subscribe({
+      next: (tareas) => {
+        this.tareas.set(this.ordenar(tareas));
+      },
+    });
+  }
+
   cambiarEstadoFiltro(valor: string): void {
     this.estadoFiltro.set(valor as EstadoTarea | '');
   }
 
   etiquetaEstado(estado: EstadoTarea): string {
-    return etiquetaEstado(estado);
+    return estado === 'EN_CURSO' ? 'En actividad' : etiquetaEstado(estado);
   }
 
-  /** Estados a los que se puede pasar desde el actual (vacío si ya está cerrada). */
   siguientes(t: Tarea): EstadoTarea[] {
     return siguientesDe(t.estado);
   }
@@ -130,7 +152,6 @@ export class TareaList implements OnInit {
   }
 
   async cambiarEstado(t: Tarea, nuevoEstado: EstadoTarea): Promise<void> {
-    // Cancelar libera el camión y no se puede deshacer: se pide confirmación.
     if (nuevoEstado === 'CANCELADO') {
       const confirmado = await this.alertService.confirmarAccion(
         `¿Cancelar la tarea TAR-${t.id}?`,
@@ -146,7 +167,7 @@ export class TareaList implements OnInit {
         this.tareas.update((lista) => lista.map((x) => (x.id === actualizada.id ? actualizada : x)));
         this.cambiandoId.set(null);
         this.alertService.toastExito(
-          `Tarea TAR-${actualizada.id} ${etiquetaEstado(actualizada.estado).toLowerCase()}`,
+          `Tarea TAR-${actualizada.id} ${this.etiquetaEstado(actualizada.estado).toLowerCase()}`,
         );
       },
       error: (err: HttpErrorResponse) => {
