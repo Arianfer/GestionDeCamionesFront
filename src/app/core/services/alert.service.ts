@@ -53,6 +53,26 @@ export class AlertService {
     return res.isConfirmed;
   }
 
+  async confirmarAccion(
+    titulo: string,
+    detalle?: string,
+    textoConfirmar: string = 'Sí, confirmar',
+    colorConfirmar: string = '#dc3545'
+  ): Promise<boolean> {
+    const res = await Swal.fire({
+      title: titulo,
+      text: detalle,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: colorConfirmar,
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: textoConfirmar,
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true
+    });
+    return res.isConfirmed;
+  }
+
   async confirmarLogout(): Promise<boolean> {
     const res = await Swal.fire({
       title: '¿Cerrar sesión?',

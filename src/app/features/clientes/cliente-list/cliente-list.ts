@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
+import { AlertService } from '../../../core/services/alert.service';
 import { Cliente } from '../../../shared/models/cliente.model';
 import { CuitPipe } from '../../../shared/pipes/cuit.pipe';
 import { ClienteForm } from '../cliente-form/cliente-form';
@@ -18,6 +19,7 @@ export class ClienteList implements OnInit {
   private readonly clienteService = inject(ClienteService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly alertService = inject(AlertService);
 
   readonly clientes = signal<Cliente[]>([]);
   readonly filtro = signal('');
@@ -88,19 +90,22 @@ export class ClienteList implements OnInit {
   }
 
   alGuardar(cliente: Cliente): void {
+    const existe = this.clientes().some((c) => c.id === cliente.id);
     this.cerrarDrawer();
     this.clientes.update((lista) => {
-      const existe = lista.some((c) => c.id === cliente.id);
       const actualizada = existe
         ? lista.map((c) => (c.id === cliente.id ? cliente : c))
         : [...lista, cliente];
       return this.ordenar(actualizada);
     });
+    this.alertService.toastExito(existe ? 'Cliente actualizado' : 'Cliente creado');
   }
 
-  eliminarCliente(cliente: Cliente): void {
-    // TODO: reemplazar por el confirm-dialog de shared/ cuando exista.
-    if (!confirm(`¿Eliminar al cliente "${cliente.razonSocial}"?`)) return;
+  async eliminarCliente(cliente: Cliente): Promise<void> {
+    const confirmado = await this.alertService.confirmarEliminacion(
+      `al cliente "${cliente.razonSocial}"`,
+    );
+    if (!confirmado) return;
 
     this.error.set(null);
     this.eliminandoId.set(cliente.id);
@@ -109,15 +114,17 @@ export class ClienteList implements OnInit {
         this.clientes.update((lista) => lista.filter((c) => c.id !== cliente.id));
         if (this.clienteEditandoId() === cliente.id) this.cerrarDrawer();
         this.eliminandoId.set(null);
+        this.alertService.toastExito('Cliente eliminado');
       },
       error: (err: HttpErrorResponse) => {
         this.eliminandoId.set(null);
         // El back devuelve 500 si el cliente tiene servicios asociados (clave foránea).
-        this.error.set(
+        const msg =
           err.status === 500
             ? 'No se pudo eliminar el cliente. Probablemente tenga servicios asociados.'
-            : mensajeError(err, 'eliminar el cliente'),
-        );
+            : mensajeError(err, 'eliminar el cliente');
+        this.error.set(msg);
+        this.alertService.error('No se pudo eliminar', msg);
       },
     });
   }

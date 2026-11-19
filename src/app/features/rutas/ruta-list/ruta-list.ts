@@ -8,6 +8,7 @@ import { Servicio } from '../../../shared/models/servicio.model';
 import { RutaForm } from '../ruta-form/ruta-form';
 import { HttpErrorResponse } from '@angular/common/http';
 import { mensajeError } from '../../../shared/utils/mensaje-error';
+import { AlertService } from '../../../core/services/alert.service';
 
 @Component({
   selector: 'app-ruta-list',
@@ -19,6 +20,7 @@ export class RutaList implements OnInit {
   private rutasService = inject(RutasService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
+  private alertService = inject(AlertService);
 
   rutas = signal<Ruta[]>([]);
   texto = signal('');
@@ -136,9 +138,11 @@ export class RutaList implements OnInit {
   }
 
   alGuardar(r: Ruta) {
+    const esEdicion = this.rutaEditandoId() !== null;
     this.drawerAbierto.set(false);
     this.seleccionadaId.set(r.idRuta);
     this.cargar(r.idRuta);
+    this.alertService.toastExito(esEdicion ? 'Ruta actualizada' : 'Ruta creada');
   }
 
   alReordenar(servicios: Servicio[]) {
@@ -150,12 +154,18 @@ export class RutaList implements OnInit {
     );
   }
 
-  eliminar(r: Ruta) {
+  async eliminar(r: Ruta) {
     const n = this.cantidadServicios(r);
-    const aviso = n > 0 ? `\n\nSe van a eliminar también sus ${n} servicios.` : '';
+    const detalle =
+      n > 0
+        ? `Se van a eliminar también sus ${n} servicios. Esta acción no se puede deshacer.`
+        : 'Esta acción no se puede deshacer.';
 
-    // Provisorio hasta tener shared/confirm-dialog
-    if (!confirm(`¿Eliminar la ruta "${r.nombre}"?${aviso}`)) return;
+    const confirmado = await this.alertService.confirmarEliminacion(
+      `la ruta "${r.nombre}"`,
+      detalle,
+    );
+    if (!confirmado) return;
 
     this.rutasService.eliminar(r.idRuta).subscribe({
       next: () => {
@@ -164,13 +174,16 @@ export class RutaList implements OnInit {
           const lista = this.rutasFiltradas();
           this.seleccionadaId.set(lista[0]?.idRuta ?? null);
         }
+        this.alertService.toastExito('Ruta eliminada');
       },
-      error: (err: HttpErrorResponse) =>
-        this.error.set(
+      error: (err: HttpErrorResponse) => {
+        const msg =
           err.status === 500
             ? 'No se pudo eliminar. Puede que la ruta tenga servicios o tareas asignadas.'
-            : mensajeError(err, 'eliminar la ruta'),
-        ),
+            : mensajeError(err, 'eliminar la ruta');
+        this.error.set(msg);
+        this.alertService.error('No se pudo eliminar', msg);
+      },
     });
   }
 }

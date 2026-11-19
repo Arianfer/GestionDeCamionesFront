@@ -1,5 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AlertService } from '../../../core/services/alert.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Usuario } from '../../../shared/models/usuario.model';
 import { UsuarioForm } from '../usuario-form/usuario-form';
@@ -18,6 +19,7 @@ export class UsuarioList implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly alertService = inject(AlertService);
 
   readonly usuarios = signal<Usuario[]>([]);
   readonly filtro = signal('');
@@ -137,34 +139,46 @@ export class UsuarioList implements OnInit {
   }
 
   alGuardar(usuario: Usuario): void {
+    const existe = this.usuarios().some((u) => u.id === usuario.id);
     this.cerrarDrawer();
     this.usuarios.update((lista) => {
-      const existe = lista.some((u) => u.id === usuario.id);
       return existe
         ? lista.map((u) => (u.id === usuario.id ? usuario : u))
         : [...lista, usuario];
     });
+    this.alertService.toastExito(existe ? 'Usuario actualizado' : 'Usuario creado');
   }
 
   esPropio(u: Usuario): boolean {
     return String(u.id) === this.auth.getId();
   }
 
-  desactivar(u: Usuario): void {
+  async desactivar(u: Usuario): Promise<void> {
     if (!this.auth.puedeGestionarUsuario(u.rol)) {
       this.error.set('No tenés permiso para modificar este usuario.');
       return;
     }
 
-    if (!confirm(`¿Desactivar a ${u.nombre} ${u.apellido}? No va a poder iniciar sesión.`)) return;
+    const confirmado = await this.alertService.confirmarAccion(
+      `¿Desactivar a ${u.nombre} ${u.apellido}?`,
+      'No va a poder iniciar sesión.',
+      'Sí, desactivar',
+      '#ea580c',
+    );
+    if (!confirmado) return;
 
     this.usuariosService.desactivar(u.id).subscribe({
-      next: () =>
+      next: () => {
         this.usuarios.update((lista) =>
           lista.map((x) => (x.id === u.id ? { ...x, activo: false } : x)),
-        ),
-      error: (err: HttpErrorResponse) =>
-        this.error.set(mensajeError(err, `desactivar a ${u.nombre} ${u.apellido}`)),
+        );
+        this.alertService.toastExito('Usuario desactivado');
+      },
+      error: (err: HttpErrorResponse) => {
+        const msg = mensajeError(err, `desactivar a ${u.nombre} ${u.apellido}`);
+        this.error.set(msg);
+        this.alertService.error('No se pudo desactivar', msg);
+      },
     });
   }
 }

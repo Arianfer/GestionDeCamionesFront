@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
+import { AlertService } from '../../../core/services/alert.service';
 import { Camion, EstadoCamion, TipoCamion } from '../../../shared/models/camion.model';
 import { PatentePipe } from '../../../shared/pipes/patente.pipe';
 import { CamionForm } from '../camion-form/camion-form';
@@ -18,6 +19,7 @@ export class CamionList implements OnInit {
   private readonly camionesService = inject(CamionesService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly alertService = inject(AlertService);
 
   readonly estados: { valor: EstadoCamion; etiqueta: string }[] = [
     { valor: 'DISPONIBLE', etiqueta: 'Disponible' },
@@ -119,18 +121,22 @@ export class CamionList implements OnInit {
   }
 
   alGuardar(camion: Camion): void {
+    const existe = this.camiones().some((c) => c.id === camion.id);
     this.cerrarDrawer();
     this.camiones.update((lista) => {
-      const existe = lista.some((c) => c.id === camion.id);
       const actualizada = existe
         ? lista.map((c) => (c.id === camion.id ? camion : c))
         : [...lista, camion];
       return this.ordenar(actualizada);
     });
+    this.alertService.toastExito(existe ? 'Camión actualizado' : 'Camión creado');
   }
 
-  eliminar(camion: Camion): void {
-    if (!confirm(`¿Eliminar el camión ${camion.patente}?`)) return;
+  async eliminar(camion: Camion): Promise<void> {
+    const confirmado = await this.alertService.confirmarEliminacion(
+      `el camión ${camion.patente}`,
+    );
+    if (!confirmado) return;
 
     this.eliminandoId.set(camion.id);
     this.camionesService.eliminar(camion.id).subscribe({
@@ -138,14 +144,16 @@ export class CamionList implements OnInit {
         this.camiones.update((lista) => lista.filter((c) => c.id !== camion.id));
         if (this.camionEditandoId() === camion.id) this.cerrarDrawer();
         this.eliminandoId.set(null);
+        this.alertService.toastExito('Camión eliminado');
       },
       error: (err: HttpErrorResponse) => {
         this.eliminandoId.set(null);
-        this.error.set(
+        const msg =
           err.status === 500
             ? 'No se pudo eliminar. Puede que el camión tenga rutas asociadas.'
-            : mensajeError(err, 'eliminar el camión'),
-        );
+            : mensajeError(err, 'eliminar el camión');
+        this.error.set(msg);
+        this.alertService.error('No se pudo eliminar', msg);
       },
     });
   }
