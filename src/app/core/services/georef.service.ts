@@ -14,6 +14,7 @@ export class GeorefService {
   private http = inject(HttpClient);
   private readonly georefUrl = 'https://apis.datos.gob.ar/georef/api/direcciones';
   private readonly nominatimUrl = 'https://nominatim.openstreetmap.org/search';
+  private readonly nominatimReverseUrl = 'https://nominatim.openstreetmap.org/reverse';
 
   // General Pueyrredón (06357), Mar Chiquita / Santa Clara (06518), Balcarce (06063), Gral. Alvarado / Miramar (06351)
   private readonly DEPTOS_ZONA = '06357,06518,06063,06351';
@@ -87,6 +88,35 @@ export class GeorefService {
         })
       ),
       catchError(() => of([]))
+    );
+  }
+
+  obtenerDireccionPorPunto(latitud: number, longitud: number): Observable<string | null> {
+    const params = new HttpParams()
+      .set('format', 'jsonv2')
+      .set('lat', latitud.toString())
+      .set('lon', longitud.toString())
+      .set('addressdetails', '1')
+      .set('zoom', '18')
+      .set('accept-language', 'es');
+
+    return this.http.get<any>(this.nominatimReverseUrl, { params }).pipe(
+      map((res) => {
+        const addr = res?.address ?? {};
+        const calle = this.capitalizar(
+          addr.road || addr.pedestrian || addr.footway || res?.name || '',
+        );
+        const altura = addr.house_number ? ` ${addr.house_number}` : '';
+        const ciudad = this.capitalizar(
+          addr.city || addr.town || addr.village || addr.municipality || 'Mar del Plata',
+        );
+        const direccionCorta = `${calle}${altura}`.trim();
+
+        return direccionCorta
+          ? `${direccionCorta}, ${ciudad}, Buenos Aires, Argentina`
+          : null;
+      }),
+      catchError(() => of(null)),
     );
   }
 
