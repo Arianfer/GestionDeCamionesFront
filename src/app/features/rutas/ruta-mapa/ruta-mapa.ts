@@ -5,6 +5,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import * as L from 'leaflet';
 import { RutasService } from '../rutas.service';
 import { Servicio } from '../../../shared/models/servicio.model';
+import { crearPopupParada } from '../../../shared/utils/popup-parada';
 
 @Component({
   selector: 'app-ruta-mapa',
@@ -133,12 +134,10 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         iconAnchor: [14, 14]
       });
 
+      const popup = L.popup().setContent(crearPopupParada(idx + 1, parada));
+
       L.marker([parada.latitud, parada.longitud], { icon })
-        .bindPopup(`
-          <strong>#${idx + 1} - ${parada.nombre}</strong><br>
-          <span>${parada.direccion}</span>
-          ${parada.tipoResiduo ? `<br><small>Residuo: ${parada.tipoResiduo}</small>` : ''}
-        `)
+        .bindPopup(popup)
         .addTo(this.markersLayer);
 
       bounds.extend([parada.latitud, parada.longitud]);
