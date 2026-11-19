@@ -36,6 +36,7 @@
           id="nombre"
           type="text"
           formControlName="nombre"
+          placeholder="Ej: RR Centro - Lunes"
           maxlength="50"
           [class.invalido]="form.controls.nombre.touched && form.controls.nombre.invalid"
         />
@@ -53,6 +54,7 @@
           id="descripcion"
           rows="3"
           formControlName="descripcion"
+          placeholder="Escriba una descripción de la ruta..."
           maxlength="400"
           [class.invalido]="
             form.controls.descripcion.touched && form.controls.descripcion.invalid

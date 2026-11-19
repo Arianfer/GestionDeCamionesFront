@@ -202,7 +202,7 @@
           @if (form.controls.idUsuario.touched && form.controls.idUsuario.invalid) {
             <small class="error">Elegí un chofer.</small>
           } @else {
-            <small class="ayuda">Al elegir la ruta se sugiere su chofer; podés cambiarlo.</small>
+            <small class="ayuda">Al elegir la ruta se sugiere su chofer.</small>
           }
           @if (erroresBackend()['idUsuario']) {
             <small class="error">{{ erroresBackend()['idUsuario'] }}</small>
