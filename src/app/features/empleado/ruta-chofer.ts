@@ -27,6 +27,8 @@ export interface DiaSemanaCard {
   horaEjecucion: string;
 }
 
+const BASE_EMPRESA = { lat: -37.9972, lng: -57.5973 }; // Av. M. Champagnat 3625
+
 @Component({
   selector: 'app-ruta-chofer',
   standalone: true,
@@ -49,6 +51,7 @@ export class RutaChoferComponent implements OnInit, OnDestroy {
   private camionMarker: L.Marker | null = null;
   private paradasLayer = L.layerGroup();
   private rutaPolyline: L.Polyline | null = null;
+  private gpsRealActivo = false;
 
   // Control de pantalla: 'DIAS' (inicio semanal) o 'MAPA' (recorrido en ejecución)
   vista = signal<'DIAS' | 'MAPA'>('DIAS');
@@ -62,8 +65,8 @@ export class RutaChoferComponent implements OnInit, OnDestroy {
   paradas = signal<ServicioParada[]>([]);
   indiceActual = signal<number>(0);
 
-  // Base de la empresa en Av. M. Champagnat 3625
-  ubicacionCamion = signal<{ lat: number; lng: number }>({ lat:  -37.9972, lng: -57.5973 });
+  // Posición actual del camión (arranca en la base y avanza parada a parada si no hay GPS físico)
+  ubicacionCamion = signal<{ lat: number; lng: number }>({ ...BASE_EMPRESA });
 
   cargando = signal<boolean>(true);
   cargandoMapa = signal<boolean>(false);
@@ -196,9 +199,12 @@ export class RutaChoferComponent implements OnInit, OnDestroy {
     this.paradas.set([]);
     this.errorMsg.set(null);
     this.cargandoMapa.set(true);
-    this.vista.set('MAPA');
 
-    // Esperar a que Angular renderice el contenedor #mapContainer del @if (vista() === 'MAPA')
+    if (!this.gpsRealActivo) {
+      this.moverCamionA(BASE_EMPRESA.lat, BASE_EMPRESA.lng);
+    }
+
+    this.vista.set('MAPA');
     setTimeout(() => this.inicializarMapa(), 0);
 
     if (tarea.estado === 'PENDIENTE') {
@@ -212,7 +218,6 @@ export class RutaChoferComponent implements OnInit, OnDestroy {
       });
     }
 
-    // Buscar la ruta correspondiente a la tarea elegida (con fallback a obtenerMiRuta)
     this.choferService.obtenerRutaPorId(tarea.idRuta).pipe(
       catchError(() => this.choferService.obtenerMiRuta(choferId))
     ).subscribe({
@@ -248,7 +253,24 @@ export class RutaChoferComponent implements OnInit, OnDestroy {
   irAParada(index: number): void {
     this.indiceActual.set(index);
     this.listaAbierta.set(false);
+
+    if (!this.gpsRealActivo) {
+      const lista = this.paradas();
+      if (index > 0 && lista[index - 1]) {
+        this.moverCamionA(lista[index - 1].latitud, lista[index - 1].longitud);
+      } else {
+        this.moverCamionA(BASE_EMPRESA.lat, BASE_EMPRESA.lng);
+      }
+    }
+
     this.actualizarMapaCompleto();
+  }
+
+  private moverCamionA(lat: number, lng: number): void {
+    this.ubicacionCamion.set({ lat, lng });
+    if (this.camionMarker) {
+      this.camionMarker.setLatLng([lat, lng]);
+    }
   }
 
   private inicializarMapa(): void {
@@ -291,20 +313,16 @@ export class RutaChoferComponent implements OnInit, OnDestroy {
     if ('geolocation' in navigator) {
       this.watchId = navigator.geolocation.watchPosition(
         (pos) => {
-          const nuevaPos = {
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude
-          };
-          this.ubicacionCamion.set(nuevaPos);
-
-          if (this.camionMarker) {
-            this.camionMarker.setLatLng([nuevaPos.lat, nuevaPos.lng]);
-          }
+          this.gpsRealActivo = true;
+          this.moverCamionA(pos.coords.latitude, pos.coords.longitude);
           if (this.vista() === 'MAPA') {
             this.trazarRutaEnMapa();
           }
         },
-        (err) => console.warn('GPS no disponible, usando ubicación por defecto:', err),
+        (err) => {
+          this.gpsRealActivo = false;
+          console.warn('GPS no disponible, simulando avance parada a parada:', err);
+        },
         { enableHighAccuracy: true, maximumAge: 5000, timeout: 10000 }
       );
     }
@@ -317,8 +335,13 @@ export class RutaChoferComponent implements OnInit, OnDestroy {
     this.trazarRutaEnMapa();
 
     const actual = this.paradaActual();
+    const origen = this.ubicacionCamion();
     if (actual) {
-      this.map.setView([actual.latitud, actual.longitud], 15);
+      const bounds = L.latLngBounds(
+        [origen.lat, origen.lng],
+        [actual.latitud, actual.longitud]
+      );
+      this.map.fitBounds(bounds, { padding: [70, 70], maxZoom: 16 });
     }
   }
 
@@ -360,8 +383,8 @@ export class RutaChoferComponent implements OnInit, OnDestroy {
   trazarRutaEnMapa(): void {
     if (!this.map) return;
 
-    const pendientes = this.paradas().slice(this.indiceActual());
-    if (pendientes.length === 0) {
+    const destino = this.paradaActual();
+    if (!destino) {
       if (this.rutaPolyline) {
         this.rutaPolyline.remove();
         this.rutaPolyline = null;
@@ -370,11 +393,7 @@ export class RutaChoferComponent implements OnInit, OnDestroy {
     }
 
     const origen = this.ubicacionCamion();
-    const puntos = [
-      `${origen.lng},${origen.lat}`,
-      ...pendientes.map((p) => `${p.longitud},${p.latitud}`)
-    ].join(';');
-
+    const puntos = `${origen.lng},${origen.lat};${destino.longitud},${destino.latitud}`;
     const url = `https://router.project-osrm.org/route/v1/driving/${puntos}?overview=full&geometries=geojson`;
 
     this.http.get<any>(url).subscribe({
@@ -391,14 +410,14 @@ export class RutaChoferComponent implements OnInit, OnDestroy {
         this.rutaPolyline = L.polyline(coords, {
           color: '#1a73e8',
           weight: 6,
-          opacity: 0.9
+          opacity: 0.92
         }).addTo(this.map);
       },
       error: () => {
         if (!this.map) return;
         const fallbackCoords: [number, number][] = [
           [origen.lat, origen.lng],
-          ...pendientes.map((p) => [p.latitud, p.longitud] as [number, number])
+          [destino.latitud, destino.longitud]
         ];
         if (this.rutaPolyline) {
           this.rutaPolyline.remove();
@@ -456,31 +475,44 @@ export class RutaChoferComponent implements OnInit, OnDestroy {
   private avanzarParada(estado: 'COMPLETADA' | 'FALLA', motivo?: string): void {
     const idx = this.indiceActual();
     const listaActualizada = [...this.paradas()];
-    const obsPrevia = listaActualizada[idx].motivo;
+    const paradaCompletada = listaActualizada[idx];
+    const obsPrevia = paradaCompletada.motivo;
     const detalleFinal = motivo
       ? (obsPrevia ? `${motivo} (${obsPrevia})` : motivo)
       : obsPrevia;
 
     listaActualizada[idx] = {
-      ...listaActualizada[idx],
+      ...paradaCompletada,
       estadoParada: estado,
       motivo: detalleFinal
     };
     this.paradas.set(listaActualizada);
+
+    if (!this.gpsRealActivo) {
+      this.moverCamionA(paradaCompletada.latitud, paradaCompletada.longitud);
+    }
 
     const siguienteIdx = idx + 1;
     this.indiceActual.set(siguienteIdx);
 
     if (siguienteIdx >= listaActualizada.length) {
       const tarea = this.tareaActiva();
-      if (tarea) {
-        this.choferService.actualizarEstadoTarea(tarea.id, 'COMPLETADO').subscribe();
+      if (tarea && tarea.estado !== 'COMPLETADO') {
+        this.choferService.actualizarEstadoTarea(tarea.id, 'COMPLETADO').subscribe({
+          next: (actualizada) => {
+            this.tareaActiva.set(actualizada);
+            this.tareasChofer.update((lista) =>
+              lista.map((t) => (t.id === actualizada.id ? actualizada : t))
+            );
+          }
+        });
       }
       if (this.rutaPolyline) {
         this.rutaPolyline.remove();
         this.rutaPolyline = null;
       }
       this.dibujarMarcadoresParadas();
+      this.map?.setView([paradaCompletada.latitud, paradaCompletada.longitud], 16);
       this.alertService.toastExito('¡Recorrido finalizado con éxito!');
     } else {
       const etiqueta = estado === 'COMPLETADA' ? 'Parada completada' : 'Falla registrada';
