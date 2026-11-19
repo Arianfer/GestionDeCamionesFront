@@ -119,7 +119,7 @@ export class TareaList implements OnInit {
   etiquetaEstado(estado: EstadoTarea): string {
     return etiquetaEstado(estado);
   }
-   
+
   /** Estados a los que se puede pasar desde el actual (vacío si ya está cerrada). */
   siguientes(t: Tarea): EstadoTarea[] {
     return siguientesDe(t.estado);
@@ -132,13 +132,12 @@ export class TareaList implements OnInit {
   async cambiarEstado(t: Tarea, nuevoEstado: EstadoTarea): Promise<void> {
     // Cancelar libera el camión y no se puede deshacer: se pide confirmación.
     if (nuevoEstado === 'CANCELADO') {
-      const ok = await this.alertService.confirmar({
-        titulo: `¿Cancelar la tarea TAR-${t.id}?`,
-        texto: `El camión ${this.patentePipe.transform(this.patente(t))} va a quedar disponible.`,
-        confirmText: 'Cancelar tarea',
-        icon: 'question',
-      });
-      if (!ok) return;
+      const confirmado = await this.alertService.confirmarAccion(
+        `¿Cancelar la tarea TAR-${t.id}?`,
+        `El camión ${this.patentePipe.transform(this.patente(t))} va a quedar disponible. Esta acción no se puede deshacer.`,
+        'Sí, cancelar tarea',
+      );
+      if (!confirmado) return;
     }
 
     this.cambiandoId.set(t.id);
@@ -155,7 +154,7 @@ export class TareaList implements OnInit {
         this.alertService.error(
           'No se pudo cambiar el estado',
           mensajeErrorTarea(err, 'cambiar el estado de la tarea'),
-        );      
+        );
       },
     });
   }
@@ -172,6 +171,7 @@ export class TareaList implements OnInit {
     const chofer = this.usuariosPorId().get(t.idUsuario);
     return chofer ? `${chofer.nombre} ${chofer.apellido}` : `Chofer #${t.idUsuario}`;
   }
+
   abrirNuevo(): void {
     this.drawerAbierto.set(true);
   }

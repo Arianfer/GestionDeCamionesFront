@@ -2,10 +2,10 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
+import { AlertService } from '../../../core/services/alert.service';
 import { Cliente } from '../../../shared/models/cliente.model';
 import { CuitPipe } from '../../../shared/pipes/cuit.pipe';
 import { ClienteForm } from '../cliente-form/cliente-form';
-import { AlertService } from '../../../core/services/alert.service';
 import { ClienteService } from '../cliente.service';
 import { mensajeError } from '../../../shared/utils/mensaje-error';
 
@@ -90,21 +90,24 @@ export class ClienteList implements OnInit {
   }
 
   alGuardar(cliente: Cliente): void {
+    const existe = this.clientes().some((c) => c.id === cliente.id);
     this.cerrarDrawer();
     this.clientes.update((lista) => {
-      const existe = lista.some((c) => c.id === cliente.id);
       const actualizada = existe
         ? lista.map((c) => (c.id === cliente.id ? cliente : c))
         : [...lista, cliente];
       return this.ordenar(actualizada);
     });
+    this.alertService.toastExito(existe ? 'Cliente actualizado' : 'Cliente creado');
   }
 
   async eliminarCliente(cliente: Cliente): Promise<void> {
-    const ok = await this.alertService.confirmarEliminacion(
-      `al cliente "${cliente.razonSocial}"`,
+    const confirmado = await this.alertService.confirmarAccion(
+      `¿Eliminar al cliente "${cliente.razonSocial}"?`,
+      'Esta acción no se puede deshacer.',
+      'Sí, eliminar',
     );
-    if (!ok) return;
+    if (!confirmado) return;
 
     this.error.set(null);
     this.eliminandoId.set(cliente.id);
@@ -113,15 +116,17 @@ export class ClienteList implements OnInit {
         this.clientes.update((lista) => lista.filter((c) => c.id !== cliente.id));
         if (this.clienteEditandoId() === cliente.id) this.cerrarDrawer();
         this.eliminandoId.set(null);
+        this.alertService.toastExito('Cliente eliminado');
       },
       error: (err: HttpErrorResponse) => {
         this.eliminandoId.set(null);
         // El back devuelve 500 si el cliente tiene servicios asociados (clave foránea).
-        this.error.set(
+        const msg =
           err.status === 500
             ? 'No se pudo eliminar el cliente. Probablemente tenga servicios asociados.'
-            : mensajeError(err, 'eliminar el cliente'),
-        );
+            : mensajeError(err, 'eliminar el cliente');
+        this.error.set(msg);
+        this.alertService.error('No se pudo eliminar', msg);
       },
     });
   }

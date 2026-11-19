@@ -207,9 +207,11 @@ export class RutaList implements OnInit {
   }
 
   alGuardar(r: Ruta) {
+    const esEdicion = this.rutaEditandoId() !== null;
     this.drawerAbierto.set(false);
     this.seleccionadaId.set(r.idRuta);
     this.cargar(r.idRuta);
+    this.alertService.toastExito(esEdicion ? 'Ruta actualizada' : 'Ruta creada');
   }
 
   alReordenar(servicios: Servicio[]) {
@@ -223,13 +225,17 @@ export class RutaList implements OnInit {
 
   async eliminar(r: Ruta): Promise<void> {
     const n = this.cantidadServicios(r);
-    const aviso =
+    const detalle =
       n > 0
         ? `Se van a eliminar también sus ${n} servicios. Esta acción no se puede deshacer.`
-        : undefined;
+        : 'Esta acción no se puede deshacer.';
 
-    const ok = await this.alertService.confirmarEliminacion(`la ruta "${r.nombre}"`, aviso);
-    if (!ok) return;
+    const confirmado = await this.alertService.confirmarAccion(
+      `¿Eliminar la ruta "${r.nombre}"?`,
+      detalle,
+      'Sí, eliminar',
+    );
+    if (!confirmado) return;
 
     this.rutasService.eliminar(r.idRuta).subscribe({
       next: () => {
@@ -238,13 +244,16 @@ export class RutaList implements OnInit {
           const lista = this.rutasFiltradas();
           this.seleccionadaId.set(lista[0]?.idRuta ?? null);
         }
+        this.alertService.toastExito('Ruta eliminada');
       },
-      error: (err: HttpErrorResponse) =>
-        this.error.set(
+      error: (err: HttpErrorResponse) => {
+        const msg =
           err.status === 500
             ? 'No se pudo eliminar. Puede que la ruta tenga servicios o tareas asignadas.'
-            : mensajeError(err, 'eliminar la ruta'),
-        ),
+            : mensajeError(err, 'eliminar la ruta');
+        this.error.set(msg);
+        this.alertService.error('No se pudo eliminar', msg);
+      },
     });
   }
 }

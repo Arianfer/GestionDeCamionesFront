@@ -66,19 +66,48 @@ export class AlertService {
     return res.isConfirmed;
   }
 
-  confirmarEliminacion(entidad: string, detalle?: string): Promise<boolean> {
-    return this.confirmar({
-      titulo: `¿Eliminar ${entidad}?`,
-      texto: detalle,
+  async confirmarAccion(
+    titulo: string,
+    detalle?: string,
+    textoConfirmar: string = 'Sí, confirmar',
+    colorConfirmar: string = '#dc3545'
+  ): Promise<boolean> {
+    const res = await Swal.fire({
+      title: titulo,
+      text: detalle,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: colorConfirmar,
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: textoConfirmar,
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true
     });
+    return res.isConfirmed;
   }
 
-  confirmarLogout(): Promise<boolean> {
-    return this.confirmar({
-      titulo: '¿Cerrar sesión?',
-      texto: 'Vas a salir del sistema de Ciageser S.A.',
-      confirmText: 'Cerrar sesión',
-      icon: 'question',
-    });
+  confirmarEliminacion(entidad: string, detalle?: string): Promise<boolean> {
+    return this.confirmarAccion(
+      `¿Eliminar ${entidad}?`,
+      detalle ?? 'Esta acción no se puede deshacer.',
+      'Sí, eliminar',
+    );
   }
+
+  async confirmarLogout(): Promise<boolean> {
+    const res = await Swal.fire({
+      title: '¿Cerrar sesión?',
+      text: 'Vas a salir del sistema de Ciageser S.A.',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#dc3545',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Cerrar sesión',
+      cancelButtonText: 'Quedarme',
+      reverseButtons: true
+    });
+    return res.isConfirmed;
+  }
+
 }
+

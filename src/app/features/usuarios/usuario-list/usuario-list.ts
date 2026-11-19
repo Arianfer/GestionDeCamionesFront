@@ -139,13 +139,14 @@ export class UsuarioList implements OnInit {
   }
 
   alGuardar(usuario: Usuario): void {
+    const existe = this.usuarios().some((u) => u.id === usuario.id);
     this.cerrarDrawer();
     this.usuarios.update((lista) => {
-      const existe = lista.some((u) => u.id === usuario.id);
       return existe
         ? lista.map((u) => (u.id === usuario.id ? usuario : u))
         : [...lista, usuario];
     });
+    this.alertService.toastExito(existe ? 'Usuario actualizado' : 'Usuario creado');
   }
 
   esPropio(u: Usuario): boolean {
@@ -158,21 +159,26 @@ export class UsuarioList implements OnInit {
       return;
     }
 
-    const ok = await this.alertService.confirmar({
-      titulo: `¿Desactivar a ${u.nombre} ${u.apellido}?`,
-      texto: 'No va a poder iniciar sesión.',
-      confirmText: 'Desactivar',
-      icon: 'question',
-    });
-    if (!ok) return;
+    const confirmado = await this.alertService.confirmarAccion(
+      `¿Desactivar a ${u.nombre} ${u.apellido}?`,
+      'No va a poder iniciar sesión.',
+      'Sí, desactivar',
+      '#ea580c',
+    );
+    if (!confirmado) return;
 
     this.usuariosService.desactivar(u.id).subscribe({
-      next: () =>
+      next: () => {
         this.usuarios.update((lista) =>
           lista.map((x) => (x.id === u.id ? { ...x, activo: false } : x)),
-        ),
-      error: (err: HttpErrorResponse) =>
-        this.error.set(mensajeError(err, `desactivar a ${u.nombre} ${u.apellido}`)),
+        );
+        this.alertService.toastExito('Usuario desactivado');
+      },
+      error: (err: HttpErrorResponse) => {
+        const msg = mensajeError(err, `desactivar a ${u.nombre} ${u.apellido}`);
+        this.error.set(msg);
+        this.alertService.error('No se pudo desactivar', msg);
+      },
     });
   }
 }
