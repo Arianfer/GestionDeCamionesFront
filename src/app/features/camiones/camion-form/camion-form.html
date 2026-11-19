@@ -86,7 +86,7 @@
 
         @if (esEdicion) {
           <div class="campo">
-            <label for="capacidadCarga">Capacidad de carga <span class="requerido">*</span></label>
+            <label for="capacidadCarga">Capacidad de carga (kg)</label>
             <input
               id="capacidadCarga"
               type="number"
@@ -101,7 +101,7 @@
             @if (
               form.controls.capacidadCarga.touched && form.controls.capacidadCarga.invalid
             ) {
-              <small class="error">La capacidad es obligatoria y no puede ser negativa.</small>
+              <small class="error">La capacidad debe ser mayor a 0.</small>
             }
             @if (erroresBackend()['capacidadCarga']) {
               <small class="error">{{ erroresBackend()['capacidadCarga'] }}</small>
@@ -114,7 +114,6 @@
           <select
             id="tipo"
             formControlName="tipo"
-            (change)="alCambiarTipo($event)"
             [class.invalido]="form.controls.tipo.touched && form.controls.tipo.invalid"
           >
             @for (t of tipos; track t.valor) {
@@ -123,8 +122,7 @@
           </select>
           @if (!esEdicion) {
             <small class="ayuda">
-              Capacidad y consumo se asignan automáticamente: {{ valoresPorTipo.capacidadCarga }} kg ·
-              {{ valoresPorTipo.consumoDieselPorKm }} L/km. Podés ajustarlos al editar el camión.
+              La capacidad y el consumo se asignan automáticamente según el tipo. Podés ajustarlos al editar el camión.
             </small>
           }
           @if (erroresBackend()['tipo']) {
@@ -151,7 +149,7 @@
               form.controls.consumoDieselPorKm.touched &&
               form.controls.consumoDieselPorKm.invalid
             ) {
-              <small class="error">El consumo no puede ser negativo.</small>
+              <small class="error">El consumo debe ser mayor a 0.</small>
             }
             @if (erroresBackend()['consumoDieselPorKm']) {
               <small class="error">{{ erroresBackend()['consumoDieselPorKm'] }}</small>

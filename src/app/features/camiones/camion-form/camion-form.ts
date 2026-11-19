@@ -6,16 +6,6 @@ import { erroresDeValidacion, mensajeError } from '../../../shared/utils/mensaje
 import {Camion,CamionRequest,EstadoCamion,TipoCamion,} from '../../../shared/models/camion.model';
 import { CamionesService } from '../camiones.service';
 
-/** Valores por defecto según el tipo de camión. Se usan al crear; al editar se respeta lo guardado. */
-const CONFIG_POR_TIPO: Record<
-  TipoCamion,
-  { capacidadCarga: number; consumoDieselPorKm: number }
-> = {
-  RECOLECTOR: { capacidadCarga: 15000, consumoDieselPorKm: 0.35 },
-  BARRIOS_PRIVADOS: { capacidadCarga: 10000, consumoDieselPorKm: 0.3 },
-  DAILY: { capacidadCarga: 3500, consumoDieselPorKm: 0.22 },
-};
-
 @Component({
   selector: 'app-camion-form',
   imports: [ReactiveFormsModule, RouterLink],
@@ -62,34 +52,14 @@ export class CamionForm implements OnInit {
       'DISPONIBLE',
       Validators.required,
     ),
-    capacidadCarga: this.fb.control<number | null>(
-      CONFIG_POR_TIPO.RECOLECTOR.capacidadCarga,
-      [Validators.required, Validators.min(0)],
-    ),
-    consumoDieselPorKm: this.fb.control<number | null>(
-      CONFIG_POR_TIPO.RECOLECTOR.consumoDieselPorKm,
-      [Validators.min(0)],
-    ),
+    // SCRUM-151: al crear quedan vacíos y el back asigna los valores según el tipo.
+    // Solo se muestran y se pueden ajustar al editar.
+    capacidadCarga: this.fb.control<number | null>(null, [Validators.min(1)]),
+    consumoDieselPorKm: this.fb.control<number | null>(null, [Validators.min(0.01)]),
   });
 
   get esEdicion(): boolean {
     return this.id !== null;
-  }
-
-  /** Valores que se asignan automáticamente al tipo seleccionado (solo al crear). */
-  get valoresPorTipo(): { capacidadCarga: number; consumoDieselPorKm: number } {
-    return CONFIG_POR_TIPO[this.form.controls.tipo.value];
-  }
-
-  alCambiarTipo(event: Event): void {
-    if (this.esEdicion) return;
-
-    const tipo = (event.target as HTMLSelectElement).value as TipoCamion;
-    const config = CONFIG_POR_TIPO[tipo];
-    this.form.patchValue({
-      capacidadCarga: config.capacidadCarga,
-      consumoDieselPorKm: config.consumoDieselPorKm,
-    });
   }
 
   ngOnInit(): void {
@@ -138,13 +108,16 @@ export class CamionForm implements OnInit {
     }
 
     const v = this.form.getRawValue();
+    // SCRUM-151: al crear no se mandan capacidad ni consumo (los pone el back según el tipo).
+    // Al editar se mandan los valores del formulario; si quedan vacíos, el back conserva los que tenía.
     const body: CamionRequest = {
       patente: v.patente.trim().toUpperCase(),
       tipo: v.tipo,
       estadoCamion: v.estadoCamion,
-      capacidadCarga: Number(v.capacidadCarga),
+      capacidadCarga:
+        !this.esEdicion || v.capacidadCarga === null ? null : Number(v.capacidadCarga),
       consumoDieselPorKm:
-        v.consumoDieselPorKm === null ? null : Number(v.consumoDieselPorKm),
+        !this.esEdicion || v.consumoDieselPorKm === null ? null : Number(v.consumoDieselPorKm),
     };
 
     this.guardando.set(true);
@@ -167,12 +140,6 @@ export class CamionForm implements OnInit {
         const campos = erroresDeValidacion(err);
         if (campos) {
           this.erroresBackend.set(campos);
-          return;
-        }
-
-        // El back todavía no tiene PUT /api/camiones/{id}: responde 405 (o 403 con el back viejo)
-        if (this.esEdicion && (err.status === 403 || err.status === 405)) {
-          this.error.set('El backend actual todavía no permite editar camiones.');
           return;
         }
 
