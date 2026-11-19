@@ -14,6 +14,6 @@ export interface CamionRequest {
   patente: string;
   tipo: TipoCamion;
   estadoCamion: EstadoCamion;
-  capacidadCarga: number;
+  capacidadCarga?: number | null;
   consumoDieselPorKm?: number | null;
 }
