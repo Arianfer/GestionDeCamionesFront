@@ -15,7 +15,7 @@ import {
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Subject, Subscription, debounceTime, distinctUntilChanged, filter, forkJoin, switchMap, tap } from 'rxjs';
+import { Subject, Subscription, catchError, debounceTime, distinctUntilChanged, filter, forkJoin, of, switchMap, tap } from 'rxjs';
 import * as L from 'leaflet';
 import { ServiciosService } from '../servicios.service';
 import { ClienteService } from '../../clientes/cliente.service';
@@ -89,6 +89,7 @@ export class ServicioForm implements OnInit, AfterViewInit, OnDestroy {
   cargandoOpciones = signal(true);
   private ultimosOrdenes = signal<Map<number, number>>(new Map());
   private subRuta?: Subscription;
+  private subDireccionMapa?: Subscription;
 
   readonly prioridades: Prioridad[] = ['ALTA', 'MEDIA', 'BAJA'];
   readonly tiposResiduo: TipoResiduo[] = ['GENERAL', 'RECICLABLE'];
@@ -166,6 +167,7 @@ export class ServicioForm implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy() {
     this.subBusqueda?.unsubscribe();
     this.subRuta?.unsubscribe();
+    this.subDireccionMapa?.unsubscribe();
     this.map?.remove();
   }
 
@@ -235,6 +237,8 @@ export class ServicioForm implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private actualizarCoordenadasDesdeMapa(lat: number, lon: number) {
+    if (this.form.disabled) return;
+
     const latRedondeada = Number(lat.toFixed(6));
     const lonRedondeada = Number(lon.toFixed(6));
 
@@ -243,6 +247,23 @@ export class ServicioForm implements OnInit, AfterViewInit, OnDestroy {
       longitud: lonRedondeada,
     });
     this.actualizarPinMapa(latRedondeada, lonRedondeada, this.map?.getZoom() ?? 16);
+    this.actualizarDireccionDesdeMapa(latRedondeada, lonRedondeada);
+  }
+
+  private actualizarDireccionDesdeMapa(lat: number, lon: number) {
+    this.subDireccionMapa?.unsubscribe();
+    this.sugerencias.set([]);
+    this.avisoDireccion.set('');
+
+    this.subDireccionMapa = this.georef.obtenerDireccionPorPunto(lat, lon).subscribe({
+      next: (direccion) => {
+        if (direccion) {
+          this.form.controls.direccion.setValue(direccion);
+          return;
+        }
+        this.avisoDireccion.set('No se pudo obtener la dirección del punto. Completala manualmente.');
+      },
+    });
   }
 
   // ---------- Autocompletado ----------
@@ -263,13 +284,20 @@ export class ServicioForm implements OnInit, AfterViewInit, OnDestroy {
           this.buscando.set(true);
           this.avisoDireccion.set('');
         }),
-        switchMap((texto) => this.georef.buscarEnZona(texto))
+        switchMap((texto) =>
+          this.georef.buscarEnZona(texto).pipe(
+            catchError(() => {
+              this.avisoDireccion.set('Error al buscar dirección. Marcá el punto directo en el mapa.');
+              return of<DireccionNormalizada[]>([]);
+            }),
+          ),
+        )
       )
       .subscribe({
         next: (lista) => {
           this.buscando.set(false);
           this.sugerencias.set(lista);
-          if (lista.length === 0) {
+          if (lista.length === 0 && !this.avisoDireccion()) {
             this.avisoDireccion.set('No se encontraron coincidencias. Podés marcar el punto directo en el mapa.');
           }
         },
