@@ -2,7 +2,6 @@ import { Component, OnInit, OnDestroy, ElementRef, ViewChild, inject, signal, co
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { Router } from '@angular/router';
 import { forkJoin, of, catchError } from 'rxjs';
 import * as L from 'leaflet';
 
@@ -43,7 +42,6 @@ export class RutaChoferComponent implements OnInit, OnDestroy {
   private camionesService = inject(CamionesService);
   private authService = inject(AuthService);
   private alertService = inject(AlertService);
-  private router = inject(Router);
   private http = inject(HttpClient);
 
   @ViewChild('mapContainer') mapContainer?: ElementRef<HTMLDivElement>;
@@ -537,6 +535,5 @@ export class RutaChoferComponent implements OnInit, OnDestroy {
 
     this.authService.logout();
     this.alertService.toastInfo('Sesión cerrada');
-    this.router.navigate(['/login']);
   }
 }

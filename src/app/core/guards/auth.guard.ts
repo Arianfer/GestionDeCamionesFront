@@ -6,9 +6,10 @@ export const authGuard: CanActivateFn & CanMatchFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  if (authService.getToken()) {
+  if (authService.sesionActiva()) {
     return true;
   }
 
+  authService.limpiarSesion();
   return router.createUrlTree(['/login']);
 };
