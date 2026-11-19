@@ -13,6 +13,7 @@ import { RutasService } from '../rutas/rutas.service';
 import { CamionesService } from '../camiones/camiones.service';
 import { Ruta } from '../../shared/models/ruta.model';
 import { Camion } from '../../shared/models/camion.model';
+import { crearPopupParada } from '../../shared/utils/popup-parada';
 
 export interface DiaSemanaCard {
   nombreDia: string;
@@ -374,8 +375,10 @@ export class RutaChoferComponent implements OnInit, OnDestroy {
         iconAnchor: [size / 2, size / 2]
       });
 
+      const popup = L.popup().setContent(crearPopupParada(index + 1, parada));
+
       L.marker([parada.latitud, parada.longitud], { icon })
-        .bindPopup(`<strong>#${index + 1} ${parada.nombre}</strong><br>${parada.direccion}`)
+        .bindPopup(popup)
         .addTo(this.paradasLayer);
     });
   }
