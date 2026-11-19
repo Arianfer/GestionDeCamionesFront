@@ -30,7 +30,7 @@
 
       <div class="form-grid">
         <div class="campo">
-          <label for="descripcion">Descripción</label>
+          <label for="descripcion">Descripción <span class="requerido">*</span></label>
           <input
             id="descripcion"
             type="text"
@@ -40,7 +40,13 @@
             [class.invalido]="form.controls.descripcion.touched && form.controls.descripcion.invalid"
           />
           @if (form.controls.descripcion.touched && form.controls.descripcion.invalid) {
-            <small class="error">La descripción no puede superar los 100 caracteres.</small>
+            <small class="error">
+              @if (form.controls.descripcion.errors?.['maxlength']) {
+                La descripción no puede superar los 100 caracteres.
+              } @else {
+                La descripción es obligatoria.
+              }
+            </small>
           }
           @if (erroresBackend()['descripcion']) {
             <small class="error">{{ erroresBackend()['descripcion'] }}</small>
