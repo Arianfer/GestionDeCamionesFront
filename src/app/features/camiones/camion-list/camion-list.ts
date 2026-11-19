@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { Camion, EstadoCamion, TipoCamion } from '../../../shared/models/camion.model';
 import { PatentePipe } from '../../../shared/pipes/patente.pipe';
+import { AlertService } from '../../../core/services/alert.service';
 import { CamionForm } from '../camion-form/camion-form';
 import { CamionesService } from '../camiones.service';
 import { mensajeError } from '../../../shared/utils/mensaje-error';
@@ -16,6 +17,7 @@ import { mensajeError } from '../../../shared/utils/mensaje-error';
 })
 export class CamionList implements OnInit {
   private readonly camionesService = inject(CamionesService);
+  private readonly alertService = inject(AlertService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -129,8 +131,9 @@ export class CamionList implements OnInit {
     });
   }
 
-  eliminar(camion: Camion): void {
-    if (!confirm(`¿Eliminar el camión ${camion.patente}?`)) return;
+  async eliminar(camion: Camion): Promise<void> {
+    const ok = await this.alertService.confirmarEliminacion(`el camión ${camion.patente}`);
+    if (!ok) return;
 
     this.eliminandoId.set(camion.id);
     this.camionesService.eliminar(camion.id).subscribe({

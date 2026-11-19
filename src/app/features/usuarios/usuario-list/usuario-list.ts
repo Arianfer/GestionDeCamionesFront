@@ -1,5 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { AlertService } from '../../../core/services/alert.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Usuario } from '../../../shared/models/usuario.model';
 import { UsuarioForm } from '../usuario-form/usuario-form';
@@ -15,6 +16,7 @@ import { mensajeError } from '../../../shared/utils/mensaje-error';
 })
 export class UsuarioList implements OnInit {
   private readonly usuariosService = inject(UsuariosService);
+  private readonly alertService = inject(AlertService);
   private readonly auth = inject(AuthService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -150,13 +152,19 @@ export class UsuarioList implements OnInit {
     return String(u.id) === this.auth.getId();
   }
 
-  desactivar(u: Usuario): void {
+  async desactivar(u: Usuario): Promise<void> {
     if (!this.auth.puedeGestionarUsuario(u.rol)) {
       this.error.set('No tenés permiso para modificar este usuario.');
       return;
     }
 
-    if (!confirm(`¿Desactivar a ${u.nombre} ${u.apellido}? No va a poder iniciar sesión.`)) return;
+    const ok = await this.alertService.confirmar({
+      titulo: `¿Desactivar a ${u.nombre} ${u.apellido}?`,
+      texto: 'No va a poder iniciar sesión.',
+      confirmText: 'Desactivar',
+      icon: 'question',
+    });
+    if (!ok) return;
 
     this.usuariosService.desactivar(u.id).subscribe({
       next: () =>

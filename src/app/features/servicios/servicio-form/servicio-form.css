@@ -353,6 +353,35 @@ select:disabled {
   outline: none;
 }
 
+.buscador {
+  position: relative;
+}
+
+.sugerencias-buscador {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 5;
+}
+
+.sugerencias-buscador span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sugerencias-buscador small {
+  color: var(--color-texto-suave);
+  font-size: 10.5px;
+}
+
+.sugerencia-vacia {
+  padding: 10px 12px;
+  color: var(--color-texto-suave);
+  font-size: 12px;
+}
+
 /* ---------- Mapa ---------- */
 .mapa-header {
   display: flex;

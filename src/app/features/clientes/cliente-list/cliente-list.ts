@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Cliente } from '../../../shared/models/cliente.model';
 import { CuitPipe } from '../../../shared/pipes/cuit.pipe';
 import { ClienteForm } from '../cliente-form/cliente-form';
+import { AlertService } from '../../../core/services/alert.service';
 import { ClienteService } from '../cliente.service';
 import { mensajeError } from '../../../shared/utils/mensaje-error';
 
@@ -16,6 +17,7 @@ import { mensajeError } from '../../../shared/utils/mensaje-error';
 })
 export class ClienteList implements OnInit {
   private readonly clienteService = inject(ClienteService);
+  private readonly alertService = inject(AlertService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
 
@@ -98,9 +100,11 @@ export class ClienteList implements OnInit {
     });
   }
 
-  eliminarCliente(cliente: Cliente): void {
-    // TODO: reemplazar por el confirm-dialog de shared/ cuando exista.
-    if (!confirm(`¿Eliminar al cliente "${cliente.razonSocial}"?`)) return;
+  async eliminarCliente(cliente: Cliente): Promise<void> {
+    const ok = await this.alertService.confirmarEliminacion(
+      `al cliente "${cliente.razonSocial}"`,
+    );
+    if (!ok) return;
 
     this.error.set(null);
     this.eliminandoId.set(cliente.id);

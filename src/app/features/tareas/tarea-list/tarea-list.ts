@@ -129,15 +129,16 @@ export class TareaList implements OnInit {
     return accionEstado(estado);
   }
 
-  cambiarEstado(t: Tarea, nuevoEstado: EstadoTarea): void {
+  async cambiarEstado(t: Tarea, nuevoEstado: EstadoTarea): Promise<void> {
     // Cancelar libera el camión y no se puede deshacer: se pide confirmación.
-    if (
-      nuevoEstado === 'CANCELADO' &&
-      !confirm(
-        `¿Cancelar la tarea TAR-${t.id}? El camión ${this.patentePipe.transform(this.patente(t))} va a quedar disponible.`,
-      )
-    ) {
-      return;
+    if (nuevoEstado === 'CANCELADO') {
+      const ok = await this.alertService.confirmar({
+        titulo: `¿Cancelar la tarea TAR-${t.id}?`,
+        texto: `El camión ${this.patentePipe.transform(this.patente(t))} va a quedar disponible.`,
+        confirmText: 'Cancelar tarea',
+        icon: 'question',
+      });
+      if (!ok) return;
     }
 
     this.cambiandoId.set(t.id);

@@ -38,33 +38,47 @@ export class AlertService {
     });
   }
 
-  async confirmarEliminacion(entidad: string, detalle?: string): Promise<boolean> {
+  /** Confirmación con la misma animación y estilo que ya usa el alta de servicios. */
+  async confirmar({
+    titulo,
+    texto = 'Esta acción no se puede deshacer.',
+    confirmText = 'Sí, eliminar',
+    icon = 'warning',
+    confirmColor = '#dc3545',
+  }: {
+    titulo: string;
+    texto?: string;
+    confirmText?: string;
+    icon?: 'warning' | 'question' | 'info' | 'error';
+    confirmColor?: string;
+  }): Promise<boolean> {
     const res = await Swal.fire({
-      title: `¿Eliminar ${entidad}?`,
-      text: detalle || 'Esta acción no se puede deshacer.',
-      icon: 'warning',
+      title: titulo,
+      text: texto,
+      icon,
       showCancelButton: true,
-      confirmButtonColor: '#dc3545',
+      confirmButtonColor: confirmColor,
       cancelButtonColor: '#6c757d',
-      confirmButtonText: 'Sí, eliminar',
+      confirmButtonText: confirmText,
       cancelButtonText: 'Cancelar',
       reverseButtons: true
     });
     return res.isConfirmed;
   }
 
-  async confirmarLogout(): Promise<boolean> {
-    const res = await Swal.fire({
-      title: '¿Cerrar sesión?',
-      text: 'Vas a salir del sistema de Ciageser S.A.',
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#dc3545',
-      cancelButtonColor: '#6c757d',
-      confirmButtonText: 'Cerrar sesión',
-      cancelButtonText: 'Quedarme',
-      reverseButtons: true
+  confirmarEliminacion(entidad: string, detalle?: string): Promise<boolean> {
+    return this.confirmar({
+      titulo: `¿Eliminar ${entidad}?`,
+      texto: detalle,
     });
-    return res.isConfirmed;
+  }
+
+  confirmarLogout(): Promise<boolean> {
+    return this.confirmar({
+      titulo: '¿Cerrar sesión?',
+      texto: 'Vas a salir del sistema de Ciageser S.A.',
+      confirmText: 'Cerrar sesión',
+      icon: 'question',
+    });
   }
 }

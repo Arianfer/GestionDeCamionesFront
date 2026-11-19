@@ -9,10 +9,7 @@
 
     <div class="servicios-acciones">
       <div class="filtro filtro-busqueda">
-        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="11" cy="11" r="8" />
-          <path d="m21 21-4.3-4.3" />
-        </svg>
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-buscar" /></svg>
         <input
           #q
           type="search"
@@ -44,18 +41,12 @@
           aria-label="Limpiar filtros"
           title="Limpiar filtros"
         >
-          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M18 6 6 18" />
-            <path d="m6 6 12 12" />
-          </svg>
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cerrar" /></svg>
         </button>
       }
 
       <button type="button" class="btn btn-primario" (click)="abrirNuevo()">
-        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M5 12h14" />
-          <path d="M12 5v14" />
-        </svg>
+        <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus" /></svg>
         <span>Nuevo Servicio</span>
       </button>
     </div>
@@ -63,11 +54,7 @@
 
   @if (error()) {
     <p class="alerta" role="alert">
-      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-        <path d="M12 9v4" />
-        <path d="M12 17h.01" />
-      </svg>
+      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-alerta" /></svg>
       <span>{{ error() }}</span>
     </p>
   }
@@ -82,10 +69,7 @@
       <div class="detalle-panel detalle-cargando">
         <div class="detalle-vacio">
           <span class="estado-icono" aria-hidden="true">
-            <svg class="icono" viewBox="0 0 24 24">
-              <path d="M20 10c0 4.99-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 14.99 4 10a8 8 0 0 1 16 0Z" />
-              <circle cx="12" cy="10" r="3" />
-            </svg>
+            <svg class="icono" viewBox="0 0 24 24"><use href="#i-ubicacion" /></svg>
           </span>
           <h2>Cargando servicios</h2>
           <p>Estamos preparando el listado y la ficha de ubicación.</p>
@@ -95,20 +79,14 @@
   } @else if (serviciosFiltrados().length === 0) {
     <div class="estado-vacio">
       <span class="estado-icono" aria-hidden="true">
-        <svg class="icono" viewBox="0 0 24 24">
-          <path d="M20 10c0 4.99-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 14.99 4 10a8 8 0 0 1 16 0Z" />
-          <circle cx="12" cy="10" r="3" />
-        </svg>
+        <svg class="icono" viewBox="0 0 24 24"><use href="#i-ubicacion" /></svg>
       </span>
 
       @if (servicios().length === 0) {
         <h2>Todavía no hay servicios</h2>
         <p>Cargá el primer punto de recolección para empezar a organizar las rutas.</p>
         <button type="button" class="btn btn-primario" (click)="abrirNuevo()">
-          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M5 12h14" />
-            <path d="M12 5v14" />
-          </svg>
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-plus" /></svg>
           <span>Crear primer servicio</span>
         </button>
       } @else {
@@ -139,10 +117,7 @@
             <span class="servicio-card-nombre">{{ s.nombre }}</span>
 
             <span class="servicio-card-direccion">
-              <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M20 10c0 4.99-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 14.99 4 10a8 8 0 0 1 16 0Z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
+              <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-ubicacion" /></svg>
               <span class="direccion-texto">{{ s.direccion }}</span>
             </span>
 
@@ -175,10 +150,7 @@
         <div class="detalle-panel detalle-vacio-panel">
           <div class="detalle-vacio">
             <span class="estado-icono" aria-hidden="true">
-              <svg class="icono" viewBox="0 0 24 24">
-                <path d="M20 10c0 4.99-5.54 10.19-7.4 11.8a1 1 0 0 1-1.2 0C9.54 20.19 4 14.99 4 10a8 8 0 0 1 16 0Z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
+              <svg class="icono" viewBox="0 0 24 24"><use href="#i-ubicacion" /></svg>
             </span>
             <h2>Elegí un servicio</h2>
             <p>Seleccioná un punto del listado para ver todos sus atributos y su ubicación.</p>

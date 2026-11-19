@@ -2,14 +2,7 @@
   <header class="tarea-form-encabezado">
     <div class="tarea-form-titulo">
       <span class="tarea-form-icono" aria-hidden="true">
-        <svg class="icono" viewBox="0 0 24 24">
-          <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
-          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-          <path d="M12 11h4" />
-          <path d="M12 16h4" />
-          <path d="M8 11h.01" />
-          <path d="M8 16h.01" />
-        </svg>
+        <svg class="icono" viewBox="0 0 24 24"><use href="#i-tarea" /></svg>
       </span>
       <div>
         <h1>Nueva Tarea</h1>
@@ -18,10 +11,7 @@
     </div>
 
     <button type="button" class="btn-cerrar" (click)="cancelar()" aria-label="Cerrar formulario">
-      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M18 6 6 18" />
-        <path d="m6 6 12 12" />
-      </svg>
+      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cerrar" /></svg>
     </button>
   </header>
 
@@ -33,11 +23,7 @@
     <form [formGroup]="form" (ngSubmit)="guardar()" class="form-panel" novalidate>
       @if (error()) {
         <p class="alerta" role="alert">
-          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-            <path d="M12 9v4" />
-            <path d="M12 17h.01" />
-          </svg>
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-alerta" /></svg>
           <span>{{ error() }}</span>
         </p>
       }
@@ -67,11 +53,14 @@
             id="fechaEjecucion"
             type="datetime-local"
             formControlName="fechaEjecucion"
+            [min]="fechaMinima()"
             [class.invalido]="
               form.controls.fechaEjecucion.touched && form.controls.fechaEjecucion.invalid
             "
           />
-          @if (form.controls.fechaEjecucion.touched && form.controls.fechaEjecucion.invalid) {
+          @if (form.controls.fechaEjecucion.hasError('fechaPasada')) {
+            <small class="error">La fecha y hora deben ser posteriores al momento actual.</small>
+          } @else if (form.controls.fechaEjecucion.touched && form.controls.fechaEjecucion.invalid) {
             <small class="error">Indicá cuándo se va a ejecutar la tarea.</small>
           }
           @if (erroresBackend()['fechaEjecucion']) {
@@ -81,16 +70,39 @@
 
         <div class="campo">
           <label for="idCamion">Camión <span class="requerido">*</span></label>
-          <select
-            id="idCamion"
-            formControlName="idCamion"
-            [class.invalido]="form.controls.idCamion.touched && form.controls.idCamion.invalid"
-          >
-            <option [ngValue]="null" disabled>Seleccioná un camión</option>
-            @for (c of camionesDisponibles(); track c.id) {
-              <option [ngValue]="c.id">{{ c.patente | patente }} · {{ c.capacidadCarga }} kg</option>
+          <div class="buscador">
+            <input
+              id="idCamion"
+              type="text"
+              autocomplete="off"
+              role="combobox"
+              aria-autocomplete="list"
+              [attr.aria-expanded]="camionesDesplegados()"
+              [value]="camionBusqueda()"
+              [disabled]="camionesDisponibles().length === 0"
+              [class.invalido]="form.controls.idCamion.touched && form.controls.idCamion.invalid"
+              placeholder="Escribí la patente del camión..."
+              (input)="onCamionBusqueda($any($event.target).value)"
+              (focus)="camionesDesplegados.set(true)"
+              (blur)="camionesDesplegados.set(false)"
+              (keydown.enter)="elegirPrimerCamion($event)"
+              (keydown.escape)="camionesDesplegados.set(false)"
+            />
+            @if (camionesDesplegados()) {
+              <ul class="sugerencias sugerencias-buscador" role="listbox">
+                @for (c of camionesFiltrados(); track c.id) {
+                  <li role="option" [attr.aria-selected]="c.id === form.controls.idCamion.value">
+                    <button type="button" (mousedown)="elegirCamion(c, $event)">
+                      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-camion" /></svg>
+                      <span>{{ c.patente | patente }}<small>{{ c.capacidadCarga }} kg</small></span>
+                    </button>
+                  </li>
+                } @empty {
+                  <li class="sugerencia-vacia">No hay camiones con esa patente.</li>
+                }
+              </ul>
             }
-          </select>
+          </div>
           @if (camionesDisponibles().length === 0) {
             <small class="error">
               No hay camiones disponibles. Se libera uno al completar o cancelar su tarea.
@@ -107,16 +119,38 @@
 
         <div class="campo">
           <label for="idRuta">Ruta <span class="requerido">*</span></label>
-          <select
-            id="idRuta"
-            formControlName="idRuta"
-            [class.invalido]="form.controls.idRuta.touched && form.controls.idRuta.invalid"
-          >
-            <option [ngValue]="null" disabled>Seleccioná una ruta</option>
-            @for (r of rutas(); track r.idRuta) {
-              <option [ngValue]="r.idRuta">{{ r.nombre }}</option>
+          <div class="buscador">
+            <input
+              id="idRuta"
+              type="text"
+              autocomplete="off"
+              role="combobox"
+              aria-autocomplete="list"
+              [attr.aria-expanded]="rutasDesplegados()"
+              [value]="rutaBusqueda()"
+              [class.invalido]="form.controls.idRuta.touched && form.controls.idRuta.invalid"
+              placeholder="Escribí el nombre de la ruta..."
+              (input)="onRutaBusqueda($any($event.target).value)"
+              (focus)="rutasDesplegados.set(true)"
+              (blur)="rutasDesplegados.set(false)"
+              (keydown.enter)="elegirPrimerRuta($event)"
+              (keydown.escape)="rutasDesplegados.set(false)"
+            />
+            @if (rutasDesplegados()) {
+              <ul class="sugerencias sugerencias-buscador" role="listbox">
+                @for (r of rutasFiltrados(); track r.idRuta) {
+                  <li role="option" [attr.aria-selected]="r.idRuta === form.controls.idRuta.value">
+                    <button type="button" (mousedown)="elegirRuta(r, $event)">
+                      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-ruta" /></svg>
+                      <span>{{ r.nombre }}</span>
+                    </button>
+                  </li>
+                } @empty {
+                  <li class="sugerencia-vacia">No hay rutas con ese nombre.</li>
+                }
+              </ul>
             }
-          </select>
+          </div>
           @if (form.controls.idRuta.touched && form.controls.idRuta.invalid) {
             <small class="error">Elegí una ruta.</small>
           }
@@ -127,16 +161,38 @@
 
         <div class="campo">
           <label for="idUsuario">Chofer <span class="requerido">*</span></label>
-          <select
-            id="idUsuario"
-            formControlName="idUsuario"
-            [class.invalido]="form.controls.idUsuario.touched && form.controls.idUsuario.invalid"
-          >
-            <option [ngValue]="null" disabled>Seleccioná un chofer</option>
-            @for (u of choferes(); track u.id) {
-              <option [ngValue]="u.id">{{ u.apellido }}, {{ u.nombre }}</option>
+          <div class="buscador">
+            <input
+              id="idUsuario"
+              type="text"
+              autocomplete="off"
+              role="combobox"
+              aria-autocomplete="list"
+              [attr.aria-expanded]="choferesDesplegados()"
+              [value]="choferBusqueda()"
+              [class.invalido]="form.controls.idUsuario.touched && form.controls.idUsuario.invalid"
+              placeholder="Escribí apellido, nombre o DNI..."
+              (input)="onChoferBusqueda($any($event.target).value)"
+              (focus)="choferesDesplegados.set(true)"
+              (blur)="choferesDesplegados.set(false)"
+              (keydown.enter)="elegirPrimerChofer($event)"
+              (keydown.escape)="choferesDesplegados.set(false)"
+            />
+            @if (choferesDesplegados()) {
+              <ul class="sugerencias sugerencias-buscador" role="listbox">
+                @for (u of choferesFiltrados(); track u.id) {
+                  <li role="option" [attr.aria-selected]="u.id === form.controls.idUsuario.value">
+                    <button type="button" (mousedown)="elegirChofer(u, $event)">
+                      <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-usuario" /></svg>
+                      <span>{{ u.apellido }}, {{ u.nombre }}<small>DNI {{ u.dni }}</small></span>
+                    </button>
+                  </li>
+                } @empty {
+                  <li class="sugerencia-vacia">No hay choferes con ese nombre.</li>
+                }
+              </ul>
             }
-          </select>
+          </div>
           @if (form.controls.idUsuario.touched && form.controls.idUsuario.invalid) {
             <small class="error">Elegí un chofer.</small>
           } @else {
@@ -150,10 +206,8 @@
 
       <div class="botones">
         <button type="button" class="btn btn-secundario" (click)="cancelar()">Cancelar</button>
-        <button type="submit" class="btn btn-primario" [disabled]="guardando()">
-          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M20 6 9 17l-5-5" />
-          </svg>
+        <button type="submit" class="btn btn-primario" [disabled]="guardando() || form.invalid">
+          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check-simple" /></svg>
           <span>{{ guardando() ? 'Guardando...' : 'Crear tarea' }}</span>
         </button>
       </div>

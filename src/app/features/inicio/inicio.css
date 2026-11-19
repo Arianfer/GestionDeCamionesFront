@@ -7,10 +7,6 @@
   --inicio-sombra-alta: 0 8px 24px color-mix(in srgb, var(--color-texto) 8%, transparent);
 }
 
-.iconos-def {
-  display: none;
-}
-
 .icono {
   width: 16px;
   height: 16px;

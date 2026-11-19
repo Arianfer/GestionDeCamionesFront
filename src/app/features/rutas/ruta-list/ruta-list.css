@@ -706,7 +706,7 @@
   opacity: 0.62;
 }
 
-.parada-chips {
+.chips {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
