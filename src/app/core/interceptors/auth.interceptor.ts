@@ -2,16 +2,17 @@ import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+import { environment } from '../../../environments/environment';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const token = authService.getToken();
 
-  // Solo adjuntamos el JWT si la petición va a nuestro backend (evita bloqueos CORS en OSRM y Georef)
-  const esBackendPropio = req.url.startsWith('http://localhost:8080');
+  const esLogin = req.url.includes('/auth/login');
+  const esBackendPropio = req.url.startsWith(environment.apiUrl);
 
   let peticion = req;
-  if (token && esBackendPropio) {
+  if (token && esBackendPropio && !esLogin) {
     peticion = req.clone({
       setHeaders: {
         Authorization: `Bearer ${token}`
@@ -21,8 +22,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(peticion).pipe(
     catchError((error: HttpErrorResponse) => {
-      // SCRUM-46: Si el token expira o es inválido (401), ejecuta tu logout() que limpia todo y redirige
-      if (error.status === 401 && esBackendPropio) {
+      if (error.status === 401 && esBackendPropio && !esLogin) {
         authService.logout();
       }
       return throwError(() => error);

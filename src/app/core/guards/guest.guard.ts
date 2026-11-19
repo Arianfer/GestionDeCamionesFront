@@ -6,10 +6,11 @@ export const guestGuard: CanActivateFn = () => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  if (authService.getToken()) {
+  if (authService.sesionActiva()) {
     const rol = authService.getRol();
     return router.createUrlTree([rol === 'EMPLEADO' ? '/chofer' : '/inicio']);
   }
 
+  authService.limpiarSesion();
   return true;
 };

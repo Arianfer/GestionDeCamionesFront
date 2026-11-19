@@ -72,6 +72,7 @@ export const routes: Routes = [
       {
         path: 'tareas',
         canActivate: [roleGuard],
+        canMatch: [roleGuard],
         data: { roles: ['ADMIN', 'OFICINA'] },
         loadChildren: () =>
           import('./features/tareas/tareas.routes').then(m => m.TAREAS_ROUTES),
