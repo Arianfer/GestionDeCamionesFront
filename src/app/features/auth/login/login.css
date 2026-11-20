@@ -1,56 +1,47 @@
 .login-page {
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
   min-height: 100vh;
-  background: #f4f7f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+  background: linear-gradient(135deg, #ffff 0%, var(--color-primario, #1b6b34) 55%, #237a3e 100%);
 }
 
-.login-visual {
-  position: relative;
+/* Tarjeta principal limpia, sin bordes raros */
+.login-shell {
+  display: grid;
+  grid-template-columns: 410px 1fr;
+  width: 100%;
+  max-width: 1060px;
+  min-height: 570px;
+  border-radius: 22px;
   overflow: hidden;
-  background: linear-gradient(180deg, #e7f4fc 0%, #56b349 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.login-visual img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-}
-
-.login-panel {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 32px 24px;
-  background: #f4f7f5;
-}
-
-.login-card {
   background: #ffffff;
-  padding: 36px 32px;
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.08);
-  width: 100%;
-  max-width: 400px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+}
+
+.login-form-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 44px 38px;
+  background: #ffffff;
 }
 
 .login-header h2 {
-  margin: 0 0 6px;
-  font-size: 24px;
+  margin: 0 0 8px;
+  font-size: 25px;
   font-weight: 700;
   color: #0f172a;
+  letter-spacing: -0.02em;
 }
 
 .subtitle {
+  margin: 0 0 28px;
+  font-size: 13.5px;
+  line-height: 1.45;
   color: #64748b;
-  font-size: 14px;
-  margin: 0 0 24px;
 }
 
 .form-group {
@@ -60,44 +51,56 @@
 
 .form-group label {
   display: block;
-  margin-bottom: 6px;
-  font-size: 13.5px;
+  margin-bottom: 7px;
+  font-size: 13px;
   font-weight: 600;
   color: #1e293b;
 }
 
 .form-group input {
   width: 100%;
-  padding: 11px 13px;
-  border: 1px solid #cbd5e1;
+  padding: 12px 14px;
+  border: 1px solid #e2e8f0;
   border-radius: 10px;
-  font-size: 14.5px;
+  background: #f8fafc;
+  font-size: 14px;
+  color: #0f172a;
   box-sizing: border-box;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.form-group input::placeholder {
+  color: #94a3b8;
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #28a745;
-  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.15);
+  background: #ffffff;
+  border-color: var(--color-primario, #ffffff);
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.16);
 }
 
 .btn-primary {
   width: 100%;
-  padding: 12px;
-  margin-top: 4px;
-  background-color: #28a745;
+  padding: 13px;
+  margin-top: 8px;
+  background-color: var(--color-primario, #28a745);
   color: #ffffff;
   border: none;
   border-radius: 10px;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  box-shadow: 0 6px 16px rgba(27, 107, 52, 0.28);
+  transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: #218838;
+  filter: brightness(0.93);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .btn-primary:disabled {
@@ -106,32 +109,43 @@
 }
 
 .error-message {
-  color: #dc3545;
+  color: #dc2626;
   background: #fef2f2;
   border: 1px solid #fecaca;
-  padding: 9px 12px;
-  border-radius: 8px;
-  margin-bottom: 15px;
-  font-size: 13.5px;
+  padding: 10px 12px;
+  border-radius: 9px;
+  margin-bottom: 16px;
+  font-size: 13px;
 }
 
-/* En celular o pantallas angostas, la imagen pasa a fondo con tarjeta translúcida */
-@media (max-width: 900px) {
-  .login-page {
+/* Panel derecho con la imagen nítida de la flota */
+.login-hero-panel {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, #dff1fb 0%, #ffffff 100%);
+}
+
+.login-hero-panel img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
+  display: block;
+}
+
+/* Adaptación para tablet / celular */
+@media (max-width: 880px) {
+  .login-shell {
     grid-template-columns: 1fr;
-    background: url('/images/fondo-login.jpg') center / cover no-repeat;
+    max-width: 430px;
+    min-height: auto;
   }
 
-  .login-visual {
+  .login-hero-panel {
     display: none;
   }
 
-  .login-panel {
-    background: rgba(15, 23, 42, 0.25);
-    backdrop-filter: blur(2px);
-  }
-
-  .login-card {
-    background: rgba(255, 255, 255, 0.96);
+  .login-form-panel {
+    padding: 34px 26px;
   }
 }

@@ -1,13 +1,9 @@
 <div class="login-page">
-  <div class="login-visual">
-    <img src="fondo-login.png" alt="Flota de vehículos Ciageser S.A." />
-  </div>
-
-  <div class="login-panel">
-    <div class="login-card">
+  <div class="login-shell">
+    <div class="login-form-panel">
       <div class="login-header">
         <h2>Sistema Ciageser S.A.</h2>
-        <p class="subtitle">Gestión de Camiones y Recorridos</p>
+        <p class="subtitle">Ingresá tu DNI y contraseña para acceder al sistema.</p>
       </div>
 
       <form (ngSubmit)="onSubmit()">
@@ -45,6 +41,10 @@
           {{ isLoading ? 'Ingresando...' : 'Iniciar Sesión' }}
         </button>
       </form>
+    </div>
+
+    <div class="login-hero-panel">
+      <img src="fondo-login.png" alt="Flota Ciageser S.A." />
     </div>
   </div>
 </div>
