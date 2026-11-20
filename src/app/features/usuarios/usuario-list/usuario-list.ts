@@ -2,6 +2,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AlertService } from '../../../core/services/alert.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { PaginadorComponent } from '../../../shared/paginador/paginador';
 import { Usuario } from '../../../shared/models/usuario.model';
 import { UsuarioForm } from '../usuario-form/usuario-form';
 import { UsuariosService } from '../usuarios.service';
@@ -10,7 +11,7 @@ import { mensajeError } from '../../../shared/utils/mensaje-error';
 
 @Component({
   selector: 'app-usuario-list',
-  imports: [UsuarioForm],
+  imports: [UsuarioForm, PaginadorComponent],
   templateUrl: './usuario-list.html',
   styleUrl: './usuario-list.css',
 })
@@ -27,6 +28,9 @@ export class UsuarioList implements OnInit {
   readonly error = signal('');
   readonly drawerAbierto = signal(false);
   readonly usuarioEditandoId = signal<number | null>(null);
+
+  readonly paginaActual = signal(1);
+  readonly itemsPorPagina = 9;
 
   private idEditarPendiente: number | null = null;
 
@@ -45,6 +49,13 @@ export class UsuarioList implements OnInit {
         u.rol.toLowerCase().includes(q) ||
         this.etiquetaRol(u.rol).toLowerCase().includes(q),
     );
+  });
+
+  readonly paginados = computed(() => {
+    const totalPaginas = Math.max(1, Math.ceil(this.filtrados().length / this.itemsPorPagina));
+    const pagina = Math.min(this.paginaActual(), totalPaginas);
+    const inicio = (pagina - 1) * this.itemsPorPagina;
+    return this.filtrados().slice(inicio, inicio + this.itemsPorPagina);
   });
 
   ngOnInit(): void {

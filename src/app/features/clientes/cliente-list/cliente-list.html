@@ -14,7 +14,7 @@
           placeholder="Buscar empresa o CUIT..."
           aria-label="Buscar por razón social o CUIT"
           [value]="filtro()"
-          (input)="filtro.set(q.value)"
+          (input)="filtro.set(q.value); paginaActual.set(1)"
         />
       </div>
 
@@ -54,14 +54,14 @@
       } @else {
         <h2>No hay clientes para mostrar</h2>
         <p>Probá con otro nombre de empresa o número de CUIT.</p>
-        <button type="button" class="btn btn-secundario" (click)="filtro.set('')">
+        <button type="button" class="btn btn-secundario" (click)="filtro.set(''); paginaActual.set(1)">
           Limpiar búsqueda
         </button>
       }
     </div>
   } @else {
     <div class="clientes-grid" aria-label="Directorio de clientes">
-      @for (c of filtrados(); track c.id) {
+      @for (c of paginados(); track c.id) {
         <article class="cliente-card">
           <div>
             <div class="cliente-card-titulo">
@@ -100,6 +100,13 @@
         </article>
       }
     </div>
+
+    <app-paginador
+      [totalItems]="filtrados().length"
+      [paginaActual]="paginaActual()"
+      [itemsPorPagina]="itemsPorPagina"
+      (cambiarPagina)="paginaActual.set($event)"
+    />
   }
 </div>
 

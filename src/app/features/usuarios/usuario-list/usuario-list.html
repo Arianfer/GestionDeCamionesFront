@@ -14,7 +14,7 @@
           placeholder="Buscar usuario, DNI o rol..."
           aria-label="Buscar por nombre, DNI, email o rol"
           [value]="filtro()"
-          (input)="filtro.set(q.value)"
+          (input)="filtro.set(q.value); paginaActual.set(1)"
         />
       </div>
 
@@ -68,7 +68,7 @@
         } @else {
           <h2>No hay usuarios para mostrar</h2>
           <p>Probá con otro nombre, DNI, email o rol.</p>
-          <button type="button" class="btn btn-secundario" (click)="filtro.set('')">
+          <button type="button" class="btn btn-secundario" (click)="filtro.set(''); paginaActual.set(1)">
             Limpiar búsqueda
           </button>
         }
@@ -76,7 +76,7 @@
     }
   } @else {
     <div class="usuarios-grid" aria-label="Equipo de usuarios">
-      @for (u of filtrados(); track u.id) {
+      @for (u of paginados(); track u.id) {
         <article class="usuario-card" [class.usuario-card--inactivo]="!u.activo">
           <div class="usuario-card-cabecera">
             <span class="usuario-avatar" aria-hidden="true">{{ iniciales(u) }}</span>
@@ -135,6 +135,13 @@
         </article>
       }
     </div>
+
+    <app-paginador
+      [totalItems]="filtrados().length"
+      [paginaActual]="paginaActual()"
+      [itemsPorPagina]="itemsPorPagina"
+      (cambiarPagina)="paginaActual.set($event)"
+    />
   }
 </div>
 

@@ -3,6 +3,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { AlertService } from '../../../core/services/alert.service';
+import { PaginadorComponent } from '../../../shared/paginador/paginador';
 import { Cliente } from '../../../shared/models/cliente.model';
 import { CuitPipe } from '../../../shared/pipes/cuit.pipe';
 import { ClienteForm } from '../cliente-form/cliente-form';
@@ -11,7 +12,7 @@ import { mensajeError } from '../../../shared/utils/mensaje-error';
 
 @Component({
   selector: 'app-cliente-list',
-  imports: [CuitPipe, ClienteForm],
+  imports: [CuitPipe, ClienteForm, PaginadorComponent],
   templateUrl: './cliente-list.html',
   styleUrl: './cliente-list.css',
 })
@@ -29,6 +30,9 @@ export class ClienteList implements OnInit {
   readonly drawerAbierto = signal(false);
   readonly clienteEditandoId = signal<number | null>(null);
 
+  readonly paginaActual = signal(1);
+  readonly itemsPorPagina = 9;
+
   readonly filtrados = computed(() => {
     const q = this.filtro().trim().toLowerCase();
     if (!q) return this.clientes();
@@ -41,6 +45,13 @@ export class ClienteList implements OnInit {
         c.razonSocial.toLowerCase().includes(q) ||
         (qDigitos.length > 0 && c.cuit.replace(/\D/g, '').includes(qDigitos)),
     );
+  });
+
+  readonly paginados = computed(() => {
+    const totalPaginas = Math.max(1, Math.ceil(this.filtrados().length / this.itemsPorPagina));
+    const pagina = Math.min(this.paginaActual(), totalPaginas);
+    const inicio = (pagina - 1) * this.itemsPorPagina;
+    return this.filtrados().slice(inicio, inicio + this.itemsPorPagina);
   });
 
   ngOnInit(): void {

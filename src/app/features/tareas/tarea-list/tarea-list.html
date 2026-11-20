@@ -16,7 +16,7 @@
           placeholder="Buscar patente, ruta o chofer..."
           aria-label="Buscar tareas por descripción, patente, ruta o chofer"
           [value]="filtro()"
-          (input)="filtro.set(q.value)"
+          (input)="filtro.set(q.value); paginaActual.set(1)"
         />
       </div>
 
@@ -72,7 +72,7 @@
         <button
           type="button"
           class="btn btn-secundario"
-          (click)="filtro.set(''); estadoFiltro.set('')"
+          (click)="filtro.set(''); estadoFiltro.set(''); paginaActual.set(1)"
         >
           Limpiar filtros
         </button>
@@ -80,7 +80,7 @@
     </div>
   } @else {
     <div class="tareas-grid" aria-label="Listado de tareas">
-      @for (t of filtradas(); track t.id) {
+      @for (t of paginadas(); track t.id) {
         <article class="tarea-card">
           <div>
             <div class="tarea-card-fila">
@@ -148,6 +148,13 @@
         </article>
       }
     </div>
+
+    <app-paginador
+      [totalItems]="filtradas().length"
+      [paginaActual]="paginaActual()"
+      [itemsPorPagina]="itemsPorPagina"
+      (cambiarPagina)="paginaActual.set($event)"
+    />
   }
 </div>
 

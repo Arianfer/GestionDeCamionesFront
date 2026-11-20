@@ -3,6 +3,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import { AlertService } from '../../../core/services/alert.service';
+import { PaginadorComponent } from '../../../shared/paginador/paginador';
 import { Camion, EstadoCamion, TipoCamion } from '../../../shared/models/camion.model';
 import { PatentePipe } from '../../../shared/pipes/patente.pipe';
 import { CamionForm } from '../camion-form/camion-form';
@@ -11,7 +12,7 @@ import { mensajeError } from '../../../shared/utils/mensaje-error';
 
 @Component({
   selector: 'app-camion-list',
-  imports: [PatentePipe, CamionForm],
+  imports: [PatentePipe, CamionForm, PaginadorComponent],
   templateUrl: './camion-list.html',
   styleUrl: './camion-list.css',
 })
@@ -42,6 +43,9 @@ export class CamionList implements OnInit {
   readonly drawerAbierto = signal(false);
   readonly camionEditandoId = signal<number | null>(null);
 
+  readonly paginaActual = signal(1);
+  readonly itemsPorPagina = 9;
+
   readonly filtrados = computed(() => {
     const q = this.filtro().trim().toLowerCase();
     const qPatente = q.replace(/\s/g, '').toUpperCase();
@@ -59,6 +63,13 @@ export class CamionList implements OnInit {
         this.etiquetaEstado(c.estadoCamion).toLowerCase().includes(q)
       );
     });
+  });
+
+  readonly paginados = computed(() => {
+    const totalPaginas = Math.max(1, Math.ceil(this.filtrados().length / this.itemsPorPagina));
+    const pagina = Math.min(this.paginaActual(), totalPaginas);
+    const inicio = (pagina - 1) * this.itemsPorPagina;
+    return this.filtrados().slice(inicio, inicio + this.itemsPorPagina);
   });
 
   ngOnInit(): void {
@@ -95,6 +106,7 @@ export class CamionList implements OnInit {
 
   cambiarEstadoFiltro(valor: string): void {
     this.estadoFiltro.set(valor as EstadoCamion | '');
+    this.paginaActual.set(1);
   }
 
   etiquetaEstado(estado: EstadoCamion): string {

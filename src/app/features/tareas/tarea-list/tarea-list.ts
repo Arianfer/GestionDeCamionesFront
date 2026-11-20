@@ -4,6 +4,7 @@ import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular
 import { forkJoin } from 'rxjs';
 
 import { AlertService } from '../../../core/services/alert.service';
+import { PaginadorComponent } from '../../../shared/paginador/paginador';
 import { Camion } from '../../../shared/models/camion.model';
 import { Ruta } from '../../../shared/models/ruta.model';
 import { EstadoTarea, Tarea } from '../../../shared/models/tarea.model';
@@ -19,7 +20,7 @@ import { TareasService } from '../tareas.service';
 
 @Component({
   selector: 'app-tarea-list',
-  imports: [DatePipe, PatentePipe, TareaForm],
+  imports: [DatePipe, PatentePipe, TareaForm, PaginadorComponent],
   templateUrl: './tarea-list.html',
   styleUrl: './tarea-list.css',
 })
@@ -43,6 +44,9 @@ export class TareaList implements OnInit, OnDestroy {
   readonly error = signal('');
   readonly drawerAbierto = signal(false);
   readonly cambiandoId = signal<number | null>(null);
+
+  readonly paginaActual = signal(1);
+  readonly itemsPorPagina = 9;
 
   private readonly patentePipe = new PatentePipe();
   private pollingTimer: ReturnType<typeof setInterval> | null = null;
@@ -83,9 +87,15 @@ export class TareaList implements OnInit, OnDestroy {
     });
   });
 
+  readonly paginadas = computed(() => {
+    const totalPaginas = Math.max(1, Math.ceil(this.filtradas().length / this.itemsPorPagina));
+    const pagina = Math.min(this.paginaActual(), totalPaginas);
+    const inicio = (pagina - 1) * this.itemsPorPagina;
+    return this.filtradas().slice(inicio, inicio + this.itemsPorPagina);
+  });
+
   ngOnInit(): void {
     this.cargar();
-    // Actualiza estados automáticamente cada 5 segundos y al volver a la pestaña
     this.pollingTimer = setInterval(() => this.refrescarSilencioso(), 5000);
     document.addEventListener('visibilitychange', this.onVisibilityChange);
   }
@@ -137,6 +147,7 @@ export class TareaList implements OnInit, OnDestroy {
 
   cambiarEstadoFiltro(valor: string): void {
     this.estadoFiltro.set(valor as EstadoTarea | '');
+    this.paginaActual.set(1);
   }
 
   etiquetaEstado(estado: EstadoTarea): string {
