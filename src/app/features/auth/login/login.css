@@ -1,72 +1,79 @@
+/* Página completa: la imagen ocupa todo el fondo y la tarjeta va arriba, a la izquierda */
 .login-page {
+  position: relative;
   min-height: 100vh;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 24px;
-  box-sizing: border-box;
-  background: linear-gradient(135deg, #ffff 0%, var(--color-primario, #1b6b34) 55%, #237a3e 100%);
-}
-
-/* Tarjeta principal limpia, sin bordes raros */
-.login-shell {
-  display: grid;
-  grid-template-columns: 410px 1fr;
-  width: 100%;
-  max-width: 1060px;
-  min-height: 570px;
-  border-radius: 22px;
+  justify-content: flex-start;
+  padding: 32px 6vw;
   overflow: hidden;
-  background: #ffffff;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  background: #dff1fb; /* color de respaldo mientras carga la imagen */
 }
 
-.login-form-panel {
+/* Imagen de fondo a pantalla completa */
+.login-fondo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
+  z-index: 0;
+}
+
+/* Tarjeta blanca del formulario */
+.login-card {
+  position: relative;
+  z-index: 1;
+  /* Crece con la pantalla: 420px en notebooks, hasta 560px en monitores grandes */
+  width: clamp(420px, 30vw, 560px);
+  /* Alta como en la referencia (78% de la pantalla, máximo 680px), con el contenido centrado */
+  min-height: min(680px, 78vh);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 44px 38px;
+  padding: 56px 52px 40px;
   background: #ffffff;
+  border-radius: 18px;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, 0.22);
 }
 
-.login-header h2 {
+.login-header h1 {
   margin: 0 0 8px;
-  font-size: 25px;
+  font-size: 32px;
   font-weight: 700;
   color: #0f172a;
   letter-spacing: -0.02em;
 }
 
 .subtitle {
-  margin: 0 0 28px;
-  font-size: 13.5px;
-  line-height: 1.45;
-  color: #64748b;
+  margin: 0 0 32px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #475569;
 }
 
 .form-group {
-  margin-bottom: 18px;
-  text-align: left;
+  margin-bottom: 20px;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 7px;
-  font-size: 13px;
+  margin-bottom: 8px;
+  font-size: 15px;
   font-weight: 600;
-  color: #1e293b;
+  color: #0f172a;
 }
 
 .form-group input {
   width: 100%;
-  padding: 12px 14px;
+  padding: 14px 16px;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
-  background: #f8fafc;
-  font-size: 14px;
+  background: #ffffff;
+  font-size: 15px;
   color: #0f172a;
-  box-sizing: border-box;
-  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .form-group input::placeholder {
@@ -75,28 +82,27 @@
 
 .form-group input:focus {
   outline: none;
-  background: #ffffff;
-  border-color: var(--color-primario, #ffffff);
-  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.16);
+  border-color: var(--color-primario, #2e7d32);
+  box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.16);
 }
 
+/* Botón verde de ancho completo, como en la referencia */
 .btn-primary {
   width: 100%;
-  padding: 13px;
-  margin-top: 8px;
-  background-color: var(--color-primario, #28a745);
+  padding: 15px;
+  margin-top: 12px;
+  background-color: #22b35e;
   color: #ffffff;
   border: none;
   border-radius: 10px;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 6px 16px rgba(27, 107, 52, 0.28);
   transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
 .btn-primary:hover:not(:disabled) {
-  filter: brightness(0.93);
+  background-color: #1e9e53;
 }
 
 .btn-primary:active:not(:disabled) {
@@ -109,43 +115,99 @@
 }
 
 .error-message {
-  color: #dc2626;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
+  margin-bottom: 14px;
   padding: 10px 12px;
+  border: 1px solid #fecaca;
   border-radius: 9px;
-  margin-bottom: 16px;
+  background: #fef2f2;
+  color: #dc2626;
   font-size: 13px;
 }
 
-/* Panel derecho con la imagen nítida de la flota */
-.login-hero-panel {
-  position: relative;
-  overflow: hidden;
-  background: linear-gradient(180deg, #dff1fb 0%, #ffffff 100%);
+/* Línea divisoria con texto en el medio */
+.separador {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 28px 0 18px;
+  color: #94a3b8;
+  font-size: 12px;
 }
 
-.login-hero-panel img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center bottom;
-  display: block;
+.separador::before,
+.separador::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e2e8f0;
 }
 
-/* Adaptación para tablet / celular */
+.login-ayuda {
+  margin: 0;
+  text-align: center;
+  font-size: 13px;
+  color: #475569;
+}
+
+/* Monitores grandes (Full HD o más): todo un poco más grande para acompañar la tarjeta */
+@media (min-width: 1600px) {
+  .login-card {
+    padding: 64px 60px 48px;
+  }
+
+  .login-header h1 {
+    font-size: 40px;
+  }
+
+  .subtitle {
+    font-size: 17px;
+    margin-bottom: 40px;
+  }
+
+  .form-group {
+    margin-bottom: 24px;
+  }
+
+  .form-group label {
+    font-size: 16px;
+  }
+
+  .form-group input {
+    padding: 17px 18px;
+    font-size: 16px;
+  }
+
+  .btn-primary {
+    padding: 18px;
+    font-size: 17px;
+  }
+
+  .separador {
+    font-size: 13px;
+  }
+
+  .login-ayuda {
+    font-size: 14px;
+  }
+}
+
+/* Tablet y celular: la tarjeta ocupa casi todo el ancho y baja,
+   así el logo de la imagen queda visible arriba */
 @media (max-width: 880px) {
-  .login-shell {
-    grid-template-columns: 1fr;
-    max-width: 430px;
+  .login-page {
+    justify-content: center;
+    align-items: flex-end;
+    padding: 24px 16px 32px;
+  }
+
+  .login-fondo {
+    object-position: center 20%;
+  }
+
+  .login-card {
+    width: 100%;
+    max-width: 440px;
     min-height: auto;
-  }
-
-  .login-hero-panel {
-    display: none;
-  }
-
-  .login-form-panel {
-    padding: 34px 26px;
+    padding: 36px 24px 28px;
   }
 }
