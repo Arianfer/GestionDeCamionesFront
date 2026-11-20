@@ -98,7 +98,11 @@ export class TareaForm implements OnInit {
   });
 
   readonly form = this.fb.group({
-    descripcion: this.fb.nonNullable.control('', [Validators.maxLength(100)]),
+    descripcion: this.fb.nonNullable.control('', [
+      Validators.required,
+      Validators.pattern(/\S/), //Hace que no se envien solo espacios en blanco
+      Validators.maxLength(100)
+    ]),
     fechaEjecucion: this.fb.nonNullable.control('', [Validators.required, fechaFutura()]),
     idCamion: this.fb.control<number | null>(null, Validators.required),
     idRuta: this.fb.control<number | null>(null, Validators.required),
