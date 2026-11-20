@@ -1,40 +1,50 @@
-<div class="login-container">
-  <div class="login-card">
-    <h2>Sistema Ciageser S.A.</h2>
-    <p class="subtitle">Gestión de Camiones y Recorridos</p>
+<div class="login-page">
+  <div class="login-visual">
+    <img src="fondo-login.png" alt="Flota de vehículos Ciageser S.A." />
+  </div>
 
-    <form (ngSubmit)="onSubmit()">
-      <div class="form-group">
-        <label for="dni">DNI (Usuario)</label>
-        <input
-          type="text"
-          id="dni"
-          name="dni"
-          [(ngModel)]="credentials.dni"
-          placeholder="Ej: 12345678"
-          required
-        />
+  <div class="login-panel">
+    <div class="login-card">
+      <div class="login-header">
+        <h2>Sistema Ciageser S.A.</h2>
+        <p class="subtitle">Gestión de Camiones y Recorridos</p>
       </div>
 
-      <div class="form-group">
-        <label for="password">Contraseña (4 últimos dígitos)</label>
-        <input
-          type="password"
-          id="password"
-          name="password"
-          [(ngModel)]="credentials.password"
-          placeholder="Ej: 5678"
-          required
-        />
-      </div>
+      <form (ngSubmit)="onSubmit()">
+        <div class="form-group">
+          <label for="dni">DNI (Usuario)</label>
+          <input
+            type="text"
+            id="dni"
+            name="dni"
+            [(ngModel)]="credentials.dni"
+            placeholder="Ej: 12345678"
+            required
+          />
+        </div>
 
-      <div *ngIf="errorMessage" class="error-message">
-        {{ errorMessage }}
-      </div>
+        <div class="form-group">
+          <label for="password">Contraseña (4 últimos dígitos)</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            [(ngModel)]="credentials.password"
+            placeholder="Ej: 5678"
+            required
+          />
+        </div>
 
-      <button type="submit" [disabled]="isLoading" class="btn-primary">
-        {{ isLoading ? 'Ingresando...' : 'Iniciar Sesión' }}
-      </button>
-    </form>
+        @if (errorMessage) {
+          <div class="error-message">
+            {{ errorMessage }}
+          </div>
+        }
+
+        <button type="submit" [disabled]="isLoading" class="btn-primary">
+          {{ isLoading ? 'Ingresando...' : 'Iniciar Sesión' }}
+        </button>
+      </form>
+    </div>
   </div>
 </div>
